@@ -6,7 +6,7 @@ import shutil
 import json
 from dotenv import load_dotenv
 from datetime import datetime
-from upload_doucment import DocumentUploader
+from upload_document import DocumentUploader
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -156,7 +156,8 @@ def upload_document():
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.json
-    user_message = data.get("message", "").strip()
+    print("Received data:", data) 
+    user_message = data.get("message", {}).get("text", "").strip()
     
     if not user_message:
         return jsonify({"error": "Empty message"}), 400
@@ -165,12 +166,15 @@ def chat():
         if not os.path.exists(os.path.join(VECTORSTORE_DIRECTORY, "index.faiss")):
             return jsonify({"error": "No documents uploaded yet"}), 404
 
+        print("Loading vectorstore...")
         vectorstore = FAISS.load_local(
             folder_path=VECTORSTORE_DIRECTORY,
             embeddings=embeddings,
             allow_dangerous_deserialization=True
         )
+        print("Vectorstore loaded successfully.")
 
+        print("Initializing QA chain...")
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
@@ -178,11 +182,16 @@ def chat():
             chain_type_kwargs={"prompt": prompt},
             return_source_documents=False
         )
+        print("QA chain initialized successfully.")
 
+        print(f"Processing query: {user_message}")
         response = qa_chain.invoke({"query": user_message})
+        print(f"Query processed successfully. Response: {response}")
+
         return jsonify({"response": response["result"]}), 200
     except Exception as e:
-        return jsonify({"error": "Failed to process query"}), 500
+        print(f"Error during query processing: {str(e)}")
+        return jsonify({"error": f"Failed to process query: {str(e)}"}), 500
 
 @app.route('/api/save_query', methods=['POST'])
 def save_query():
