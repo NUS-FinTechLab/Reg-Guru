@@ -1,6 +1,7 @@
 import {SERVER_URL} from "@/utils/constants";
 export const getData = async () => {
     try {
+        console.log("SERVER_URL", process.env.NEXT_PUBLIC_BACKEND_URL);
         const [queriesRes, docsRes] = await Promise.all([
             fetch(`${SERVER_URL}/api/get_queries`),
             fetch(`${SERVER_URL}/api/get_documents`)

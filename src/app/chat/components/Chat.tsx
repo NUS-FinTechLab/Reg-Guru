@@ -8,6 +8,7 @@ import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {ToggleTheme} from "@/components/layout/toogle-theme";
 import {SidebarTrigger} from "@/components/ui/sidebar";
+import { SERVER_URL } from "@/utils/constants";
 
 export default function ChatDashboard() {
     const router = useRouter();
@@ -38,7 +39,7 @@ export default function ChatDashboard() {
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/api/upload_document", {
+            const response = await fetch(SERVER_URL + "/api/upload_document", {
                 method: "POST",
                 body: formData,
             });

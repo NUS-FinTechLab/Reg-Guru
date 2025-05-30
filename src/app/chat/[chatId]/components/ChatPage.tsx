@@ -30,6 +30,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {ToggleTheme} from "@/components/layout/toogle-theme";
+import { SERVER_URL } from "@/utils/constants";
 
 interface Message {
     id: number;
@@ -177,7 +178,7 @@ export default function ChatPage() {
         setIsTyping(true);
     
         try {
-            const response = await fetch("http://127.0.0.1:5000/api/chat", {
+            const response = await fetch(SERVER_URL + "/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userMessage }),
@@ -199,7 +200,7 @@ export default function ChatPage() {
             setMessages((prev) => [...prev, botMessage]);
     
             // Save to query history
-            await fetch("http://127.0.0.1:5000/api/save_query", {
+            await fetch(SERVER_URL + "/api/save_query", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -210,7 +211,7 @@ export default function ChatPage() {
             });
     
             // Refresh queries
-            const queriesResponse = await fetch("http://127.0.0.1:5000/api/get_queries");
+            const queriesResponse = await fetch(SERVER_URL + "/api/get_queries");
             setSavedQueries(await queriesResponse.json());
             
         } catch (error) {
@@ -234,8 +235,8 @@ export default function ChatPage() {
         const fetchData = async () => {
             try {
                 const [queriesRes, docsRes] = await Promise.all([
-                    fetch("http://127.0.0.1:5000/api/get_queries"),
-                    fetch("http://127.0.0.1:5000/api/get_documents")
+                    fetch(SERVER_URL + "/api/get_queries"),
+                    fetch(SERVER_URL + "/api/get_documents")
                 ]);
                 setSavedQueries(await queriesRes.json());
                 setUploadedDocuments(await docsRes.json());

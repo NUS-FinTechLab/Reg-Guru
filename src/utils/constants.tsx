@@ -1,1 +1,1 @@
-export const SERVER_URL = process.env.NEXT_APP_BACKEND_URL;
+export const SERVER_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
