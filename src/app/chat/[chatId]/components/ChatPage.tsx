@@ -234,6 +234,7 @@ export default function ChatPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                console.log("SERVER_URL", SERVER_URL);
                 const [queriesRes, docsRes] = await Promise.all([
                     fetch(SERVER_URL + "/api/get_queries"),
                     fetch(SERVER_URL + "/api/get_documents")
