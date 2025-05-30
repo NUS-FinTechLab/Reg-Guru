@@ -1,0 +1,20 @@
+name: Reg-guru-backend
+
+on:
+  push:
+    branches:
+      -master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: build image
+        run: docker build ./backend -t uylulu/reg-guru-backend:latest
+
+      - name: push image
+        run: |
+          docker push uylulu/reg-guru-backend:latest
