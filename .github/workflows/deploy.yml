@@ -22,3 +22,18 @@ jobs:
       - name: push image
         run: |
           docker push uylulu/reg-guru-backend:latest
+
+      - name: SSH to EC2 and deploy
+        uses: appleboy/ssh-action@v1
+        with: 
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user
+            docker pull uylulu/reg-guru-backend:latest
+            docker stop reg-guru-backend || true
+            docker rm reg-guru-backend || true
+            docker run -d --name reg-guru-backend -p 500:500 uylulu/reg-guru-backend:latest
+          
+      
