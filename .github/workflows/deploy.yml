@@ -1,9 +1,7 @@
 name: Reg-guru-backend
 
 on:
-  push:
-    branches:
-      -master
+  [workflow_dispatch, push, pull_request]
 
 jobs:
   deploy:
