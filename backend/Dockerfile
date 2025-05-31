@@ -15,9 +15,5 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 5000
 
-# Set the environment variable for Flask
-ENV OPENAI_API_KEY=api-key
-ENV FLASK_ENV=development
-
 # Run the application
 CMD ["python3", "-u", "app.py"]
