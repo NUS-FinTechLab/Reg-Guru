@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 500
+EXPOSE 5000
 
 # Set the environment variable for Flask
 ENV OPENAI_API_KEY=api-key
