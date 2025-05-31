@@ -20,4 +20,4 @@ ENV OPENAI_API_KEY=api-key
 ENV FLASK_ENV=development
 
 # Run the application
-CMD ["python3", "app.py"]
+CMD ["python3", "-u", "app.py"]
