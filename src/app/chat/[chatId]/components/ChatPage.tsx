@@ -39,7 +39,79 @@ interface Message {
     timestamp: Date;
 }
 
+
+
 export default function ChatPage() {
+    const [question, setQuestion] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleAskQuestion = () => {
+        if (!question.trim()) return;
+        // Generate a unique chat ID
+        const chatId = Date.now().toString();
+
+        // Navigate to the chat page with the new chatId
+        router.push(`/chat/${chatId}?initialQuestion=${encodeURIComponent(question)}`);
+    };
+
+    const handleDocumentUpload = async (e:any) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setDocumentFile(file);
+        setUploadError(null);
+        setIsUploading(true);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await fetch(SERVER_URL + "/api/upload_document", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.status === 409) {
+                // File already exists - treat as success but notify user
+                setUploadedDocuments(prev => [...prev, {
+                    filename: file.name,
+                    upload_time: new Date().toISOString()
+                }]);
+                setUploadError(null);
+                return;
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Upload failed");
+            }
+
+            const data = await response.json();
+            setUploadedDocuments(prev => [...prev, {
+                filename: data.filename,
+                upload_time: new Date().toISOString()
+            }]);
+
+            // Clear the file input
+            e.target.value = null;
+
+            // Optional: Auto-suggest a question about the document
+            if (!question) {
+                setQuestion(`What is the main topic of ${file.name}?`);
+            }}
+            catch (error) {
+            console.error("Upload error:", error);
+            // Narrow the type of 'error'
+            if (error instanceof Error) {
+                setUploadError(null);
+            } else {
+                setUploadError(null);
+            }}
+            finally {
+            setIsUploading(false);
+            }
+    };
+
     const router = useRouter();
     const { chatId } = useParams();
     const [message, setMessage] = useState("");
@@ -449,9 +521,26 @@ export default function ChatPage() {
             <div className="p-4 sticky bg-white dark:bg-[#171717] max-w-[100%] w-full mx-auto flex justify-center bottom-0 border-2 rounded-2xl my-2">
                 <div className="mx-auto w-full max-w-lg">
                     <div className="flex items-center gap-2">
-                        <Button className={"cursor-pointer w-12 h-12 rounded-full text-gray-400"} variant={"outline"}>
-                            <Paperclip className={""}/>
-                        </Button>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                                className="sr-only"
+                                id="document-upload"
+                                onChange={handleDocumentUpload}
+                            />
+                            <label htmlFor="document-upload">
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="cursor-pointer w-12 h-12 rounded-full text-gray-400"
+                                >
+                                    <span>
+                                        <Paperclip />
+                                    </span>
+                                </Button>
+                            </label>
+                        </div>
                         <div className="relative flex-1">
                             <Input
                                 ref={inputRef}
