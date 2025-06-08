@@ -1,7 +1,7 @@
 "use client";
 
-import {useEffect, useRef, useState} from "react";
-import {useParams, useRouter} from "next/navigation";
+import {use, useEffect, useRef, useState} from "react";
+import {useParams, useRouter, useSearchParams} from "next/navigation";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input"
 import {ScrollArea} from "@/components/ui/scroll-area";
@@ -49,28 +49,28 @@ export default function ChatPage() {
         if (!question.trim()) return;
         // Generate a unique chat ID
         const chatId = Date.now().toString();
-
+        
         // Navigate to the chat page with the new chatId
         router.push(`/chat/${chatId}?initialQuestion=${encodeURIComponent(question)}`);
     };
-
+    
     const handleDocumentUpload = async (e:any) => {
         const file = e.target.files[0];
         if (!file) return;
-
+        
         setDocumentFile(file);
         setUploadError(null);
         setIsUploading(true);
-
+        
         const formData = new FormData();
         formData.append("file", file);
-
+        
         try {
             const response = await fetch(SERVER_URL + "/api/upload_document", {
                 method: "POST",
                 body: formData,
             });
-
+            
             if (response.status === 409) {
                 // File already exists - treat as success but notify user
                 setUploadedDocuments(prev => [...prev, {
@@ -80,26 +80,26 @@ export default function ChatPage() {
                 setUploadError(null);
                 return;
             }
-
+            
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Upload failed");
             }
-
+            
             const data = await response.json();
             setUploadedDocuments(prev => [...prev, {
                 filename: data.filename,
                 upload_time: new Date().toISOString()
             }]);
-
+            
             // Clear the file input
             e.target.value = null;
-
+            
             // Optional: Auto-suggest a question about the document
             if (!question) {
                 setQuestion(`What is the main topic of ${file.name}?`);
-            }}
-            catch (error) {
+            }
+        } catch (error) {
             console.error("Upload error:", error);
             // Narrow the type of 'error'
             if (error instanceof Error) {
@@ -108,218 +108,239 @@ export default function ChatPage() {
                 setUploadError(null);
             }}
             finally {
-            setIsUploading(false);
+                setIsUploading(false);
             }
-    };
+        };
+            
+            const router = useRouter();
+            const { chatId } = useParams();
+            const [message, setMessage] = useState("");
+            const [chatHistory, setChatHistory] = useState<any[]>([]);
+            const [documentFile, setDocumentFile] = useState<any>(null);
+            const [activeTab, setActiveTab] = useState("chat");
+            const [lastResponseId, setLastResponseId] = useState<number | null>(null);
+            const [uploadError, setUploadError] = useState(null);
+            const [messages, setMessages] = useState<Message[]>([]);
+            const [savedQueries, setSavedQueries] = useState<any[]>([]);
+            const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
+            const [input, setInput] = useState("");
+            const [isTyping, setIsTyping] = useState(false);
+            const [autoScroll, setAutoScroll] = useState(true);
+            const [showScrollButton, setShowScrollButton] = useState(false);
+            const scrollAreaRef = useRef<HTMLDivElement>(null);
+            const inputRef = useRef<HTMLInputElement>(null);
+            const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const router = useRouter();
-    const { chatId } = useParams();
-    const [message, setMessage] = useState("");
-    const [chatHistory, setChatHistory] = useState<any[]>([]);
-    const [documentFile, setDocumentFile] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState("chat");
-    const [lastResponseId, setLastResponseId] = useState<number | null>(null);
-    const [uploadError, setUploadError] = useState(null);
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [savedQueries, setSavedQueries] = useState<any[]>([]);
-    const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
-    const [input, setInput] = useState("");
-    const [isTyping, setIsTyping] = useState(false);
-    const [autoScroll, setAutoScroll] = useState(true);
-    const [showScrollButton, setShowScrollButton] = useState(false);
-    const scrollAreaRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Load previous messages from localStorage on mount sidebar
-    useEffect(() => {
-        const savedMessages = localStorage.getItem(`chat-${chatId}-messages`);
-        if (savedMessages) {
-            try {
-                const parsedMessages = JSON.parse(savedMessages);
-                // Convert string timestamps back to Date objects
-                const messagesWithDates = parsedMessages.map((msg: any) => ({
-                    ...msg,
-                    timestamp: new Date(msg.timestamp)
+            // Load previous messages from localStorage on mount sidebar
+            useEffect(() => {
+                const savedMessages = localStorage.getItem(`chat-${chatId}-messages`);
+                if (savedMessages) {
+                    try {
+                        const parsedMessages = JSON.parse(savedMessages);
+                        // Convert string timestamps back to Date objects
+                        const messagesWithDates = parsedMessages.map((msg: any) => ({
+                            ...msg,
+                            timestamp: new Date(msg.timestamp)
+                        }));
+                        setMessages(messagesWithDates);
+                    } catch (e) {
+                        console.error("Failed to parse saved messages", e);
+                    }
+                }
+            }, [chatId]);
+            
+            // Save messages to localStorage whenever they change
+            useEffect(() => {
+                if (messages.length > 0) {
+                    localStorage.setItem(`chat-${chatId}-messages`, JSON.stringify(messages));
+                }
+            }, [messages, chatId]);
+            
+            // Scroll to bottom when new messages arrive if autoScroll is true
+            useEffect(() => {
+                if (autoScroll && messagesEndRef.current) {
+                    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+                }
+            }, [messages, autoScroll]);
+            
+            // Handle scroll events to detect when user has scrolled up
+            useEffect(() => {
+                const scrollArea = scrollAreaRef.current;
+                
+                const handleScroll = () => {
+                    if (scrollArea) {
+                        const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+                        const isAtBottom = scrollHeight - scrollTop - clientHeight < 20;
+                        
+                        setAutoScroll(isAtBottom);
+                        setShowScrollButton(!isAtBottom && messages.length > 0);
+                    }
+                };
+                
+                if (scrollArea) {
+                    scrollArea.addEventListener("scroll", handleScroll);
+                    return () => scrollArea.removeEventListener("scroll", handleScroll);
+                }
+            }, [messages.length]);
+            
+            // Focus input on load
+            useEffect(() => {
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
+            }, []);
+            
+            
+            const scrollToBottom = () => {
+                setAutoScroll(true);
+                if (messagesEndRef.current) {
+                    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+                }
+            };
+            
+            const formatTime = (date: Date) => {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            };
+            
+            const formatDate = (date: Date) => {
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                const isToday = date.toDateString() === today.toDateString();
+                const isYesterday = date.toDateString() === yesterday.toDateString();
+                
+                if (isToday) return "Today";
+                if (isYesterday) return "Yesterday";
+                return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            };
+            
+            // Group messages by date
+            const groupMessagesByDate = () => {
+                const groups: { [key: string]: Message[] } = {};
+                
+                messages.forEach(message => {
+                    const dateKey = new Date(message.timestamp).toDateString();
+                    if (!groups[dateKey]) {
+                        groups[dateKey] = [];
+                    }
+                    groups[dateKey].push(message);
+                });
+                
+                return Object.entries(groups).map(([date, msgs]) => ({
+                    date: new Date(date),
+                    messages: msgs
                 }));
-                setMessages(messagesWithDates);
-            } catch (e) {
-                console.error("Failed to parse saved messages", e);
-            }
-        }
-    }, [chatId]);
-
-    // Save messages to localStorage whenever they change
-    useEffect(() => {
-        if (messages.length > 0) {
-            localStorage.setItem(`chat-${chatId}-messages`, JSON.stringify(messages));
-        }
-    }, [messages, chatId]);
-
-    // Scroll to bottom when new messages arrive if autoScroll is true
-    useEffect(() => {
-        if (autoScroll && messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [messages, autoScroll]);
-
-    // Handle scroll events to detect when user has scrolled up
-    useEffect(() => {
-        const scrollArea = scrollAreaRef.current;
-
-        const handleScroll = () => {
-            if (scrollArea) {
-                const { scrollTop, scrollHeight, clientHeight } = scrollArea;
-                const isAtBottom = scrollHeight - scrollTop - clientHeight < 20;
-
-                setAutoScroll(isAtBottom);
-                setShowScrollButton(!isAtBottom && messages.length > 0);
-            }
-        };
-
-        if (scrollArea) {
-            scrollArea.addEventListener("scroll", handleScroll);
-            return () => scrollArea.removeEventListener("scroll", handleScroll);
-        }
-    }, [messages.length]);
-
-    // Focus input on load
-    useEffect(() => {
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
-    }, []);
-
-    const scrollToBottom = () => {
-        setAutoScroll(true);
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    };
-
-    const formatTime = (date: Date) => {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    const formatDate = (date: Date) => {
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const isToday = date.toDateString() === today.toDateString();
-        const isYesterday = date.toDateString() === yesterday.toDateString();
-
-        if (isToday) return "Today";
-        if (isYesterday) return "Yesterday";
-        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    };
-
-    // Group messages by date
-    const groupMessagesByDate = () => {
-        const groups: { [key: string]: Message[] } = {};
-
-        messages.forEach(message => {
-            const dateKey = new Date(message.timestamp).toDateString();
-            if (!groups[dateKey]) {
-                groups[dateKey] = [];
-            }
-            groups[dateKey].push(message);
-        });
-
-        return Object.entries(groups).map(([date, msgs]) => ({
-            date: new Date(date),
-            messages: msgs
-        }));
-    };
-
-    const handleSend = async () => {
-        if (!input.trim()) return;
-    
-        // Add user message
-        const userMessage: Message = {
-            id: Date.now(),
-            text: input,
-            role: "user",
-            timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, userMessage]);
-        setInput("");
-        setAutoScroll(true);
-    
-        // Show typing indicator
-        setIsTyping(true);
-    
-        try {
-            const response = await fetch(SERVER_URL + "/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage }),
-            });
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-    
-            const data = await response.json();
-            
-            // Add bot response to messages
-            const botMessage: Message = {
-                id: Date.now(),
-                text: data.response,
-                role: "bot",
-                timestamp: new Date(),
             };
-            setMessages((prev) => [...prev, botMessage]);
-    
-            // Save to query history
-            await fetch(SERVER_URL + "/api/save_query", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    question: input,
-                    answer: data.response,
-                    document: documentFile?.name || "Current Document",
-                }),
-            });
-    
-            // Refresh queries
-            const queriesResponse = await fetch(SERVER_URL + "/api/get_queries");
-            setSavedQueries(await queriesResponse.json());
             
-        } catch (error) {
-            console.error("Error:", error);
-            // Add error message from bot
-            const errorMessage: Message = {
-                id: Date.now(),
-                text: "Sorry, something went wrong. Please try again.",
-                role: "bot",
-                timestamp: new Date(),
+            const handleSend = async (input : string) => {
+                if (!input.trim()) return;
+                
+
+                // Add user message
+                const userMessage: Message = {
+                    id: Date.now(),
+                    text: input,
+                    role: "user",
+                    timestamp: new Date(),
+                };
+                setMessages((prev) => [...prev, userMessage]);
+                setInput("");
+                setAutoScroll(true);
+                
+                // Show typing indicator
+                setIsTyping(true);
+                // set initial message
+                
+                try {
+                    const response = await fetch(SERVER_URL + "/api/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: userMessage }),
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Add bot response to messages
+                    const botMessage: Message = {
+                        id: Date.now(),
+                        text: data.response,
+                        role: "bot",
+                        timestamp: new Date(),
+                    };
+                    setMessages((prev) => [...prev, botMessage]);
+                    
+                    // Save to query history
+                    await fetch(SERVER_URL + "/api/save_query", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            question: input,
+                            answer: data.response,
+                            document: documentFile?.name || "Current Document",
+                        }),
+                    });
+                    
+                    // Refresh queries
+                    const queriesResponse = await fetch(SERVER_URL + "/api/get_queries");
+                    setSavedQueries(await queriesResponse.json());
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    // Add error message from bot
+                    const errorMessage: Message = {
+                        id: Date.now(),
+                        text: "Sorry, something went wrong. Please try again.",
+                        role: "bot",
+                        timestamp: new Date(),
+                    };
+                    setMessages((prev) => [...prev, errorMessage]);
+                } finally {
+                    setIsTyping(false);
+                }
             };
-            setMessages((prev) => [...prev, errorMessage]);
-        } finally {
-            setIsTyping(false);
-        }
-    };
+            
+            // Initiate first question
+            const searchParams = useSearchParams();
+            let some = false;
+            useEffect(() => {
+                if (some) return;
+                some = true;
+                if (localStorage.getItem(`chat-${chatId}-messages`)) return;
 
-    const messageGroups = groupMessagesByDate();
+                const initialQuestionText = searchParams.get("initialQuestion") ?? "";
+                if (initialQuestionText.trim()) {
+                    setInput(initialQuestionText);
+                    handleSend(initialQuestionText);
+                }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                console.log("SERVER_URL", SERVER_URL);
-                const [queriesRes, docsRes] = await Promise.all([
-                    fetch(SERVER_URL + "/api/get_queries"),
-                    fetch(SERVER_URL + "/api/get_documents")
-                ]);
-                setSavedQueries(await queriesRes.json());
-                setUploadedDocuments(await docsRes.json());
-            } catch (error) {
-                console.error("Error loading data:", error);
-            }
-        };
-        fetchData();
-        // console.log(savedQueries)
-    }, []);
+            const messageGroups = groupMessagesByDate();
+            
+            useEffect(() => {
+                const fetchData = async () => {
+                    try {
+                        console.log("SERVER_URL", SERVER_URL);
+                        const [queriesRes, docsRes] = await Promise.all([
+                            fetch(SERVER_URL + "/api/get_queries"),
+                            fetch(SERVER_URL + "/api/get_documents")
+                        ]);
+                        setSavedQueries(await queriesRes.json());
+                        setUploadedDocuments(await docsRes.json());
+                    } catch (error) {
+                        console.error("Error loading data:", error);
+                    }
+                };
+                fetchData();
+                // console.log(savedQueries)
+            }, []);
+
     return (
         <main className="flex flex-col rounded-2xl container px-2 w-full h-screen">
             {/* Header */}
@@ -424,20 +445,23 @@ export default function ChatPage() {
                                                             : "bg-[#F0F5FC] text-[#559BFE] dark:bg-gray-800 rounded-tl-none"
                                                     }`}
                                                 >
-                                                    <p>{message.text}</p>
+                                                    <div
+                                                        className="text-sm"
+                                                        dangerouslySetInnerHTML={{ __html: message.text }}  
+                                                    />
                                                     <span className="text-xs opacity-70 block text-right mt-1">
-                            {formatTime(message.timestamp)}
-                          </span>
+                                                        {formatTime(message.timestamp)}
+                                                    </span>
                                                 </div>
                                                 <div className={"py-2"}>
                                                     {message.role === "bot" ? (
                                                         <div className="flex-shrink-0">
-                                                            <Button variant={"ghost"} className={"rounded-full"}>
+                                                            {/* <Button variant={"ghost"} className={"rounded-full"}>
                                                                 <ThumbsUp/>
                                                             </Button>
                                                             <Button variant={"ghost"} className={"rounded-full"}>
                                                                 <ThumbsDown/>
-                                                            </Button>
+                                                            </Button> */}
                                                         </div>
                                                     ) : (
                                                         <div className="flex-shrink-0">
@@ -521,7 +545,7 @@ export default function ChatPage() {
             <div className="p-4 sticky bg-white dark:bg-[#171717] max-w-[100%] w-full mx-auto flex justify-center bottom-0 border-2 rounded-2xl my-2">
                 <div className="mx-auto w-full max-w-lg">
                     <div className="flex items-center gap-2">
-                        <div className="relative">
+                        {/* <div className="relative">
                             <input
                                 type="file"
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
@@ -540,13 +564,13 @@ export default function ChatPage() {
                                     </span>
                                 </Button>
                             </label>
-                        </div>
+                        </div> */}
                         <div className="relative flex-1">
                             <Input
                                 ref={inputRef}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                                onKeyPress={(e) => e.key === "Enter" && handleSend(input)}
                                 placeholder="Type a message..."
                                 className="pl-4 pr-12 py-6 max-w-lg w-full rounded-full"
                             />
@@ -560,7 +584,7 @@ export default function ChatPage() {
                                         className="absolute right-2 top-1/2 transform -translate-y-1/2"
                                     >
                                         <Button
-                                            onClick={handleSend}
+                                            onClick={() => handleSend(input)}
                                             size="icon"
                                             className="h-10 w-10 rounded-full cursor-pointer"
                                         >

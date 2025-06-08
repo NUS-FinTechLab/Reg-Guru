@@ -151,9 +151,9 @@ export default function ChatDashboard() {
                     )}
 
                     {/* Action Cards */}
-                    <div className="grid md:grid-cols-2 gap-4 pb-12">
+                    <div className="grid md:grid-cols-1 gap-4 pb-12">
                         {/* Upload Document Card */}
-                        <Card className="shadow-sm border rounded-3xl border-gray-200 dark:border-zinc-800  transition-colors overflow-hidden group cursor-pointer">
+                        {/* <Card className="shadow-sm border rounded-3xl border-gray-200 dark:border-zinc-800  transition-colors overflow-hidden group cursor-pointer">
                             <label className="h-36 relative p-4 space-y-2 flex flex-col items-center justify-center cursor-pointer">
                                 <input
                                     type="file"
@@ -171,28 +171,30 @@ export default function ChatDashboard() {
                                     </p>
                                 </div>
                             </label>
-                        </Card>
+                        </Card> */}
 
                         {/* Say Hello Card */}
-                        <Card
-                            className="shadow-sm border rounded-3xl border-gray-200 dark:border-zinc-800  transition-colors group cursor-pointer"
-                            onClick={() => {
-                                setQuestion("Hello! Tell me what you can do.");
-                                setTimeout(handleAskQuestion, 100);
-                            }}
-                        >
-                            <div className="h-36 relative p-4 space-y-2 flex flex-col items-center justify-center">
-                                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 group-hover:bg-primary-foreground transition-colors">
-                                    <MessageCircle className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-primary" />
+                        <div className="flex justify-center items-center">
+                            <Card
+                                className="shadow-sm border rounded-3xl border-gray-200 dark:border-zinc-800 transition-colors group cursor-pointer"
+                                onClick={() => {
+                                    setQuestion("Hello! Tell me what you can do.");
+                                    setTimeout(handleAskQuestion, 100);
+                                }}
+                            >
+                                <div className="h-36 relative p-4 space-y-2 flex flex-col items-center justify-center">
+                                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-800 group-hover:bg-primary-foreground transition-colors">
+                                        <MessageCircle className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-primary" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="font-medium group-hover:text-primary transition-colors">Say Hello</p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Ask questions without using any documents
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="text-center">
-                                    <p className="font-medium group-hover:text-primary transition-colors">Say Hello</p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Ask questions without using any documents
-                                    </p>
-                                </div>
-                            </div>
-                        </Card>
+                            </Card>
+                        </div>
                     </div>
                 </div>
             </main>
