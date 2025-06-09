@@ -172,7 +172,7 @@ export default function HistoryDashboard() {
         <div className="w-full mx-auto">
             <div className="flex px-4 justify-between my-4 space-x-4 items-center">
                 <SidebarTrigger/>
-                <h1 className="font-semibold text-lg">Chat History</h1>
+                <h1 className="font-semibold text-lg">Document History</h1>
                 <ToggleTheme/>
             </div>
 
