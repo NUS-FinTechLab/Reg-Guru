@@ -106,7 +106,7 @@ export function AppSidebar() {
                 <SidebarGroup>
                     <SidebarGroupLabel>
                         <div className={"w-full flex justify-between items-center"}>
-                            <p className={"font-mono uppercase "}>Your chats</p>
+                            <p className={"font-mono uppercase "}>UPLOADED DOCUMENTS</p>
                             <Link href={"/chat/history"}>
                                 <p className={" text-xs"}>See all</p>
                             </Link>
@@ -114,18 +114,7 @@ export function AppSidebar() {
                     </SidebarGroupLabel>
                     <SidebarGroupContent className={""}>
                         <SidebarMenu>
-                            {items.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild className={"py-6 px-4"}>
-                                        <div>
-                                            <a href={item.url}>
-                                                {/*<item.icon />*/}
-                                                <span className={"text-sm font-semibold"}>{item.title}</span>
-                                            </a>
-                                        </div>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
+                            
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Paperclip, Search, Calendar, MessageSquare, Filter, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ToggleTheme } from "@/components/layout/toogle-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,38 @@ import { Avatar } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { fileNames, getFileNames } from "@/utils/api/getData";
+import { title } from "process";
+import { date, number } from "zod";
+
+class ChatHistory {
+    id!: number;
+    title!: string;
+    lastMessage!: string;
+    date!: string;
+    time!: string;
+    documents!: string[];
+    starred!: boolean;
+
+    constructor(
+        id: number,
+        title: string,
+        lastMessage: string,
+        date: string,
+        time: string,
+        documents: string[],
+        starred: boolean,
+    ) {
+        this.id = id;
+        this.title = title;
+        this.lastMessage = lastMessage;
+        this.date = date;
+        this.time = time;
+        this.documents = documents;
+        this.starred = starred;
+    } 
+}
+
 
 export default function HistoryDashboard() {
     const [query, setQuery] = useState("");
@@ -21,60 +53,90 @@ export default function HistoryDashboard() {
         { filename: "Regulatory_Guidelines_v3.docx", date: "Mar 28, 2025" },
         { filename: "Compliance_Framework.pdf", date: "Mar 15, 2025" }
     ]);
+    const [filenames, setFileNames] = useState<fileNames>({filenames: []})
+    const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+
+    useEffect(() => {
+        const load = async () => {
+            const fetched = await getFileNames();
+            setFileNames(fetched);
+        }
+        if(filenames.filenames.length == 0) {
+            load();
+        }
+
+    }, [])
+
+
+    const data = filenames.filenames;
+    
+    useEffect(() => {
+        let count : number = 1;
+        const some = data.map(name => new ChatHistory(
+            count++,
+            name,
+            "",
+            "Apr 4, 2025",
+            "14:32",
+            [name],
+            true,
+        ))
+        setChatHistory(some);
+    }, [filenames])
 
     // Sample chat history data
-    const chatHistory = [
-        {
-            id: 1,
-            title: "Policy compliance requirements",
-            lastMessage: "What are the key requirements for policy compliance in section 3.2?",
-            date: "Apr 4, 2025",
-            time: "14:32",
-            documents: ["Company_Policy_2025.pdf"],
-            messageCount: 8,
-            starred: true
-        },
-        {
-            id: 2,
-            title: "Regulatory filing deadlines",
-            lastMessage: "When is the deadline for Q2 regulatory filings?",
-            date: "Apr 2, 2025",
-            time: "09:15",
-            documents: ["Regulatory_Guidelines_v3.docx"],
-            messageCount: 5,
-            starred: false
-        },
-        {
-            id: 3,
-            title: "Compliance framework analysis",
-            lastMessage: "Can you summarize the key points of the compliance framework?",
-            date: "Mar 29, 2025",
-            time: "11:47",
-            documents: ["Compliance_Framework.pdf"],
-            messageCount: 12,
-            starred: true
-        },
-        {
-            id: 4,
-            title: "International regulations comparison",
-            lastMessage: "How do our policies align with international standards?",
-            date: "Mar 25, 2025",
-            time: "16:03",
-            documents: ["Regulatory_Guidelines_v3.docx", "Compliance_Framework.pdf"],
-            messageCount: 9,
-            starred: false
-        },
-        {
-            id: 5,
-            title: "Document extraction test",
-            lastMessage: "Can you extract all mentions of audit requirements?",
-            date: "Mar 22, 2025",
-            time: "10:22",
-            documents: ["Company_Policy_2025.pdf"],
-            messageCount: 3,
-            starred: false
-        }
-    ];
+    // const chatHistory = [
+    //     {
+    //         id: 1,
+    //         title: "Policy compliance requirements",
+    //         lastMessage: "What are the key requirements for policy compliance in section 3.2?",
+    //         date: "Apr 4, 2025",
+    //         time: "14:32",
+    //         documents: ["Company_Policy_2025.pdf"],
+    //         messageCount: 8,
+    //         starred: true
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Regulatory filing deadlines",
+    //         lastMessage: "When is the deadline for Q2 regulatory filings?",
+    //         date: "Apr 2, 2025",
+    //         time: "09:15",
+    //         documents: ["Regulatory_Guidelines_v3.docx"],
+    //         messageCount: 5,
+    //         starred: false
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Compliance framework analysis",
+    //         lastMessage: "Can you summarize the key points of the compliance framework?",
+    //         date: "Mar 29, 2025",
+    //         time: "11:47",
+    //         documents: ["Compliance_Framework.pdf"],
+    //         messageCount: 12,
+    //         starred: true
+    //     },
+    //     {
+    //         id: 4,
+    //         title: "International regulations comparison",
+    //         lastMessage: "How do our policies align with international standards?",
+    //         date: "Mar 25, 2025",
+    //         time: "16:03",
+    //         documents: ["Regulatory_Guidelines_v3.docx", "Compliance_Framework.pdf"],
+    //         messageCount: 9,
+    //         starred: false
+    //     },
+    //     {
+    //         id: 5,
+    //         title: "Document extraction test",
+    //         lastMessage: "Can you extract all mentions of audit requirements?",
+    //         date: "Mar 22, 2025",
+    //         time: "10:22",
+    //         documents: ["Company_Policy_2025.pdf"],
+    //         messageCount: 3,
+    //         starred: false
+    //     }
+    // ];
 
     // Filter states
     const [selectedDateRange, setSelectedDateRange] = useState("all");
@@ -184,10 +246,10 @@ export default function HistoryDashboard() {
                         <CardHeader className="pb-2">
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-base font-medium">
-                                    Recent Conversations
+                                    Documents uploaded
                                 </CardTitle>
                                 <span className="text-sm text-gray-500">
-                                    {filteredHistory.length} {filteredHistory.length === 1 ? 'conversation' : 'conversations'}
+                                    {filteredHistory.length} {filteredHistory.length === 1 ? 'document' : 'documents'}
                                 </span>
                             </div>
                         </CardHeader>
@@ -241,10 +303,7 @@ export default function HistoryDashboard() {
                                     ) : (
                                         <div className="flex flex-col items-center justify-center py-8">
                                             <MessageSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-2" />
-                                            <h3 className="text-base font-medium">No conversations found</h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs mt-1">
-                                                {query ? 'Try adjusting your search or filters' : 'Start a new conversation to see it here'}
-                                            </p>
+                                            <h3 className="text-base font-medium">No documents found</h3>
                                         </div>
                                     )}
                                 </div>
