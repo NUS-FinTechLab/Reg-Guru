@@ -153,7 +153,7 @@ export default function ChatDashboard() {
                     {/* Action Cards */}
                     <div className="grid md:grid-cols-1 gap-4 pb-12">
                         {/* Upload Document Card */}
-                        {/* <Card className="shadow-sm border rounded-3xl border-gray-200 dark:border-zinc-800  transition-colors overflow-hidden group cursor-pointer">
+                        <Card className="shadow-sm border rounded-3xl border-gray-200 dark:border-zinc-800  transition-colors overflow-hidden group cursor-pointer">
                             <label className="h-36 relative p-4 space-y-2 flex flex-col items-center justify-center cursor-pointer">
                                 <input
                                     type="file"
@@ -171,7 +171,7 @@ export default function ChatDashboard() {
                                     </p>
                                 </div>
                             </label>
-                        </Card> */}
+                        </Card>
 
                         {/* Say Hello Card */}
                         <div className="flex justify-center items-center">
