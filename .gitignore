@@ -2,3 +2,8 @@ node_modules/
 .next/
 .env
 /backend/.env
+/backend/MAS/downloads
+/backend/MAS/2e9b6224-eb46-4bf3-8374-97bf89333861
+/backend/MAS/venv
+/backend/MAS/chroma.sqlite3
+/backend/MAS/.idea
