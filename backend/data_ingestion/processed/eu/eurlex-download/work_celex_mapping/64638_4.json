@@ -1,0 +1,4002 @@
+[
+    {
+        "work-id": "12c7c850-77a6-11e9-9f05-01aa75ed71a1",
+        "celex": "32019D0785"
+    },
+    {
+        "work-id": "1d89c29f-39a1-11ef-87a1-01aa75ed71a1",
+        "celex": "32024D1826"
+    },
+    {
+        "work-id": "f1a980e7-31e0-4d73-95f1-a8d0b9ab8104",
+        "celex": "31995D0551"
+    },
+    {
+        "work-id": "ff2ba50e-2065-4efc-9f2b-03658cc541ba",
+        "celex": "31991D0391"
+    },
+    {
+        "work-id": "3ab8dc2b-e07d-11ec-a534-01aa75ed71a1",
+        "celex": "32022R0845"
+    },
+    {
+        "work-id": "e3ca317d-6809-4cfe-a263-34bb3c9580b6",
+        "celex": "31983D0389"
+    },
+    {
+        "work-id": "34bdaa83-3d50-11e3-a247-01aa75ed71a1",
+        "celex": "32013R1031"
+    },
+    {
+        "work-id": "b727637f-e5fa-46f7-be5d-40181dee0c1e",
+        "celex": "32010D0108"
+    },
+    {
+        "work-id": "3ee9bae0-ee64-11ef-b5e9-01aa75ed71a1",
+        "celex": "32025D0344"
+    },
+    {
+        "work-id": "e9d30a18-4415-4bb6-91fd-578eca57a17a",
+        "celex": "32005A0719(06)"
+    },
+    {
+        "work-id": "f24953d3-ed5d-11e3-8cd4-01aa75ed71a1",
+        "celex": "32014R0546"
+    },
+    {
+        "work-id": "30a435a4-260f-4b69-9cb7-ac15ec92401c",
+        "celex": "31993D0349"
+    },
+    {
+        "work-id": "2b00edb5-c309-46cf-9be3-167e4853904f",
+        "celex": "32008R0238"
+    },
+    {
+        "work-id": "a3ce187f-d89a-407b-a384-286989bacb93",
+        "celex": "32001M2384"
+    },
+    {
+        "work-id": "027ce305-5e69-11ee-9220-01aa75ed71a1",
+        "celex": "32023R2091"
+    },
+    {
+        "work-id": "9fe9e93f-6bdd-11e6-9b08-01aa75ed71a1",
+        "celex": "32016R0805R(01)"
+    },
+    {
+        "work-id": "d900b8a7-f95f-43a3-9741-2fb1bb273b8b",
+        "celex": "32016M8011"
+    },
+    {
+        "work-id": "2f4e758d-df42-11ed-a05c-01aa75ed71a1",
+        "celex": "32022R0839R(01)"
+    },
+    {
+        "work-id": "cb69b1f3-1a8a-11e7-808e-01aa75ed71a1",
+        "celex": "32017R0640"
+    },
+    {
+        "work-id": "a04dda17-0562-11e7-8a35-01aa75ed71a1",
+        "celex": "32017D0418"
+    },
+    {
+        "work-id": "49fef214-c673-42c5-a891-35c9ff5253aa",
+        "celex": "31986D0664"
+    },
+    {
+        "work-id": "6b30b985-2124-4c9b-995c-c9cb65a807fd",
+        "celex": "31995R1166"
+    },
+    {
+        "work-id": "ac7147d7-2044-11e8-ac73-01aa75ed71a1",
+        "celex": "32018O0008"
+    },
+    {
+        "work-id": "7e2b224e-2325-11eb-b57e-01aa75ed71a1",
+        "celex": "32020D1661"
+    },
+    {
+        "work-id": "b5449751-ba3f-4333-9389-1e259bade544",
+        "celex": "32001M2584"
+    },
+    {
+        "work-id": "f1214bf4-4450-417c-ad78-043e0b92fe26",
+        "celex": "32006D0710"
+    },
+    {
+        "work-id": "16fc50c6-8a53-11e3-87da-01aa75ed71a1",
+        "celex": "32014D0049"
+    },
+    {
+        "work-id": "f002acef-c425-11e6-a6db-01aa75ed71a1",
+        "celex": "32016L2284"
+    },
+    {
+        "work-id": "7059c4dd-2787-4ba1-9025-132726ebe038",
+        "celex": "32018M8943"
+    },
+    {
+        "work-id": "a83d6324-3947-11ed-9c68-01aa75ed71a1",
+        "celex": "32022R1621"
+    },
+    {
+        "work-id": "4e8dd16a-935d-11ea-aac4-01aa75ed71a1",
+        "celex": "32020R0630"
+    },
+    {
+        "work-id": "ea14862d-8ab1-11eb-b85c-01aa75ed71a1",
+        "celex": "32021R0475"
+    },
+    {
+        "work-id": "26be09ca-b4db-11ee-b164-01aa75ed71a1",
+        "celex": "32024D0241"
+    },
+    {
+        "work-id": "bfb73966-69db-44a5-91c5-f7fdd0da8c1b",
+        "celex": "32011M6296"
+    },
+    {
+        "work-id": "156c9112-02c4-4f0c-ad3f-16685ec85e92",
+        "celex": "32001D0403"
+    },
+    {
+        "work-id": "910f62b1-4ae7-11ef-acbc-01aa75ed71a1",
+        "celex": "32024R2110"
+    },
+    {
+        "work-id": "4dcdd33a-664f-43d8-aca1-1ac2e19610c5",
+        "celex": "31993R0731R(01)"
+    },
+    {
+        "work-id": "a955b7bc-8b7a-11eb-b85c-01aa75ed71a1",
+        "celex": "32021D0490"
+    },
+    {
+        "work-id": "bed715a2-cc41-11ec-b6f4-01aa75ed71a1",
+        "celex": "32019R2175R(03)"
+    },
+    {
+        "work-id": "b3f3333c-05c9-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1230"
+    },
+    {
+        "work-id": "488221b0-0bb4-11ed-b11c-01aa75ed71a1",
+        "celex": "32022R1288"
+    },
+    {
+        "work-id": "a42e6170-1f36-11eb-b57e-01aa75ed71a1",
+        "celex": "32020R1633"
+    },
+    {
+        "work-id": "6da09dfa-77e2-437f-a4d0-349ec9edad2b",
+        "celex": "32002M2971"
+    },
+    {
+        "work-id": "4cf5be4f-bc5d-447e-9430-643a6251f3e4",
+        "celex": "32007M4861"
+    },
+    {
+        "work-id": "a5ae0a08-86ce-11e6-b076-01aa75ed71a1",
+        "celex": "32015D2054R(01)"
+    },
+    {
+        "work-id": "13bb9c82-31c7-11ef-a61b-01aa75ed71a1",
+        "celex": "32024R1111R(01)"
+    },
+    {
+        "work-id": "c8450506-e2ac-11ea-ad25-01aa75ed71a1",
+        "celex": "32020R1108R(01)"
+    },
+    {
+        "work-id": "8cd43938-024f-4a05-8167-9f273b9ea9c1",
+        "celex": "32009D0446"
+    },
+    {
+        "work-id": "03739354-0765-44ad-b6fc-7e20aa65439a",
+        "celex": "31999R0639"
+    },
+    {
+        "work-id": "189ca3c4-7f50-11e8-ac6a-01aa75ed71a1",
+        "celex": "32017R1185R(01)"
+    },
+    {
+        "work-id": "c8528936-ffe3-11e6-8a35-01aa75ed71a1",
+        "celex": "32017R0354"
+    },
+    {
+        "work-id": "10f55e47-09b3-11e5-8817-01aa75ed71a1",
+        "celex": "32015D0860"
+    },
+    {
+        "work-id": "bb131acf-878e-4c93-828c-33f53855da01",
+        "celex": "32004R0180"
+    },
+    {
+        "work-id": "3f40c9d8-145f-4917-b57b-fe024916c154",
+        "celex": "32009M5631"
+    },
+    {
+        "work-id": "685ca4ad-fd7d-11e6-8a35-01aa75ed71a1",
+        "celex": "32017D0341"
+    },
+    {
+        "work-id": "a3dffd34-571e-4a27-b2b5-101453d89f27",
+        "celex": "32004D0597"
+    },
+    {
+        "work-id": "fc914608-6ee1-11ee-9220-01aa75ed71a1",
+        "celex": "32009R1224R(08)"
+    },
+    {
+        "work-id": "56ff4564-08f5-4e21-8989-e29c635f63fc",
+        "celex": "32002D0541"
+    },
+    {
+        "work-id": "a9c822b1-8019-11e3-9b7d-01aa75ed71a1",
+        "celex": "32014D0015"
+    },
+    {
+        "work-id": "97554696-cf35-431a-b4a9-329706dc78a3",
+        "celex": "31999D0005(01)"
+    },
+    {
+        "work-id": "05f557f9-a491-47df-befa-ad3ae09b3bb1",
+        "celex": "32004D0446"
+    },
+    {
+        "work-id": "f2f9863d-eb07-4616-a30b-21b01ddc48d5",
+        "celex": "32008H0098"
+    },
+    {
+        "work-id": "0dac3b15-f188-4c83-b3d1-696488e3b628",
+        "celex": "32008H0454"
+    },
+    {
+        "work-id": "d27ab89f-7868-11e8-ac6a-01aa75ed71a1",
+        "celex": "32018R0899"
+    },
+    {
+        "work-id": "7e1686e7-b829-11ef-91ed-01aa75ed71a1",
+        "celex": "32024R3102"
+    },
+    {
+        "work-id": "512b377f-1967-43e4-93c7-bcd19bae8b98",
+        "celex": "32008R0380"
+    },
+    {
+        "work-id": "bd08c8b5-4663-41cf-ae67-3deb4c60bf7a",
+        "celex": "32000R1474"
+    },
+    {
+        "work-id": "3f213b67-b93f-11e7-a7f8-01aa75ed71a1",
+        "celex": "32017R1941"
+    },
+    {
+        "work-id": "2c312894-56d9-4b76-9d0f-229aa5c041d7",
+        "celex": "32006M4293"
+    },
+    {
+        "work-id": "a5ff0587-b1fc-11ea-bb7a-01aa75ed71a1",
+        "celex": "32019L1833R(02)"
+    },
+    {
+        "work-id": "3005abee-58d0-11e8-ab41-01aa75ed71a1",
+        "celex": "32018D0715"
+    },
+    {
+        "work-id": "9cc37836-04f0-45a8-ac76-06375da6fef8",
+        "celex": "32004D0158"
+    },
+    {
+        "work-id": "fecc098c-6b9d-4112-bbef-55ea08fdf6ed",
+        "celex": "31997M0850"
+    },
+    {
+        "work-id": "51fee531-5f40-42e3-9574-59ab4bfc73f5",
+        "celex": "31993D0361"
+    },
+    {
+        "work-id": "4fafe9a5-f5be-474a-afd2-fb9aa8a33a99",
+        "celex": "32006M4423"
+    },
+    {
+        "work-id": "fc8d59eb-5e49-44cf-a955-e99cacc34e57",
+        "celex": "31997M0936"
+    },
+    {
+        "work-id": "4e61f6e8-4b13-11f0-85ba-01aa75ed71a1",
+        "celex": "32018R0848R(27)"
+    },
+    {
+        "work-id": "1e13ee5f-4da6-48f3-a21b-365aee5ecb1b",
+        "celex": "31983S0359R(01)"
+    },
+    {
+        "work-id": "2abe2fe4-ac64-4599-a496-35c234d59246",
+        "celex": "32016M8039"
+    },
+    {
+        "work-id": "ab5e44df-0d09-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019M9597"
+    },
+    {
+        "work-id": "e01a319c-d523-483f-92b7-a6cae1c77500",
+        "celex": "31988D0157"
+    },
+    {
+        "work-id": "6df12114-64fc-11ef-a8ba-01aa75ed71a1",
+        "celex": "32024R2187"
+    },
+    {
+        "work-id": "fe08b469-b652-11ed-8912-01aa75ed71a1",
+        "celex": "32023R0419"
+    },
+    {
+        "work-id": "1ecdf4c4-bb29-11ec-b6f4-01aa75ed71a1",
+        "celex": "32022R0625"
+    },
+    {
+        "work-id": "4158ddf0-dc57-45ba-bc8b-09969d3214c2",
+        "celex": "32012D0021"
+    },
+    {
+        "work-id": "294e1faf-b5fb-11e1-b84a-01aa75ed71a1",
+        "celex": "32012R0461"
+    },
+    {
+        "work-id": "d2e5f917-9fd7-11e5-8781-01aa75ed71a1",
+        "celex": "32015R2283"
+    },
+    {
+        "work-id": "655a30bf-8054-4518-9257-0bb4e07dc60f",
+        "celex": "31975D0297"
+    },
+    {
+        "work-id": "21ffc332-9d6a-44a9-905b-5c7dc97eaa6e",
+        "celex": "32008D0199"
+    },
+    {
+        "work-id": "e7927a1b-7344-11ed-9887-01aa75ed71a1",
+        "celex": "32022R2368"
+    },
+    {
+        "work-id": "94dad895-e4ce-11ee-8b2b-01aa75ed71a1",
+        "celex": "32024R0587R(01)"
+    },
+    {
+        "work-id": "4aeacb2f-f97a-4d1f-92b5-b96e63211c77",
+        "celex": "32016M8026"
+    },
+    {
+        "work-id": "8658baf1-d2f9-4429-ba45-c7052a3f5af1",
+        "celex": "31996D0508"
+    },
+    {
+        "work-id": "f4b810b2-8769-11e9-9f05-01aa75ed71a1",
+        "celex": "32019R0915"
+    },
+    {
+        "work-id": "eeadf303-5410-4d54-96cb-34ee9989cc6a",
+        "celex": "32006H0283"
+    },
+    {
+        "work-id": "a1c43756-fc29-40b0-aee9-cfa9fa141aa7",
+        "celex": "31995R2964"
+    },
+    {
+        "work-id": "a1419491-94d6-11e5-983e-01aa75ed71a1",
+        "celex": "32011R0010R(08)"
+    },
+    {
+        "work-id": "61de1288-4346-11ef-865a-01aa75ed71a1",
+        "celex": "32024M11500"
+    },
+    {
+        "work-id": "63ab2e30-c419-48bc-8443-a2afdca78e1f",
+        "celex": "31999D0352"
+    },
+    {
+        "work-id": "b155ffc8-fcff-11e3-831f-01aa75ed71a1",
+        "celex": "32014D0394"
+    },
+    {
+        "work-id": "64f053ab-518e-47d3-bc0e-a264c6cd23e3",
+        "celex": "32009M5435"
+    },
+    {
+        "work-id": "01b5776d-8910-11e5-b8b7-01aa75ed71a1",
+        "celex": "32015R2015"
+    },
+    {
+        "work-id": "e0ad1705-9106-11e6-b237-01aa75ed71a1",
+        "celex": "32016R1789"
+    },
+    {
+        "work-id": "3de5666e-f31f-11e8-9982-01aa75ed71a1",
+        "celex": "32018M9071"
+    },
+    {
+        "work-id": "eca5c498-93e4-4682-9c4a-fe5adf43cf71",
+        "celex": "31980L0181R(04)"
+    },
+    {
+        "work-id": "d53a573a-4df5-4ec9-8af3-5c24c6f502fa",
+        "celex": "31986D0509"
+    },
+    {
+        "work-id": "a3b78be8-852a-4ea4-9d8f-eb560f563de4",
+        "celex": "32012R1083"
+    },
+    {
+        "work-id": "d0eebf9a-4943-11e2-8762-01aa75ed71a1",
+        "celex": "32012D0778"
+    },
+    {
+        "work-id": "8b225cfb-99a3-4114-ae03-76be35b31f4d",
+        "celex": "32004D0195"
+    },
+    {
+        "work-id": "23898768-5c89-11e7-954d-01aa75ed71a1",
+        "celex": "32017D0971R(01)"
+    },
+    {
+        "work-id": "32658494-a137-49d6-8ac1-9f22196308a1",
+        "celex": "31978R1391R(01)"
+    },
+    {
+        "work-id": "6af529db-1723-11ee-806b-01aa75ed71a1",
+        "celex": "32022M10659"
+    },
+    {
+        "work-id": "019f883f-3416-4283-8a72-301a568d9afa",
+        "celex": "32007D0402"
+    },
+    {
+        "work-id": "b0de7fa0-5da7-11e3-914b-01aa75ed71a1",
+        "celex": "32013D0713"
+    },
+    {
+        "work-id": "c27175d3-d945-40ee-a655-06d8f55535a5",
+        "celex": "31997D0300"
+    },
+    {
+        "work-id": "697bd9e1-a899-4962-8c3e-c46dbd4a3315",
+        "celex": "32009D0389"
+    },
+    {
+        "work-id": "2c2f2edd-8769-11ef-a67d-01aa75ed71a1",
+        "celex": "32024D2681"
+    },
+    {
+        "work-id": "41fcdf6f-7bd1-11e4-97c9-01aa75ed71a1",
+        "celex": "32014R1276"
+    },
+    {
+        "work-id": "860028b1-f32c-11eb-aeb9-01aa75ed71a1",
+        "celex": "32021R1255"
+    },
+    {
+        "work-id": "5c663a5d-5fff-11e4-9cbe-01aa75ed71a1",
+        "celex": "32014R1152"
+    },
+    {
+        "work-id": "400aa984-1671-4731-aca0-ae5d96649eb5",
+        "celex": "32005M3900"
+    },
+    {
+        "work-id": "0d765de8-44c1-11eb-b59f-01aa75ed71a1",
+        "celex": "32020D2186"
+    },
+    {
+        "work-id": "af8e666d-9b18-11ef-a130-01aa75ed71a1",
+        "celex": "32024D2833"
+    },
+    {
+        "work-id": "1f2e02e2-c82b-11eb-a925-01aa75ed71a1",
+        "celex": "32021R0916"
+    },
+    {
+        "work-id": "6dcc430c-4b13-11f0-85ba-01aa75ed71a1",
+        "celex": "32008R0242R(01)"
+    },
+    {
+        "work-id": "4f621851-1c58-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019R2118"
+    },
+    {
+        "work-id": "6d159b41-26c1-11ee-839d-01aa75ed71a1",
+        "celex": "32002R0178R(11)"
+    },
+    {
+        "work-id": "ba8bde44-3a7f-4a1f-8e5c-a53e61fbb701",
+        "celex": "31995M0674"
+    },
+    {
+        "work-id": "331e2d77-109d-4c4d-876a-34b4154c05bc",
+        "celex": "31998D0392R(02)"
+    },
+    {
+        "work-id": "9ea2137d-c9a1-4f1d-ace4-b9d38f8170c3",
+        "celex": "32003M3217"
+    },
+    {
+        "work-id": "87374937-8777-487d-9133-3a35adca6881",
+        "celex": "32017M8329"
+    },
+    {
+        "work-id": "493de03f-1a23-11e9-8d04-01aa75ed71a1",
+        "celex": "32019R0066"
+    },
+    {
+        "work-id": "da15f9eb-dbcf-460e-acf5-e553de68fe7d",
+        "celex": "32010R1157"
+    },
+    {
+        "work-id": "b7776a8f-a636-11e6-aab7-01aa75ed71a1",
+        "celex": "32016R1959"
+    },
+    {
+        "work-id": "8bba8f39-ddf4-11eb-895a-01aa75ed71a1",
+        "celex": "32021R1096"
+    },
+    {
+        "work-id": "219a0c82-f1c1-11ee-8e14-01aa75ed71a1",
+        "celex": "32024M11477"
+    },
+    {
+        "work-id": "1ef208fa-b30b-11e7-837e-01aa75ed71a1",
+        "celex": "32016R1036R(03)"
+    },
+    {
+        "work-id": "48b74516-c058-4dd3-a0b8-10537b0ff1b6",
+        "celex": "31991M0116"
+    },
+    {
+        "work-id": "a8662289-946a-4d75-b532-79e1fe7c61a6",
+        "celex": "32015M7565"
+    },
+    {
+        "work-id": "07f20e36-ed2b-47f2-b86f-0dea145ed441",
+        "celex": "31999R0856"
+    },
+    {
+        "work-id": "f71fd1ac-fdcc-11e3-831f-01aa75ed71a1",
+        "celex": "32014R0710"
+    },
+    {
+        "work-id": "bbc4844d-4594-11f0-b9f2-01aa75ed71a1",
+        "celex": "32025D1148"
+    },
+    {
+        "work-id": "0653f1cc-14a6-4f8d-9aff-d5f0e7c1e42e",
+        "celex": "32007H0508(04)"
+    },
+    {
+        "work-id": "8af14487-3553-4a0c-afac-a05d714f3a5c",
+        "celex": "32009D0902"
+    },
+    {
+        "work-id": "d21bee00-46c4-11e8-be1d-01aa75ed71a1",
+        "celex": "32018D0621"
+    },
+    {
+        "work-id": "fd3f4c61-3b91-11e7-a08e-01aa75ed71a1",
+        "celex": "32017L0845"
+    },
+    {
+        "work-id": "62e918ee-409a-4a52-8226-53610fa386a8",
+        "celex": "31994D1043"
+    },
+    {
+        "work-id": "d2afad36-f0c5-11e5-8529-01aa75ed71a1",
+        "celex": "32016D0431"
+    },
+    {
+        "work-id": "09989e15-b3b2-11ec-9d96-01aa75ed71a1",
+        "celex": "32022R0524"
+    },
+    {
+        "work-id": "4a7688a3-89bd-4509-853e-ebc3a1c67bc0",
+        "celex": "31963R0018"
+    },
+    {
+        "work-id": "8182c028-bec3-4d65-83c2-e15ea1f39e57",
+        "celex": "32009R0554"
+    },
+    {
+        "work-id": "5b506331-cbb8-400d-98bd-33da6684690e",
+        "celex": "31970R1523R(01)"
+    },
+    {
+        "work-id": "39f60f60-13a5-4984-ad9e-5fa6ea70c6fd",
+        "celex": "32001D0319"
+    },
+    {
+        "work-id": "87e87482-786c-11e9-9f05-01aa75ed71a1",
+        "celex": "32019R0627"
+    },
+    {
+        "work-id": "50e9cea3-4da2-11e7-a5ca-01aa75ed71a1",
+        "celex": "32017R0981"
+    },
+    {
+        "work-id": "b7c2d8bf-6bc6-11ed-9887-01aa75ed71a1",
+        "celex": "32022R2236R(01)"
+    },
+    {
+        "work-id": "c92d4789-b698-11e5-8d3c-01aa75ed71a1",
+        "celex": "32015R2305R(01)"
+    },
+    {
+        "work-id": "1280e484-c63e-458b-9e3c-e205a7f69e6d",
+        "celex": "32010M5877"
+    },
+    {
+        "work-id": "dcb3241c-bdce-48ea-8aae-dee23bbe4a6b",
+        "celex": "32002D0764"
+    },
+    {
+        "work-id": "ecf92209-e13b-45b7-adea-cbe620519572",
+        "celex": "31978D0295"
+    },
+    {
+        "work-id": "b8b4c640-16a1-11e7-808e-01aa75ed71a1",
+        "celex": "32015R1088R(03)"
+    },
+    {
+        "work-id": "79b49728-d025-4cea-95d1-81e6ab774ba9",
+        "celex": "32009L0052R(02)"
+    },
+    {
+        "work-id": "65a0a506-f3e2-11ef-b7db-01aa75ed71a1",
+        "celex": "32010R0461R(03)"
+    },
+    {
+        "work-id": "db7ee8cd-c1bf-4c31-a605-b18e1f036d53",
+        "celex": "32003M3278"
+    },
+    {
+        "work-id": "beb8d612-bf4c-452b-8533-da0e9f573795",
+        "celex": "31986D0561"
+    },
+    {
+        "work-id": "7b6603ff-2e73-11e8-b5fe-01aa75ed71a1",
+        "celex": "32018D0493"
+    },
+    {
+        "work-id": "ad8da66c-f650-11eb-9037-01aa75ed71a1",
+        "celex": "32021D1304"
+    },
+    {
+        "work-id": "1e8c1275-9024-11ea-812f-01aa75ed71a1",
+        "celex": "32020R0621"
+    },
+    {
+        "work-id": "889d4be1-1d17-11e3-8d1c-01aa75ed71a1",
+        "celex": "32013R0880"
+    },
+    {
+        "work-id": "cfe57762-59d8-4c6c-8cf5-c5e0904ce124",
+        "celex": "31990R0457"
+    },
+    {
+        "work-id": "207b8dde-b1c2-11e8-99ee-01aa75ed71a1",
+        "celex": "32018M9043"
+    },
+    {
+        "work-id": "68ee17e1-972b-4a47-a358-098dbc6065c5",
+        "celex": "32017M8590"
+    },
+    {
+        "work-id": "7c474e07-d6f2-43e0-bad9-2b740f6cca37",
+        "celex": "32014M7211"
+    },
+    {
+        "work-id": "683938a7-f8ed-11eb-b520-01aa75ed71a1",
+        "celex": "32021M10321"
+    },
+    {
+        "work-id": "b8ba94ca-cba2-11ee-95d9-01aa75ed71a1",
+        "celex": "32020R0852R(09)"
+    },
+    {
+        "work-id": "463faa94-db8f-4cbd-8462-4ef37948b2a3",
+        "celex": "31997D0870"
+    },
+    {
+        "work-id": "01835583-28fb-11ed-8fa0-01aa75ed71a1",
+        "celex": "32007L0066R(02)"
+    },
+    {
+        "work-id": "473687bc-89a1-11ee-99ba-01aa75ed71a1",
+        "celex": "32023R2657"
+    },
+    {
+        "work-id": "fc2c18c7-4805-42c0-8f93-346a85e8faf6",
+        "celex": "31999R1416"
+    },
+    {
+        "work-id": "3f0023a4-8a5e-4adc-8e16-09b1d5ae0b12",
+        "celex": "32009D0126"
+    },
+    {
+        "work-id": "247a494e-f427-42bb-b8dd-b97e316cc831",
+        "celex": "32006R0816"
+    },
+    {
+        "work-id": "cc9c0221-744d-11e8-9483-01aa75ed71a1",
+        "celex": "32018D0884"
+    },
+    {
+        "work-id": "8d09bee2-9cd2-11e6-868c-01aa75ed71a1",
+        "celex": "32014R1329R(07)"
+    },
+    {
+        "work-id": "843e7d1c-4d43-11ef-acbc-01aa75ed71a1",
+        "celex": "32023R2772R(06)"
+    },
+    {
+        "work-id": "717aea67-b265-4667-85de-39ddfad88fe4",
+        "celex": "31963D0019(01)R(01)"
+    },
+    {
+        "work-id": "8126b6f5-e77f-4077-8c9f-879e781ba3f7",
+        "celex": "32007D0788"
+    },
+    {
+        "work-id": "c04120b8-b52e-11ed-8912-01aa75ed71a1",
+        "celex": "32023D0433"
+    },
+    {
+        "work-id": "2253f2a3-8ec1-11e9-9369-01aa75ed71a1",
+        "celex": "32019D0974"
+    },
+    {
+        "work-id": "5bd9d91e-827e-4f08-a556-421eb214a4b5",
+        "celex": "32000M2243"
+    },
+    {
+        "work-id": "2c87be85-f74c-41d8-b848-500968e5ec8b",
+        "celex": "32008D0934"
+    },
+    {
+        "work-id": "8c217a45-0c03-4cd7-86ad-266baa85dd44",
+        "celex": "32005R0776"
+    },
+    {
+        "work-id": "52325f50-aa92-11e8-99ee-01aa75ed71a1",
+        "celex": "32018D0828(01)"
+    },
+    {
+        "work-id": "84cc51d6-3d20-11e7-a08e-01aa75ed71a1",
+        "celex": "32009R1270R(01)"
+    },
+    {
+        "work-id": "02b2f9ba-81dd-11e9-9f05-01aa75ed71a1",
+        "celex": "32019R0894"
+    },
+    {
+        "work-id": "ced88069-d55f-11e1-905c-01aa75ed71a1",
+        "celex": "32012H0724(18)"
+    },
+    {
+        "work-id": "3f56fbdd-633d-11e8-ab9c-01aa75ed71a1",
+        "celex": "32018D0778"
+    },
+    {
+        "work-id": "982e9f54-d448-11ee-b9d9-01aa75ed71a1",
+        "celex": "32023R1771R(01)"
+    },
+    {
+        "work-id": "2702f6c9-49c2-11ea-8aa5-01aa75ed71a1",
+        "celex": "32020R0173"
+    },
+    {
+        "work-id": "ee04fbc8-8f56-4430-9e33-048c2bf91c61",
+        "celex": "32009D0715"
+    },
+    {
+        "work-id": "4e2ccf96-e9c0-41f4-b6e2-d918ae62c33c",
+        "celex": "32000D0667"
+    },
+    {
+        "work-id": "04ae01a8-ce0d-11e9-992f-01aa75ed71a1",
+        "celex": "32018O0016R(02)"
+    },
+    {
+        "work-id": "fafbc8e5-1c12-11e2-91ce-01aa75ed71a1",
+        "celex": "32012D0636"
+    },
+    {
+        "work-id": "453ecedd-d6fe-11e6-ad7c-01aa75ed71a1",
+        "celex": "32017R0040"
+    },
+    {
+        "work-id": "487f0375-5701-11ec-91ac-01aa75ed71a1",
+        "celex": "32021R2156"
+    },
+    {
+        "work-id": "28463216-a1ce-11e2-ab01-01aa75ed71a1",
+        "celex": "32012L0036R(01)"
+    },
+    {
+        "work-id": "070a6f1e-8d79-4273-95ca-964f87341815",
+        "celex": "31988D0531"
+    },
+    {
+        "work-id": "be245cfb-7955-4139-8ec2-ea83140b4fd9",
+        "celex": "32009M4993"
+    },
+    {
+        "work-id": "01b695ba-97d3-11ed-b508-01aa75ed71a1",
+        "celex": "32021R2168R(01)"
+    },
+    {
+        "work-id": "983dc7be-52c3-11ee-9220-01aa75ed71a1",
+        "celex": "32021R0340R(03)"
+    },
+    {
+        "work-id": "fa4b8062-052b-11f0-b1a3-01aa75ed71a1",
+        "celex": "32021R1841R(01)"
+    },
+    {
+        "work-id": "b925b9e5-e611-11e8-b690-01aa75ed71a1",
+        "celex": "32018L1673"
+    },
+    {
+        "work-id": "be765cd6-9e0f-11ee-b164-01aa75ed71a1",
+        "celex": "32023R2802"
+    },
+    {
+        "work-id": "5f41ef36-8d33-407c-9112-190f2407de84",
+        "celex": "31983D0118"
+    },
+    {
+        "work-id": "f068c039-bd55-11ed-8912-01aa75ed71a1",
+        "celex": "32023D0510"
+    },
+    {
+        "work-id": "ec95ddbf-8673-49c5-9a37-30473ab119e1",
+        "celex": "32009M5622"
+    },
+    {
+        "work-id": "affbdbcb-e197-11e8-b690-01aa75ed71a1",
+        "celex": "32018R1649"
+    },
+    {
+        "work-id": "abe27346-9040-11e6-ba36-01aa75ed71a1",
+        "celex": "32016R1199R(01)"
+    },
+    {
+        "work-id": "d625086e-28a8-11eb-9d7e-01aa75ed71a1",
+        "celex": "32020D1708"
+    },
+    {
+        "work-id": "0ce34926-f830-11e7-b8f5-01aa75ed71a1",
+        "celex": "32018R0053"
+    },
+    {
+        "work-id": "65f40da1-51c9-4eee-a104-e0980a23ac30",
+        "celex": "31994D1008"
+    },
+    {
+        "work-id": "b41d54e9-f1c0-11ee-8e14-01aa75ed71a1",
+        "celex": "32024M11283"
+    },
+    {
+        "work-id": "1ed777d1-f8af-4a7c-bb54-b6b9cd950f84",
+        "celex": "31999R1225"
+    },
+    {
+        "work-id": "a7de4815-2e50-11e2-ad46-01aa75ed71a1",
+        "celex": "32001L0110R(02)"
+    },
+    {
+        "work-id": "6eeedb75-10ef-472a-8799-56e7df2b1e2c",
+        "celex": "31978Y0711(01)"
+    },
+    {
+        "work-id": "35bb98fc-a2cf-11ed-b508-01aa75ed71a1",
+        "celex": "32023R0214"
+    },
+    {
+        "work-id": "b8e82821-2760-11ee-839d-01aa75ed71a1",
+        "celex": "32023D1517"
+    },
+    {
+        "work-id": "aaae6be9-2a16-11f0-8a44-01aa75ed71a1",
+        "celex": "32025D0646R(01)"
+    },
+    {
+        "work-id": "9e7d4b6e-ef85-4082-8b58-ed107a228e28",
+        "celex": "31992H0579"
+    },
+    {
+        "work-id": "2cec9fbd-0620-49db-8045-d6ec0784abb0",
+        "celex": "31978R1740"
+    },
+    {
+        "work-id": "3e130d66-c479-4801-801c-cc2f821ea9d6",
+        "celex": "32008M5322"
+    },
+    {
+        "work-id": "49db7833-c81f-11e6-a6db-01aa75ed71a1",
+        "celex": "32014R0600R(07)"
+    },
+    {
+        "work-id": "bde0979e-c363-11e6-a6db-01aa75ed71a1",
+        "celex": "32016D1216(01)"
+    },
+    {
+        "work-id": "01a9fdd2-7852-4a51-897d-fcf690196d45",
+        "celex": "32011D0352"
+    },
+    {
+        "work-id": "100b64b0-47eb-11ea-b81b-01aa75ed71a1",
+        "celex": "32020D0153"
+    },
+    {
+        "work-id": "7dcea725-26b8-461b-ae50-33ce888437da",
+        "celex": "32006R1760"
+    },
+    {
+        "work-id": "777d9223-0430-11e9-adde-01aa75ed71a1",
+        "celex": "32018R1975"
+    },
+    {
+        "work-id": "8504f4dd-dc8e-11e6-ad7c-01aa75ed71a1",
+        "celex": "32017D0083"
+    },
+    {
+        "work-id": "b9c3ae7a-d4f2-11e3-8cd4-01aa75ed71a1",
+        "celex": "32014R0457"
+    },
+    {
+        "work-id": "a01ea69f-bf45-11e5-9e54-01aa75ed71a1",
+        "celex": "32014L0032R(04)"
+    },
+    {
+        "work-id": "02ebe682-8d50-41d0-99d2-4ac3c91b2830",
+        "celex": "31987D0406"
+    },
+    {
+        "work-id": "491bb8e9-32bd-11e6-b497-01aa75ed71a1",
+        "celex": "32016D0944"
+    },
+    {
+        "work-id": "b52e682f-c53d-4375-9969-1539717afd22",
+        "celex": "31995Y0811(02)"
+    },
+    {
+        "work-id": "8cf32fae-a91e-409d-83e5-89d68887c041",
+        "celex": "31984Y0215(01)"
+    },
+    {
+        "work-id": "37a82235-fe26-46e6-b824-b9d40c7f0fc9",
+        "celex": "32003H0555"
+    },
+    {
+        "work-id": "c9fe9226-9db8-11ec-83e1-01aa75ed71a1",
+        "celex": "32022R0352"
+    },
+    {
+        "work-id": "c2374023-8b1d-11e3-87da-01aa75ed71a1",
+        "celex": "32013R1127R(01)"
+    },
+    {
+        "work-id": "98d47585-e129-11e9-9c4e-01aa75ed71a1",
+        "celex": "32019M9420"
+    },
+    {
+        "work-id": "815e0503-750c-11e8-9483-01aa75ed71a1",
+        "celex": "32018R0885"
+    },
+    {
+        "work-id": "e5d385d7-9c8a-41d3-ab2a-a95476011f5f",
+        "celex": "32009E0164"
+    },
+    {
+        "work-id": "af524c72-e4f6-460e-8b44-0c96251e8da7",
+        "celex": "32004L0113R(01)"
+    },
+    {
+        "work-id": "938dd353-f666-4b4d-998c-92271d2d7b25",
+        "celex": "31995F0401"
+    },
+    {
+        "work-id": "e3641e94-05f3-11e6-b713-01aa75ed71a1",
+        "celex": "32014R1302R(03)"
+    },
+    {
+        "work-id": "3f5e6f64-0eac-11ec-b771-01aa75ed71a1",
+        "celex": "32021D1439"
+    },
+    {
+        "work-id": "f5130eac-3d67-11e4-8c3c-01aa75ed71a1",
+        "celex": "32014R0976"
+    },
+    {
+        "work-id": "41a24f2b-ae9c-11ec-83e1-01aa75ed71a1",
+        "celex": "32022M10597"
+    },
+    {
+        "work-id": "15fe0fd3-d955-11e9-9c4e-01aa75ed71a1",
+        "celex": "32019M9494"
+    },
+    {
+        "work-id": "c14e791b-bba8-11ef-91ed-01aa75ed71a1",
+        "celex": "32024D3182"
+    },
+    {
+        "work-id": "c582ceb5-dc18-49f1-887c-9740dea9d32f",
+        "celex": "32008M5307"
+    },
+    {
+        "work-id": "2e903a4a-f28d-11e1-8e28-01aa75ed71a1",
+        "celex": "32012R0749"
+    },
+    {
+        "work-id": "237a7703-0c3f-11e6-ba9a-01aa75ed71a1",
+        "celex": "32016R0651"
+    },
+    {
+        "work-id": "67fd8470-fe70-11e8-a96d-01aa75ed71a1",
+        "celex": "32018R1966"
+    },
+    {
+        "work-id": "4b1520d4-55d7-11ef-acbc-01aa75ed71a1",
+        "celex": "32023R2917R(01)"
+    },
+    {
+        "work-id": "82ee1914-367b-11e9-8d04-01aa75ed71a1",
+        "celex": "32019D0276"
+    },
+    {
+        "work-id": "62405d92-9515-11ec-b4e4-01aa75ed71a1",
+        "celex": "32022L0277"
+    },
+    {
+        "work-id": "4eb9c9e8-03fb-4d3a-bf3c-a847fd9a1c23",
+        "celex": "32007M4621"
+    },
+    {
+        "work-id": "1e9b2cb1-655d-42fe-a9cc-2ecc36a4bda8",
+        "celex": "32010R0151"
+    },
+    {
+        "work-id": "f9423a1d-b9e8-451c-a7e1-778e55b216d1",
+        "celex": "32005D0445"
+    },
+    {
+        "work-id": "e4eb6b9a-ea49-11ee-bf53-01aa75ed71a1",
+        "celex": "32024R0891"
+    },
+    {
+        "work-id": "fc97831e-6c78-11e3-9afb-01aa75ed71a1",
+        "celex": "32013D0798"
+    },
+    {
+        "work-id": "3fda508b-ed3e-11ec-a534-01aa75ed71a1",
+        "celex": "32022R0497R(01)"
+    },
+    {
+        "work-id": "2d6f2eaa-cc2a-11e2-8725-01aa75ed71a1",
+        "celex": "32012R0965R(03)"
+    },
+    {
+        "work-id": "0fb0e71c-4d27-41b8-b713-6083e8a21a0c",
+        "celex": "32017M8587"
+    },
+    {
+        "work-id": "91e64ba0-45ff-4b9b-ab23-0308812d5acc",
+        "celex": "32001M2286"
+    },
+    {
+        "work-id": "0ad1a00b-577c-4cff-9896-4aaa9489a1e2",
+        "celex": "32010M5946"
+    },
+    {
+        "work-id": "c5aebae4-a3ea-4497-8058-f0598e32a06f",
+        "celex": "32001D0261"
+    },
+    {
+        "work-id": "8b676805-6088-4dd8-b136-4f4b958685b9",
+        "celex": "31996D0241"
+    },
+    {
+        "work-id": "5da7586a-445f-11e8-a9f4-01aa75ed71a1",
+        "celex": "32017R2213R(01)"
+    },
+    {
+        "work-id": "cd79899e-2adb-11ea-af81-01aa75ed71a1",
+        "celex": "32019D2198"
+    },
+    {
+        "work-id": "d06045c1-5c87-11e7-954d-01aa75ed71a1",
+        "celex": "32016R0799R(04)"
+    },
+    {
+        "work-id": "82a9d4a2-7ed5-11e5-b8b7-01aa75ed71a1",
+        "celex": "32015H1381R(01)"
+    },
+    {
+        "work-id": "4b2bd14f-e62f-404f-a110-b7dd4157c620",
+        "celex": "32012R0007"
+    },
+    {
+        "work-id": "167b9dec-3a76-11e5-98a0-01aa75ed71a1",
+        "celex": "32015D1340"
+    },
+    {
+        "work-id": "c4b3925d-3ef4-4107-94ef-68a2a4eb603e",
+        "celex": "32007R1141"
+    },
+    {
+        "work-id": "0ee1f6af-8c2f-47ce-901e-54103dabbb9c",
+        "celex": "32000E0401"
+    },
+    {
+        "work-id": "09432fed-8b89-4fcf-a6ed-c00ebdafbc27",
+        "celex": "31972L0159R(01)"
+    },
+    {
+        "work-id": "e83ed730-3d22-44df-8981-a2baa7de7453",
+        "celex": "32003R0055R(01)"
+    },
+    {
+        "work-id": "7583c5f6-5068-4fa2-a49c-c223faa9f014",
+        "celex": "31995D0524"
+    },
+    {
+        "work-id": "127c1629-5455-11ef-acbc-01aa75ed71a1",
+        "celex": "32024R1781R(01)"
+    },
+    {
+        "work-id": "83378a4d-63f5-11e4-9cbe-01aa75ed71a1",
+        "celex": "32014R1173"
+    },
+    {
+        "work-id": "a11445d1-60cd-11e4-9cbe-01aa75ed71a1",
+        "celex": "32014D0755"
+    },
+    {
+        "work-id": "2c19be16-7680-4025-9e83-14e64ce6ede1",
+        "celex": "32000M1861"
+    },
+    {
+        "work-id": "42d0c76a-f402-45db-ba44-3694b60fc504",
+        "celex": "32005M3769"
+    },
+    {
+        "work-id": "11936ea5-03a0-11ef-a251-01aa75ed71a1",
+        "celex": "32024M11473"
+    },
+    {
+        "work-id": "0713aac5-faf7-11ef-b7db-01aa75ed71a1",
+        "celex": "32025D0464"
+    },
+    {
+        "work-id": "1550a7c7-d218-11ef-be2a-01aa75ed71a1",
+        "celex": "32025R0074"
+    },
+    {
+        "work-id": "f70f0a6a-6195-4cca-9367-d8adf3bd70e1",
+        "celex": "32012D0002(01)"
+    },
+    {
+        "work-id": "b9598eb4-aca5-11ef-acb1-01aa75ed71a1",
+        "celex": "32024M11792"
+    },
+    {
+        "work-id": "96a8d611-46bc-11e3-ae03-01aa75ed71a1",
+        "celex": "32013L0048"
+    },
+    {
+        "work-id": "b17a5220-dd11-11ee-b9d9-01aa75ed71a1",
+        "celex": "32019R0934R(06)"
+    },
+    {
+        "work-id": "a708afbe-0857-11e6-b713-01aa75ed71a1",
+        "celex": "32016R0622"
+    },
+    {
+        "work-id": "3c9b6b2b-17fb-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019D1894R(01)"
+    },
+    {
+        "work-id": "0c5de1cf-09ab-11ed-b11c-01aa75ed71a1",
+        "celex": "32022M10742"
+    },
+    {
+        "work-id": "0eccd54f-4978-11eb-b59f-01aa75ed71a1",
+        "celex": "32020R1794R(01)"
+    },
+    {
+        "work-id": "d51b12cd-1e21-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1503"
+    },
+    {
+        "work-id": "f35b02d0-445f-11e8-a9f4-01aa75ed71a1",
+        "celex": "32018R0603"
+    },
+    {
+        "work-id": "fdeb52eb-b8d5-11e4-a59c-01aa75ed71a1",
+        "celex": "31997L0067R(03)"
+    },
+    {
+        "work-id": "73398dd6-5ed4-433b-93e4-82103f26b8e6",
+        "celex": "32007R1441R(04)"
+    },
+    {
+        "work-id": "b257e38c-d3aa-11ef-be2a-01aa75ed71a1",
+        "celex": "32025D0071"
+    },
+    {
+        "work-id": "2224f488-f3a4-11e3-831f-01aa75ed71a1",
+        "celex": "32014R0633"
+    },
+    {
+        "work-id": "57a44b21-5236-48a9-83be-b2661320d7e2",
+        "celex": "31999M1362"
+    },
+    {
+        "work-id": "09191212-5ab7-4122-8043-872307ef83b8",
+        "celex": "32003R0786"
+    },
+    {
+        "work-id": "6aff0fdc-7df9-11e9-9f05-01aa75ed71a1",
+        "celex": "32019R0840"
+    },
+    {
+        "work-id": "b452b530-fd7c-11e6-8a35-01aa75ed71a1",
+        "celex": "32017R0332"
+    },
+    {
+        "work-id": "445ed2ab-23d0-11f0-ac85-01aa75ed71a1",
+        "celex": "32025D0820"
+    },
+    {
+        "work-id": "ac354f54-ac09-11eb-9767-01aa75ed71a1",
+        "celex": "32021R0716"
+    },
+    {
+        "work-id": "e404d660-0919-11f0-b1a3-01aa75ed71a1",
+        "celex": "32025R0608"
+    },
+    {
+        "work-id": "e5ec889e-3161-4723-aed1-8baa03a83292",
+        "celex": "32011R0362"
+    },
+    {
+        "work-id": "9a646fa6-196c-4f53-bcfe-a6ccf6da0cfb",
+        "celex": "32010M5764"
+    },
+    {
+        "work-id": "53eb42b4-cc93-4545-a4e1-3d102c82e662",
+        "celex": "31998M1232"
+    },
+    {
+        "work-id": "8f3a618e-93be-11ec-b4e4-01aa75ed71a1",
+        "celex": "32022M10577"
+    },
+    {
+        "work-id": "50eb718d-7919-11e7-b2f2-01aa75ed71a1",
+        "celex": "32017D1418"
+    },
+    {
+        "work-id": "179b31d2-cc41-11ec-b6f4-01aa75ed71a1",
+        "celex": "32021D0689R(02)"
+    },
+    {
+        "work-id": "8ada16d3-28a7-11eb-9d7e-01aa75ed71a1",
+        "celex": "32020R1710"
+    },
+    {
+        "work-id": "a6d8c359-e52b-11eb-a1a5-01aa75ed71a1",
+        "celex": "32021R1160"
+    },
+    {
+        "work-id": "f4cd06a7-3fbd-11ee-829f-01aa75ed71a1",
+        "celex": "32023R1642"
+    },
+    {
+        "work-id": "de7143cf-6ced-4e87-8dd3-01507f06f3b2",
+        "celex": "32013M6833"
+    },
+    {
+        "work-id": "a7b824c8-664f-4843-9243-450db0a41276",
+        "celex": "32011R0653"
+    },
+    {
+        "work-id": "4ae06445-6a7c-11ea-b735-01aa75ed71a1",
+        "celex": "32017R1182R(02)"
+    },
+    {
+        "work-id": "b56e31d1-3c5f-11ec-89db-01aa75ed71a1",
+        "celex": "32021R1902"
+    },
+    {
+        "work-id": "fc1bf1de-85d6-11ef-a67d-01aa75ed71a1",
+        "celex": "32024R2633"
+    },
+    {
+        "work-id": "d6edaba3-c520-4a22-a8e4-89367fd631e9",
+        "celex": "32008D0670"
+    },
+    {
+        "work-id": "52c3ff6b-823a-426f-b810-8399c66e8a70",
+        "celex": "32007M4801"
+    },
+    {
+        "work-id": "b43e7e90-4774-46b5-8b18-e62a2de8ec1c",
+        "celex": "32005R0737"
+    },
+    {
+        "work-id": "7972aa80-f9b9-11e2-a352-01aa75ed71a1",
+        "celex": "32013R0735"
+    },
+    {
+        "work-id": "391e9f06-1933-414e-9e32-e30419bd803f",
+        "celex": "32005H0175"
+    },
+    {
+        "work-id": "3e52690a-0e07-4a57-8077-3749eaecfdb5",
+        "celex": "32005R1446"
+    },
+    {
+        "work-id": "1c2bfa7b-1a27-489a-ad17-66e1b7709c18",
+        "celex": "31999D0276"
+    },
+    {
+        "work-id": "27bba2fd-7dbf-4c71-b290-4a50a932ad4b",
+        "celex": "31984Y0724(03)"
+    },
+    {
+        "work-id": "7e128bce-c836-4612-a63e-28c282f3d368",
+        "celex": "32016M8191"
+    },
+    {
+        "work-id": "15de0f7f-8816-11e4-b8a5-01aa75ed71a1",
+        "celex": "32014R1367"
+    },
+    {
+        "work-id": "ec8e558d-b7df-4f91-8733-a6ec8daf042f",
+        "celex": "31979R0561"
+    },
+    {
+        "work-id": "6b187250-505f-11e9-a8ed-01aa75ed71a1",
+        "celex": "32019D0327(06)"
+    },
+    {
+        "work-id": "e6aee14a-a871-11e6-aab7-01aa75ed71a1",
+        "celex": "32014L0026R(04)"
+    },
+    {
+        "work-id": "514140eb-b21b-4e58-a3b6-69d5edb35683",
+        "celex": "32013M6885"
+    },
+    {
+        "work-id": "80f20dcb-3d8b-11ef-ab8f-01aa75ed71a1",
+        "celex": "32024D1779R(01)"
+    },
+    {
+        "work-id": "84afce6a-7cf6-11e3-b889-01aa75ed71a1",
+        "celex": "32014R0024"
+    },
+    {
+        "work-id": "c73f2412-7b98-11e9-9f05-01aa75ed71a1",
+        "celex": "32019D0521(01)"
+    },
+    {
+        "work-id": "67e945b7-1a8d-499c-ba79-9de43cd77f9b",
+        "celex": "31998D0261"
+    },
+    {
+        "work-id": "cc7d6d3a-badd-11e7-a7f8-01aa75ed71a1",
+        "celex": "32017D1937"
+    },
+    {
+        "work-id": "d6eb504b-7d41-11e5-b8b7-01aa75ed71a1",
+        "celex": "32015D1936"
+    },
+    {
+        "work-id": "f1b67cbc-1c07-11ec-b4fe-01aa75ed71a1",
+        "celex": "32021R1696"
+    },
+    {
+        "work-id": "a5f61e49-bc27-43d1-8e6a-20f56c41f0c7",
+        "celex": "31998D0514"
+    },
+    {
+        "work-id": "50e2309c-bfe0-460f-b592-75eaf6986f2b",
+        "celex": "31998O0010"
+    },
+    {
+        "work-id": "729c5b73-3f4d-11e6-af30-01aa75ed71a1",
+        "celex": "32016D1062"
+    },
+    {
+        "work-id": "1987c422-2b61-11e8-b5fe-01aa75ed71a1",
+        "celex": "32018R0420"
+    },
+    {
+        "work-id": "3c2c176b-f326-4ff0-883c-33e2cf393c0b",
+        "celex": "32008R1099R(02)"
+    },
+    {
+        "work-id": "ee40e9de-2900-44f8-a76b-224d314fdfc6",
+        "celex": "32012M6604"
+    },
+    {
+        "work-id": "70c81777-696b-4125-8b65-ae57a345911d",
+        "celex": "32003D0536"
+    },
+    {
+        "work-id": "a71f1bcf-554a-11f0-a9d0-01aa75ed71a1",
+        "celex": "32023R2854R(03)"
+    },
+    {
+        "work-id": "973abd25-4900-11ed-92ed-01aa75ed71a1",
+        "celex": "32022R1922"
+    },
+    {
+        "work-id": "f83dd924-d045-4b92-8383-94d3395e10d2",
+        "celex": "31999D0848"
+    },
+    {
+        "work-id": "b9fce386-c45e-4b71-8e5d-597f59db2db0",
+        "celex": "31998Y0207(02)"
+    },
+    {
+        "work-id": "241f5079-8fc6-11ea-812f-01aa75ed71a1",
+        "celex": "32020M9763"
+    },
+    {
+        "work-id": "a62cb387-0519-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019R1889"
+    },
+    {
+        "work-id": "7d3f6aa8-5e37-4f6c-a1c1-ddf5c7d23db0",
+        "celex": "32017M8305"
+    },
+    {
+        "work-id": "2aa67e6f-599a-11e8-ab41-01aa75ed71a1",
+        "celex": "32013R1385R(02)"
+    },
+    {
+        "work-id": "ab89ff60-872a-4202-94ca-35989f15a38e",
+        "celex": "32011D0830(01)"
+    },
+    {
+        "work-id": "a18a139e-febd-481f-b281-68c008f376cd",
+        "celex": "32017M8389"
+    },
+    {
+        "work-id": "c598bced-f53f-11ee-8e14-01aa75ed71a1",
+        "celex": "32024R1041"
+    },
+    {
+        "work-id": "54a6beef-ca12-11ee-95d9-01aa75ed71a1",
+        "celex": "32022D2332R(01)"
+    },
+    {
+        "work-id": "e98cc202-b8c8-11ee-b164-01aa75ed71a1",
+        "celex": "32024R0363"
+    },
+    {
+        "work-id": "62818111-dde1-4431-863e-18839a616ecb",
+        "celex": "32007D0537"
+    },
+    {
+        "work-id": "940e8c46-f94a-43f2-8a03-87803c30e81d",
+        "celex": "31999M1481"
+    },
+    {
+        "work-id": "be894b63-cfa7-11ed-a05c-01aa75ed71a1",
+        "celex": "32023M11044"
+    },
+    {
+        "work-id": "fc687dad-0c52-11eb-bc07-01aa75ed71a1",
+        "celex": "32020D1430"
+    },
+    {
+        "work-id": "457a1ffb-07b0-11e8-b8f5-01aa75ed71a1",
+        "celex": "32018D0202(02)"
+    },
+    {
+        "work-id": "a49e0278-721a-484b-b84c-dd369411b375",
+        "celex": "32011M6436"
+    },
+    {
+        "work-id": "bd405328-1953-49e4-ab14-6200038fb8b5",
+        "celex": "32002M2735"
+    },
+    {
+        "work-id": "5d16286e-c513-4937-afd8-4f57b130412f",
+        "celex": "31994D0516"
+    },
+    {
+        "work-id": "634794cc-dafa-11e1-905c-01aa75ed71a1",
+        "celex": "32012R0697"
+    },
+    {
+        "work-id": "8df01050-1485-11ee-806b-01aa75ed71a1",
+        "celex": "32023D1305"
+    },
+    {
+        "work-id": "36c00587-6663-11e9-b6eb-01aa75ed71a1",
+        "celex": "32019R0637"
+    },
+    {
+        "work-id": "79238ad7-cb17-11ea-adf7-01aa75ed71a1",
+        "celex": "32020D1071"
+    },
+    {
+        "work-id": "7320ccd0-4c9c-11ea-b8b7-01aa75ed71a1",
+        "celex": "32019R0907R(02)"
+    },
+    {
+        "work-id": "a52147cb-cf5c-11e4-9a66-01aa75ed71a1",
+        "celex": "32013R1274R(01)"
+    },
+    {
+        "work-id": "cffd2152-eae0-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R0916"
+    },
+    {
+        "work-id": "30cb19f1-c6f0-473c-9179-4ef062ee82e7",
+        "celex": "32014R0806R(04)"
+    },
+    {
+        "work-id": "645ec1a0-15e2-4562-8e8c-da770492f79f",
+        "celex": "32008D0936(01)"
+    },
+    {
+        "work-id": "d64f7830-4c2b-4ca6-83d9-462fffd0b753",
+        "celex": "31997R2007"
+    },
+    {
+        "work-id": "2ca35af7-bd9a-4133-9d46-1dea48328b78",
+        "celex": "32013M7012"
+    },
+    {
+        "work-id": "9a379650-07a7-43b3-a546-b1926118a5cf",
+        "celex": "32009D0983"
+    },
+    {
+        "work-id": "4f0227ec-be47-11ed-8912-01aa75ed71a1",
+        "celex": "32023R0196R(01)"
+    },
+    {
+        "work-id": "387c9e09-b147-11ef-acb1-01aa75ed71a1",
+        "celex": "32023R1693R(02)"
+    },
+    {
+        "work-id": "0fad2774-3269-4402-8296-b455bf84332a",
+        "celex": "32002M2779"
+    },
+    {
+        "work-id": "d2c9e767-5637-11ec-91ac-01aa75ed71a1",
+        "celex": "32021R2095R(01)"
+    },
+    {
+        "work-id": "cc0e6e74-4e5f-11ec-91ac-01aa75ed71a1",
+        "celex": "32021R2071"
+    },
+    {
+        "work-id": "82e038cf-5371-11e4-a0cb-01aa75ed71a1",
+        "celex": "32008R0451R(01)"
+    },
+    {
+        "work-id": "afcd6b04-4feb-4fb4-acce-7f0805fb6309",
+        "celex": "32005B0543"
+    },
+    {
+        "work-id": "b6f08536-e463-11e6-ad7c-01aa75ed71a1",
+        "celex": "32017R0137"
+    },
+    {
+        "work-id": "119fd312-e913-470a-8fd1-9641bc78816f",
+        "celex": "31996R0402"
+    },
+    {
+        "work-id": "6221455a-ee82-4064-8f68-02d84e11a61f",
+        "celex": "32006R1967R(03)"
+    },
+    {
+        "work-id": "44a5889c-32d3-11ec-bd8e-01aa75ed71a1",
+        "celex": "32021D1853"
+    },
+    {
+        "work-id": "fe800439-0281-40be-abb4-d4e7c5e3e136",
+        "celex": "31977D0129"
+    },
+    {
+        "work-id": "ce00c845-fe70-11e8-a96d-01aa75ed71a1",
+        "celex": "32018D1213(04)"
+    },
+    {
+        "work-id": "43b05032-df41-11ed-a05c-01aa75ed71a1",
+        "celex": "32022R0581R(03)"
+    },
+    {
+        "work-id": "a2737e7f-cd02-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R0419R(02)"
+    },
+    {
+        "work-id": "a4de7e1b-a1e4-11e8-99ee-01aa75ed71a1",
+        "celex": "32018D1147"
+    },
+    {
+        "work-id": "6f41568f-3c98-41f8-bed3-7e4fb8808da3",
+        "celex": "32015M7755"
+    },
+    {
+        "work-id": "67823543-e374-11eb-895a-01aa75ed71a1",
+        "celex": "32021R1140"
+    },
+    {
+        "work-id": "67367dc0-70b0-4ac2-a4e7-3ac9ee3b1fa4",
+        "celex": "31978D0963"
+    },
+    {
+        "work-id": "50fab00a-4e53-4e12-a605-e9128bb0e642",
+        "celex": "32003D0626"
+    },
+    {
+        "work-id": "dcbe98f8-42ef-49d8-ba52-350f808bf3df",
+        "celex": "32006D0032"
+    },
+    {
+        "work-id": "f5110505-8f21-11ee-8aa6-01aa75ed71a1",
+        "celex": "32023R2631"
+    },
+    {
+        "work-id": "c527ac18-1191-4a25-ba48-665457b67155",
+        "celex": "31989R0226"
+    },
+    {
+        "work-id": "1e169afe-3063-4ccf-a3e9-de7c21937af3",
+        "celex": "31988R1315R(02)"
+    },
+    {
+        "work-id": "8fd40e37-994f-4f18-b327-ca5659e6bb16",
+        "celex": "31999M1787"
+    },
+    {
+        "work-id": "4bbd9023-5748-4d1f-969a-fc6615a08e21",
+        "celex": "31997R0092"
+    },
+    {
+        "work-id": "1323c602-77e7-4629-843f-7d0c20484289",
+        "celex": "31976D0949"
+    },
+    {
+        "work-id": "6e91b5ca-557f-11e7-a5ca-01aa75ed71a1",
+        "celex": "32017R1084"
+    },
+    {
+        "work-id": "5a4d99ca-fd0d-11ec-b94a-01aa75ed71a1",
+        "celex": "32022M10775"
+    },
+    {
+        "work-id": "a2525e65-6c74-11e3-9afb-01aa75ed71a1",
+        "celex": "32013R1408"
+    },
+    {
+        "work-id": "489c5a82-3b69-49d9-884b-29c78ba96bc9",
+        "celex": "32017M8654"
+    },
+    {
+        "work-id": "bed65c20-a8f5-11e3-86f9-01aa75ed71a1",
+        "celex": "32014D0126"
+    },
+    {
+        "work-id": "2f3ab5e5-f1ee-11ec-a534-01aa75ed71a1",
+        "celex": "32022R0965"
+    },
+    {
+        "work-id": "6c2ed809-17de-48af-a45f-0ab11283c73b",
+        "celex": "31991M0101"
+    },
+    {
+        "work-id": "c307a838-76cf-11ed-9887-01aa75ed71a1",
+        "celex": "32022R2292R(01)"
+    },
+    {
+        "work-id": "75440304-3027-11e9-8d04-01aa75ed71a1",
+        "celex": "32012R0016R(05)"
+    },
+    {
+        "work-id": "f3938d24-c3f2-11ef-91ed-01aa75ed71a1",
+        "celex": "32024R3214"
+    },
+    {
+        "work-id": "97525f8e-92c5-11e7-b92d-01aa75ed71a1",
+        "celex": "32017R1524"
+    },
+    {
+        "work-id": "0b556bb2-07c7-11e2-8e28-01aa75ed71a1",
+        "celex": "32012A0926(01)"
+    },
+    {
+        "work-id": "7edf8f23-dfa0-4252-8e7d-234ba04272a8",
+        "celex": "31992R0811R(01)"
+    },
+    {
+        "work-id": "fabf4b79-37f1-11ed-9c68-01aa75ed71a1",
+        "celex": "32021R1060R(05)"
+    },
+    {
+        "work-id": "6672ec28-a563-464c-9bc4-6a60b370ba96",
+        "celex": "32008M5219"
+    },
+    {
+        "work-id": "7806be3f-9a58-11ec-83e1-01aa75ed71a1",
+        "celex": "32022D0356"
+    },
+    {
+        "work-id": "7fd7bf5b-0c03-4e91-9572-3209011fbd99",
+        "celex": "31975R1601"
+    },
+    {
+        "work-id": "2ad9b50a-f8ae-11ea-991b-01aa75ed71a1",
+        "celex": "32020D0655R(01)"
+    },
+    {
+        "work-id": "be978233-0227-4381-87e2-20e88143dfe3",
+        "celex": "32003R0676"
+    },
+    {
+        "work-id": "fa1fed2a-294a-46ea-85c3-9ba706941ba6",
+        "celex": "32006M4135"
+    },
+    {
+        "work-id": "4ff3429a-fc35-4e96-9e46-9ed9337f0d73",
+        "celex": "31972Y1201(03)"
+    },
+    {
+        "work-id": "4f173842-7277-4fa6-915a-d7c206056b54",
+        "celex": "32005R0898R(02)"
+    },
+    {
+        "work-id": "cd8785cb-480e-47b0-b867-32028592fdb6",
+        "celex": "32015M7747"
+    },
+    {
+        "work-id": "bfb182c5-979b-11ed-b508-01aa75ed71a1",
+        "celex": "32023R0111"
+    },
+    {
+        "work-id": "21f56a41-a301-474b-a468-303b3b2b6f8f",
+        "celex": "31982R1862"
+    },
+    {
+        "work-id": "4f820b6a-1b6a-446f-9918-47c91efd5aa2",
+        "celex": "32004G0113(01)"
+    },
+    {
+        "work-id": "78371437-b906-11eb-8aca-01aa75ed71a1",
+        "celex": "32019R0317R(02)"
+    },
+    {
+        "work-id": "850d6e25-6763-4b9f-a62a-ef38ff00d041",
+        "celex": "32005M3976"
+    },
+    {
+        "work-id": "00e338e7-3ccc-11ee-aaec-01aa75ed71a1",
+        "celex": "32023D1217R(01)"
+    },
+    {
+        "work-id": "1998bd32-7633-4314-b568-51e97a1fc564",
+        "celex": "32007R0129"
+    },
+    {
+        "work-id": "f6e063ce-998c-11e5-b3b7-01aa75ed71a1",
+        "celex": "32015R2233"
+    },
+    {
+        "work-id": "506300e0-eac2-11e7-9749-01aa75ed71a1",
+        "celex": "32017R2395"
+    },
+    {
+        "work-id": "8c590a51-b691-498a-b14d-d5006a4ca88f",
+        "celex": "32008M5174"
+    },
+    {
+        "work-id": "9d32fdcb-cab7-4dc1-a091-d36a5bb4189c",
+        "celex": "32008D0973"
+    },
+    {
+        "work-id": "d2ee98ff-b760-11ef-91ed-01aa75ed71a1",
+        "celex": "32024D2940"
+    },
+    {
+        "work-id": "bf15f43c-6a8b-4953-8155-04fc004a1be3",
+        "celex": "31996Y0508(01)"
+    },
+    {
+        "work-id": "03c12e75-7a0d-11ef-bbbe-01aa75ed71a1",
+        "celex": "32024D2502"
+    },
+    {
+        "work-id": "3dc171fa-308f-427e-b668-1824674d0acb",
+        "celex": "31987R2658R(02)"
+    },
+    {
+        "work-id": "024ea7dc-9564-11ec-b4e4-01aa75ed71a1",
+        "celex": "32022R0263"
+    },
+    {
+        "work-id": "c0b9f944-1c7d-4af3-82bc-30bd0a98ccbd",
+        "celex": "31976A0152"
+    },
+    {
+        "work-id": "f98e4412-592e-11eb-b59f-01aa75ed71a1",
+        "celex": "32021R0037"
+    },
+    {
+        "work-id": "16b955b4-63e5-4ac8-96f6-0148a128257b",
+        "celex": "32007R0727R(02)"
+    },
+    {
+        "work-id": "14cb50fc-4d70-11f0-a9d0-01aa75ed71a1",
+        "celex": "32022R0079R(01)"
+    },
+    {
+        "work-id": "d79837de-a6fe-11e6-aab7-01aa75ed71a1",
+        "celex": "32016D1966"
+    },
+    {
+        "work-id": "a6165c13-43d3-4174-ad44-ed5142c8c4c1",
+        "celex": "31989R0646"
+    },
+    {
+        "work-id": "d78374e7-800d-11ed-9887-01aa75ed71a1",
+        "celex": "32022R2502"
+    },
+    {
+        "work-id": "58605da5-d42e-44f3-82f4-208cbe09438b",
+        "celex": "32013M6896"
+    },
+    {
+        "work-id": "8835df4c-2a9b-11e9-8d04-01aa75ed71a1",
+        "celex": "32003R1831R(06)"
+    },
+    {
+        "work-id": "ee713dbc-90a1-11e3-a916-01aa75ed71a1",
+        "celex": "32014R0118"
+    },
+    {
+        "work-id": "4a23a743-16f0-11e4-933d-01aa75ed71a1",
+        "celex": "32014H0729(22)"
+    },
+    {
+        "work-id": "b179b9ee-d9fa-11ee-b9d9-01aa75ed71a1",
+        "celex": "32024M11420"
+    },
+    {
+        "work-id": "184f1df3-bbf4-11e4-bbe1-01aa75ed71a1",
+        "celex": "32015H0224(01)"
+    },
+    {
+        "work-id": "65bcbebc-d1aa-11e2-9b1a-01aa75ed71a1",
+        "celex": "32013R0503"
+    },
+    {
+        "work-id": "bd8ad599-ae95-11e4-b5b2-01aa75ed71a1",
+        "celex": "32015D0191"
+    },
+    {
+        "work-id": "f0b1c3af-dd18-11ef-be2a-01aa75ed71a1",
+        "celex": "32025D0155"
+    },
+    {
+        "work-id": "802bb543-220a-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1296R(01)"
+    },
+    {
+        "work-id": "d44c571e-1317-4ec1-a353-a9177de7db66",
+        "celex": "32015M7730"
+    },
+    {
+        "work-id": "bce594a3-6e54-4075-ac47-79dde484a993",
+        "celex": "31988R2275R(01)"
+    },
+    {
+        "work-id": "88ca0ec8-2d72-4c9b-aa8b-e5c3995c57b5",
+        "celex": "32009R0601"
+    },
+    {
+        "work-id": "7970512b-680d-4d9a-b32f-4f4f96379c90",
+        "celex": "31999D0436R(01)"
+    },
+    {
+        "work-id": "e3f9e1b6-3391-11ea-ba6e-01aa75ed71a1",
+        "celex": "32019M9694"
+    },
+    {
+        "work-id": "e2e85725-123d-11e4-933d-01aa75ed71a1",
+        "celex": "32014R0793"
+    },
+    {
+        "work-id": "c8efe9fb-2e01-11e6-b497-01aa75ed71a1",
+        "celex": "32016R0897"
+    },
+    {
+        "work-id": "b4d5a491-d22e-11ea-adf7-01aa75ed71a1",
+        "celex": "32008L0098R(07)"
+    },
+    {
+        "work-id": "4354b519-c329-43d4-b60f-30f2bd61db06",
+        "celex": "32006E0787"
+    },
+    {
+        "work-id": "3ff0a701-0c34-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019R0498R(01)"
+    },
+    {
+        "work-id": "025705d6-983c-11ec-b4e4-01aa75ed71a1",
+        "celex": "32022R0320"
+    },
+    {
+        "work-id": "83c8105b-99cb-11ec-83e1-01aa75ed71a1",
+        "celex": "32022D0348"
+    },
+    {
+        "work-id": "6b022b35-c428-46ce-9c17-8f8eb74c7d8b",
+        "celex": "32010D0424(01)"
+    },
+    {
+        "work-id": "bf19bf99-0e0b-11f0-b1a3-01aa75ed71a1",
+        "celex": "32025R0664"
+    },
+    {
+        "work-id": "6452d43c-da3b-11ef-be2a-01aa75ed71a1",
+        "celex": "32024M11656"
+    },
+    {
+        "work-id": "74d8c298-31f0-11f0-8a44-01aa75ed71a1",
+        "celex": "32025R0888"
+    },
+    {
+        "work-id": "341dc935-1cbe-11e6-ba9a-01aa75ed71a1",
+        "celex": "32015D1959R(02)"
+    },
+    {
+        "work-id": "4ec8a59d-ce36-4433-8cec-7fe9595fffb1",
+        "celex": "31991R3514"
+    },
+    {
+        "work-id": "202ff3a9-20de-43b7-a68b-fba7c9881e43",
+        "celex": "31997Y0224(01)"
+    },
+    {
+        "work-id": "4ba25408-f46f-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R0974"
+    },
+    {
+        "work-id": "90fb6b90-0394-11e9-adde-01aa75ed71a1",
+        "celex": "32018M9070"
+    },
+    {
+        "work-id": "6d0e0fe2-cd3b-11e4-ab4d-01aa75ed71a1",
+        "celex": "32015D0450"
+    },
+    {
+        "work-id": "a483c535-8750-11e4-b8a5-01aa75ed71a1",
+        "celex": "32014R1360"
+    },
+    {
+        "work-id": "a51fe167-4f29-484d-86e4-1c9758f23ab4",
+        "celex": "32006M4319"
+    },
+    {
+        "work-id": "cbe2745d-a37a-11e3-9f91-01aa75ed71a1",
+        "celex": "32014D0113"
+    },
+    {
+        "work-id": "5e8a11ea-a2c6-4274-99a2-4c02c44e97c1",
+        "celex": "32000M1930"
+    },
+    {
+        "work-id": "61ea519d-0a6b-4b7a-9246-ab458f253004",
+        "celex": "32005D0090"
+    },
+    {
+        "work-id": "b064092e-bc26-4bcc-ac61-f2f85fb799dd",
+        "celex": "31975Y0725(03)"
+    },
+    {
+        "work-id": "5dbda6f9-fdc4-11ec-b94a-01aa75ed71a1",
+        "celex": "32022D0327R(02)"
+    },
+    {
+        "work-id": "b2aa2351-3b83-4283-9d40-800ec8c09775",
+        "celex": "31983D0345"
+    },
+    {
+        "work-id": "35044331-4ccb-4319-bdcb-a62e0ec6747e",
+        "celex": "32003R1044"
+    },
+    {
+        "work-id": "53d3c17c-ae3b-4c14-a491-f641d3cc2341",
+        "celex": "32003D0662"
+    },
+    {
+        "work-id": "01dd7e7d-91fb-4694-9ae2-94989de2908e",
+        "celex": "32016M8151"
+    },
+    {
+        "work-id": "17e11790-b34b-11ed-8912-01aa75ed71a1",
+        "celex": "32023R0205R(01)"
+    },
+    {
+        "work-id": "061d5864-7abc-11ed-9887-01aa75ed71a1",
+        "celex": "32022D2440"
+    },
+    {
+        "work-id": "cbcebc25-eb94-11e7-9749-01aa75ed71a1",
+        "celex": "32017R2447"
+    },
+    {
+        "work-id": "8ca7a8ed-4727-11f0-85ba-01aa75ed71a1",
+        "celex": "32012R0965R(19)"
+    },
+    {
+        "work-id": "b910d975-9f64-4cf6-873a-4f506e29d8b5",
+        "celex": "31980D1051"
+    },
+    {
+        "work-id": "398e673d-129e-42e8-bc4f-30af32f21ea5",
+        "celex": "32011L0076"
+    },
+    {
+        "work-id": "319778d6-c94e-11e4-bbe1-01aa75ed71a1",
+        "celex": "32015R0417"
+    },
+    {
+        "work-id": "e6b6f775-c3c7-48b8-a079-eb55cbc7a766",
+        "celex": "32006R1924"
+    },
+    {
+        "work-id": "a57dbbf5-ec0c-4131-881f-63298e96449c",
+        "celex": "32017M8671"
+    },
+    {
+        "work-id": "73187a47-1759-4f84-9a89-fc9293ae3216",
+        "celex": "32008R0079"
+    },
+    {
+        "work-id": "3ab244af-44b6-4d8d-a19b-2ca39da71552",
+        "celex": "32005M3850"
+    },
+    {
+        "work-id": "7628fc64-af62-11e3-86f9-01aa75ed71a1",
+        "celex": "32009R1284R(01)"
+    },
+    {
+        "work-id": "6bbb72a5-6965-11e8-85ab-01aa75ed71a1",
+        "celex": "32018R0829"
+    },
+    {
+        "work-id": "98ab6910-312c-493c-b307-d8db982c5ffe",
+        "celex": "32000M2225"
+    },
+    {
+        "work-id": "7a86ae0e-29ee-11e5-9f85-01aa75ed71a1",
+        "celex": "32000L0078R(03)"
+    },
+    {
+        "work-id": "a9dbf4a1-56e1-11f0-a9d0-01aa75ed71a1",
+        "celex": "32025D1308"
+    },
+    {
+        "work-id": "069b2697-cb0f-11e9-992f-01aa75ed71a1",
+        "celex": "32019M9354"
+    },
+    {
+        "work-id": "20a135a8-f746-11ec-b94a-01aa75ed71a1",
+        "celex": "32022D1022"
+    },
+    {
+        "work-id": "06ab9386-193b-11e4-933d-01aa75ed71a1",
+        "celex": "32014R0834"
+    },
+    {
+        "work-id": "2d439e4c-0ee1-11ed-8fa0-01aa75ed71a1",
+        "celex": "32022L1326"
+    },
+    {
+        "work-id": "8893890f-cb16-4ded-ac1c-6da59e9b981c",
+        "celex": "32008M5008"
+    },
+    {
+        "work-id": "358d4412-c96c-11e6-ad7c-01aa75ed71a1",
+        "celex": "32016D2369"
+    },
+    {
+        "work-id": "40ca135a-7218-11ed-9887-01aa75ed71a1",
+        "celex": "32022D2352"
+    },
+    {
+        "work-id": "594516c7-a2f2-11ef-85f0-01aa75ed71a1",
+        "celex": "32023D0891R(01)"
+    },
+    {
+        "work-id": "64e0677b-c476-11e3-9fe4-01aa75ed71a1",
+        "celex": "32014R0381"
+    },
+    {
+        "work-id": "c0c14e1e-b043-11e6-aab7-01aa75ed71a1",
+        "celex": "32016R0679R(01)"
+    },
+    {
+        "work-id": "36902e43-97aa-4134-9c71-dad20d63934d",
+        "celex": "32002L0085R(01)"
+    },
+    {
+        "work-id": "a5307558-e093-11e7-9749-01aa75ed71a1",
+        "celex": "32017D2116"
+    },
+    {
+        "work-id": "e2ad23a3-0f19-48ab-837e-c258939ee26a",
+        "celex": "32009R1060R(03)"
+    },
+    {
+        "work-id": "50bca6d4-e08c-11e2-9165-01aa75ed71a1",
+        "celex": "32013R0606"
+    },
+    {
+        "work-id": "4e43be22-eb0c-4786-b085-a62085c3cd55",
+        "celex": "31991M0164"
+    },
+    {
+        "work-id": "d0f645df-a29a-11e2-ab01-01aa75ed71a1",
+        "celex": "32013D0176"
+    },
+    {
+        "work-id": "d8142c16-0ad0-4b72-97c0-a32a3a9b020e",
+        "celex": "32009D0858"
+    },
+    {
+        "work-id": "491d5d5a-28a8-11eb-9d7e-01aa75ed71a1",
+        "celex": "32020D1705"
+    },
+    {
+        "work-id": "47390ff1-7970-4d05-9f44-87c9f457a762",
+        "celex": "31994D0535"
+    },
+    {
+        "work-id": "3e1a6e9d-96a3-483c-8bce-c907f3b63428",
+        "celex": "32009D0402"
+    },
+    {
+        "work-id": "b5f49761-35f4-11eb-b27b-01aa75ed71a1",
+        "celex": "32020L1833"
+    },
+    {
+        "work-id": "04d5f15c-2b15-4bf6-99e6-c66f08a5bf9d",
+        "celex": "32018M8715"
+    },
+    {
+        "work-id": "3e69e913-3e77-11ea-ba6e-01aa75ed71a1",
+        "celex": "32020R0107"
+    },
+    {
+        "work-id": "c0b73ab4-c478-11e3-9fe4-01aa75ed71a1",
+        "celex": "32014R0368R(01)"
+    },
+    {
+        "work-id": "edf69390-72f3-11e9-9f05-01aa75ed71a1",
+        "celex": "32019R0712"
+    },
+    {
+        "work-id": "0ce5c7de-0995-11e4-a7d0-01aa75ed71a1",
+        "celex": "32014R0754"
+    },
+    {
+        "work-id": "960ac546-47cd-11ee-bbdc-01aa75ed71a1",
+        "celex": "32023R0895R(01)"
+    },
+    {
+        "work-id": "1b539dfc-728a-4fe4-969b-9e36b4b120ec",
+        "celex": "31991M0063"
+    },
+    {
+        "work-id": "39d18137-fb89-4321-a8ee-ae3d1ae55a44",
+        "celex": "31991D0001"
+    },
+    {
+        "work-id": "7d33c39f-bb8e-11e1-b84a-01aa75ed71a1",
+        "celex": "32012D0317"
+    },
+    {
+        "work-id": "24ef86a5-18fd-4c62-ae2a-b789929bb304",
+        "celex": "31999M1682"
+    },
+    {
+        "work-id": "148ed98d-52f0-11f0-a9d0-01aa75ed71a1",
+        "celex": "32025D1297"
+    },
+    {
+        "work-id": "7ecdd279-65b4-11ed-9f85-01aa75ed71a1",
+        "celex": "32022M10953"
+    },
+    {
+        "work-id": "d760a0cb-821c-11e9-9f05-01aa75ed71a1",
+        "celex": "32019M9300"
+    },
+    {
+        "work-id": "6bc47cec-2a3e-11eb-9d7e-01aa75ed71a1",
+        "celex": "32015R2447R(07)"
+    },
+    {
+        "work-id": "aca0acf3-d4a8-11ef-be2a-01aa75ed71a1",
+        "celex": "32024M11643"
+    },
+    {
+        "work-id": "7f3951a1-ca1e-11e4-ab4d-01aa75ed71a1",
+        "celex": "32014D0059(01)"
+    },
+    {
+        "work-id": "968de12f-8535-443d-94f0-c701d285178e",
+        "celex": "31999R1110"
+    },
+    {
+        "work-id": "28438254-8a34-482c-853a-36cb5cf4aa69",
+        "celex": "32005M3963"
+    },
+    {
+        "work-id": "edabf359-b61f-11e7-837e-01aa75ed71a1",
+        "celex": "32017R1927"
+    },
+    {
+        "work-id": "406e3f99-7280-11ec-9136-01aa75ed71a1",
+        "celex": "32022R0026"
+    },
+    {
+        "work-id": "a9dfe3fb-676d-11ea-b735-01aa75ed71a1",
+        "celex": "32020M9700"
+    },
+    {
+        "work-id": "3e97e73d-0605-426a-9ace-e77fb38ab156",
+        "celex": "32003D0727"
+    },
+    {
+        "work-id": "2edd66f3-4d76-11e6-89bd-01aa75ed71a1",
+        "celex": "32016D1170"
+    },
+    {
+        "work-id": "ffc84edc-51d8-11e3-8945-01aa75ed71a1",
+        "celex": "32013R1171"
+    },
+    {
+        "work-id": "1ab6a0e4-e934-4bee-a86c-3186ffef9196",
+        "celex": "32007M4888"
+    },
+    {
+        "work-id": "3dc75dfc-f83e-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R0978"
+    },
+    {
+        "work-id": "f5fade4c-47eb-11ef-aea6-01aa75ed71a1",
+        "celex": "32020R2193R(02)"
+    },
+    {
+        "work-id": "817ea829-a843-11ed-b508-01aa75ed71a1",
+        "celex": "32022R2513R(01)"
+    },
+    {
+        "work-id": "5d291130-435a-11e8-a9f4-01aa75ed71a1",
+        "celex": "32018R0588"
+    },
+    {
+        "work-id": "3611942c-2fc0-11eb-b27b-01aa75ed71a1",
+        "celex": "31996R0847R(01)"
+    },
+    {
+        "work-id": "123542cf-531d-11ec-91ac-01aa75ed71a1",
+        "celex": "32021R0451R(06)"
+    },
+    {
+        "work-id": "de27b1e8-c3f2-11ef-91ed-01aa75ed71a1",
+        "celex": "32024R3211"
+    },
+    {
+        "work-id": "ad7407e9-85d7-11ef-a67d-01aa75ed71a1",
+        "celex": "32013R1308R(26)"
+    },
+    {
+        "work-id": "edbdf035-9865-11ed-b508-01aa75ed71a1",
+        "celex": "32023R0137"
+    },
+    {
+        "work-id": "2d8386cf-b373-11ef-acb1-01aa75ed71a1",
+        "celex": "32024R3024"
+    },
+    {
+        "work-id": "2b4842d7-56c7-11ed-92ed-01aa75ed71a1",
+        "celex": "32022M10914"
+    },
+    {
+        "work-id": "171eeb05-a662-11eb-9585-01aa75ed71a1",
+        "celex": "32021R0669"
+    },
+    {
+        "work-id": "f3fdc941-eb2a-11e9-9c4e-01aa75ed71a1",
+        "celex": "32019D1698"
+    },
+    {
+        "work-id": "c392b202-e9bf-4624-9869-c3edfa16d1f1",
+        "celex": "31978L0386"
+    },
+    {
+        "work-id": "e64bb162-78a5-4422-852b-335f47ea731c",
+        "celex": "32003H0178"
+    },
+    {
+        "work-id": "974ea70e-2893-49a0-af77-9574087e59b5",
+        "celex": "31995R1276"
+    },
+    {
+        "work-id": "d39cafa7-1bec-42ab-9133-92b9e6007a0e",
+        "celex": "32018M8799"
+    },
+    {
+        "work-id": "72c02253-916c-4922-8e71-9de39f897343",
+        "celex": "32003M3240"
+    },
+    {
+        "work-id": "562d5905-81cb-11ed-9887-01aa75ed71a1",
+        "celex": "32008L0098R(09)"
+    },
+    {
+        "work-id": "38d5be5a-4f40-4f4d-a501-65b5b4b74e73",
+        "celex": "31995M0678"
+    },
+    {
+        "work-id": "7b0758cb-c10c-11ec-b6f4-01aa75ed71a1",
+        "celex": "32021R0535R(04)"
+    },
+    {
+        "work-id": "1f7b3dc9-8bbd-4da3-a8ad-fc15912f7984",
+        "celex": "32003M3223"
+    },
+    {
+        "work-id": "088b1b1e-c72a-11eb-a925-01aa75ed71a1",
+        "celex": "32021D0607(01)"
+    },
+    {
+        "work-id": "f1d67add-0954-4687-8974-107ad6137718",
+        "celex": "32012D0061"
+    },
+    {
+        "work-id": "36def663-af67-4138-a00f-83c83bd264d2",
+        "celex": "32008M5205"
+    },
+    {
+        "work-id": "8f18c689-650b-11e6-9b08-01aa75ed71a1",
+        "celex": "32004R0648R(02)"
+    },
+    {
+        "work-id": "6590d449-edc1-11e6-ad7c-01aa75ed71a1",
+        "celex": "32017R0211"
+    },
+    {
+        "work-id": "58c30cb7-5889-407b-be2b-cd212f7bbb72",
+        "celex": "31992L0083R(01)"
+    },
+    {
+        "work-id": "e934cc57-9ed8-11ee-b164-01aa75ed71a1",
+        "celex": "32023R2869"
+    },
+    {
+        "work-id": "14057ea6-2ec8-11e6-b497-01aa75ed71a1",
+        "celex": "32016R0909"
+    },
+    {
+        "work-id": "eae606aa-86d1-430e-895d-56dc51d0c98a",
+        "celex": "32011R0734"
+    },
+    {
+        "work-id": "13f5eb79-c7be-11ec-b6f4-01aa75ed71a1",
+        "celex": "32021M10139"
+    },
+    {
+        "work-id": "59043a4c-e322-4751-8eb9-85fde37e8cad",
+        "celex": "31992R3576"
+    },
+    {
+        "work-id": "223f0048-5ea1-4697-951e-263a7e249733",
+        "celex": "31998D0143"
+    },
+    {
+        "work-id": "621bfddc-037e-42e4-b456-abd06c44747f",
+        "celex": "32001A0309(05)"
+    },
+    {
+        "work-id": "d67524ea-c2d4-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R0580"
+    },
+    {
+        "work-id": "92786292-ef2b-11ef-981b-01aa75ed71a1",
+        "celex": "32025R0329"
+    },
+    {
+        "work-id": "15ac2e3d-8247-4f26-8fee-6c1811ea43b9",
+        "celex": "32007M4751"
+    },
+    {
+        "work-id": "9c5898b7-6b7f-11e7-b2f2-01aa75ed71a1",
+        "celex": "32017D1333"
+    },
+    {
+        "work-id": "70d23436-e7e1-11e5-b954-01aa75ed71a1",
+        "celex": "32016D0359"
+    },
+    {
+        "work-id": "a9e6f9d0-cbe6-4a8f-9c85-921116a68481",
+        "celex": "31981R0139R(01)"
+    },
+    {
+        "work-id": "761fd18b-ae89-11e9-9d01-01aa75ed71a1",
+        "celex": "32019R1259"
+    },
+    {
+        "work-id": "f07d7fe9-4c72-11e9-a8ed-01aa75ed71a1",
+        "celex": "32019R0358"
+    },
+    {
+        "work-id": "1ea18a1a-95c2-4922-935c-116d8694cc40",
+        "celex": "31993R0696"
+    },
+    {
+        "work-id": "42d2e1e2-a229-11ef-85f0-01aa75ed71a1",
+        "celex": "32016L0798R(09)"
+    },
+    {
+        "work-id": "7221b7f0-d647-11e1-905c-01aa75ed71a1",
+        "celex": "32012R0680"
+    },
+    {
+        "work-id": "81414833-1901-4df5-a4aa-68d136d7ed3e",
+        "celex": "32003R1224R(01)"
+    },
+    {
+        "work-id": "18b76d1e-28d7-11e2-9209-01aa75ed71a1",
+        "celex": "32012D0685"
+    },
+    {
+        "work-id": "11df21a0-ea0e-4037-b2b7-58b1e5629269",
+        "celex": "32007M4367"
+    },
+    {
+        "work-id": "e3c70b94-e92e-11e8-b690-01aa75ed71a1",
+        "celex": "32018R1728"
+    },
+    {
+        "work-id": "2fbe3292-4e8a-11ec-91ac-01aa75ed71a1",
+        "celex": "32021R2017"
+    },
+    {
+        "work-id": "40680599-dbfb-11e3-8cd4-01aa75ed71a1",
+        "celex": "32014D0273"
+    },
+    {
+        "work-id": "296b6d9a-092c-11ec-b5d3-01aa75ed71a1",
+        "celex": "32021D0830(02)"
+    },
+    {
+        "work-id": "a5c8ba11-bdaa-11ef-91ed-01aa75ed71a1",
+        "celex": "32024R3196"
+    },
+    {
+        "work-id": "fcb3f85c-47bb-4baf-a884-c1bb4edb5e26",
+        "celex": "32008R0693"
+    },
+    {
+        "work-id": "23707b1d-41ab-4068-acbe-e9d64bd04654",
+        "celex": "32006H0565"
+    },
+    {
+        "work-id": "28c19ee9-e4d8-11ed-a05c-01aa75ed71a1",
+        "celex": "32023M11034"
+    },
+    {
+        "work-id": "75c52001-aca6-41e0-bc08-8388558df89b",
+        "celex": "32014M7289"
+    },
+    {
+        "work-id": "d4926b22-2607-11e5-a342-01aa75ed71a1",
+        "celex": "32015R1102"
+    },
+    {
+        "work-id": "feee95bb-a9d9-11ee-b164-01aa75ed71a1",
+        "celex": "32024R0020"
+    },
+    {
+        "work-id": "f43e3856-1bda-4a52-971b-4efa44e7bb37",
+        "celex": "32011M6298"
+    },
+    {
+        "work-id": "4ca687c8-bdfc-4a15-80e6-91fbd88c94af",
+        "celex": "32012R0298"
+    },
+    {
+        "work-id": "26fbe574-5b68-4904-8a2d-936ea61f5b75",
+        "celex": "32002D0405"
+    },
+    {
+        "work-id": "06efed72-4f48-11ed-92ed-01aa75ed71a1",
+        "celex": "32022D1974"
+    },
+    {
+        "work-id": "bee9d347-0399-11f0-9503-01aa75ed71a1",
+        "celex": "32010R0904R(04)"
+    },
+    {
+        "work-id": "e2d654d2-4d5f-4e72-82c6-3e0f0969f05b",
+        "celex": "32013M6804"
+    },
+    {
+        "work-id": "af646d2c-7f88-4ebb-b4f8-a11fd0f79e8c",
+        "celex": "32009M5610"
+    },
+    {
+        "work-id": "4e5f1bb0-ca18-4ac8-9dec-2b8f6bf13649",
+        "celex": "31998L0096R(02)"
+    },
+    {
+        "work-id": "7ef2f815-1412-4226-abb6-86a47229ac00",
+        "celex": "32009R1026"
+    },
+    {
+        "work-id": "a8caecfa-a111-4233-a91c-c095ba986530",
+        "celex": "31991L0671"
+    },
+    {
+        "work-id": "558b777e-697d-11e5-9317-01aa75ed71a1",
+        "celex": "32014R0361R(02)"
+    },
+    {
+        "work-id": "e35c6cd5-fa7c-11e2-a352-01aa75ed71a1",
+        "celex": "32013D0412"
+    },
+    {
+        "work-id": "e8600120-6640-11ee-9220-01aa75ed71a1",
+        "celex": "32023R2108"
+    },
+    {
+        "work-id": "87d39e00-db04-427c-8d7b-5051094ef5aa",
+        "celex": "32001M2449"
+    },
+    {
+        "work-id": "2767ce7b-35e8-11e9-8d04-01aa75ed71a1",
+        "celex": "32019M9255"
+    },
+    {
+        "work-id": "a59729bf-0f57-11ea-8c1f-01aa75ed71a1",
+        "celex": "32011D0299R(05)"
+    },
+    {
+        "work-id": "ba2a14e5-3a42-11e4-8c3c-01aa75ed71a1",
+        "celex": "32014D0451R(01)"
+    },
+    {
+        "work-id": "12fec30b-ea4b-43bb-aa8e-395a48618205",
+        "celex": "32012R0263"
+    },
+    {
+        "work-id": "592b1692-b31d-4c3a-9d8c-bfbbd704d8a0",
+        "celex": "31982R3600"
+    },
+    {
+        "work-id": "59c578b2-f10c-4680-9639-933391de479d",
+        "celex": "32005D0720(02)"
+    },
+    {
+        "work-id": "fd6c493c-a91f-11e4-8e01-01aa75ed71a1",
+        "celex": "32012L0029R(03)"
+    },
+    {
+        "work-id": "17239830-b75d-4a1e-9600-294b218195ef",
+        "celex": "32012R0125"
+    },
+    {
+        "work-id": "d8f1e90b-5a5f-4643-af5b-f4bee17a8235",
+        "celex": "31994D0588"
+    },
+    {
+        "work-id": "3c8e99d9-8493-11ec-8c40-01aa75ed71a1",
+        "celex": "32021R2307R(01)"
+    },
+    {
+        "work-id": "88e1e997-899d-450f-a5df-8d5328ecd744",
+        "celex": "31996M0731"
+    },
+    {
+        "work-id": "1ecad7a2-ff4b-11e8-a96d-01aa75ed71a1",
+        "celex": "32018R1980"
+    },
+    {
+        "work-id": "994d3b0b-7940-11e3-b889-01aa75ed71a1",
+        "celex": "32014L0010"
+    },
+    {
+        "work-id": "85a69719-7c0b-4063-89b0-2ce3e6b199cc",
+        "celex": "31994D0413(01)"
+    },
+    {
+        "work-id": "11adf73b-f9d4-11ed-a05c-01aa75ed71a1",
+        "celex": "32023D1016"
+    },
+    {
+        "work-id": "53571b63-daaf-432c-b1b9-bc8cad61cc52",
+        "celex": "31993D0619"
+    },
+    {
+        "work-id": "4dd46af8-a229-11ef-85f0-01aa75ed71a1",
+        "celex": "32024L2842"
+    },
+    {
+        "work-id": "f1e29a12-7cf7-4a34-88a0-af0dfb4dce61",
+        "celex": "31997D0319"
+    },
+    {
+        "work-id": "966124c3-0e4f-489f-bdab-499250b6114d",
+        "celex": "31995Y1222(01)"
+    },
+    {
+        "work-id": "1699b345-ed9b-11ef-b5e9-01aa75ed71a1",
+        "celex": "32025R0316"
+    },
+    {
+        "work-id": "e1d13c53-e25a-11e8-b690-01aa75ed71a1",
+        "celex": "32018R1653"
+    },
+    {
+        "work-id": "e292bea6-9633-4093-a6d0-46978e71c3a7",
+        "celex": "31980D0234"
+    },
+    {
+        "work-id": "04a7214e-bcc3-4e27-b461-77cd58cd4701",
+        "celex": "31994D0783"
+    },
+    {
+        "work-id": "581920e6-14aa-4757-851b-5048009e18bc",
+        "celex": "31993R0520"
+    },
+    {
+        "work-id": "8e3bafc2-40d5-11eb-b27b-01aa75ed71a1",
+        "celex": "32020R2151"
+    },
+    {
+        "work-id": "622463ca-40a5-4436-8e0d-64b4083ffcfc",
+        "celex": "32006M4338"
+    },
+    {
+        "work-id": "28fe8887-7f20-11e7-b5c6-01aa75ed71a1",
+        "celex": "32014R1322R(03)"
+    },
+    {
+        "work-id": "4494b8e0-c986-11eb-84ce-01aa75ed71a1",
+        "celex": "32021D0936"
+    },
+    {
+        "work-id": "4ee9ce56-eae1-11ed-a05c-01aa75ed71a1",
+        "celex": "32023D0912"
+    },
+    {
+        "work-id": "d69edde6-70da-4cab-8743-b4b895ec2b14",
+        "celex": "32008R0440R(01)"
+    },
+    {
+        "work-id": "883b836b-f869-11ee-a251-01aa75ed71a1",
+        "celex": "32024R0753R(03)"
+    },
+    {
+        "work-id": "adc3056b-b8e8-47e2-b0e5-2ff74504b77c",
+        "celex": "32012D0161"
+    },
+    {
+        "work-id": "8f57712d-a26f-11e5-b528-01aa75ed71a1",
+        "celex": "32011R1178R(09)"
+    },
+    {
+        "work-id": "c8083aaa-6650-11e9-b6eb-01aa75ed71a1",
+        "celex": "32019M9322"
+    },
+    {
+        "work-id": "3183e1d5-8132-4922-89ef-aa81892e0f82",
+        "celex": "32008R0746R(02)"
+    },
+    {
+        "work-id": "4ee61052-3421-11ef-b441-01aa75ed71a1",
+        "celex": "32024R1800"
+    },
+    {
+        "work-id": "9a94e0eb-6da9-11ea-b735-01aa75ed71a1",
+        "celex": "32020M9729"
+    },
+    {
+        "work-id": "207dac1b-23cd-11f0-ac85-01aa75ed71a1",
+        "celex": "32025D0823"
+    },
+    {
+        "work-id": "fee05521-4bc8-42d2-81d2-4c63c61331c1",
+        "celex": "31994D0242"
+    },
+    {
+        "work-id": "b6f77184-478c-11e3-ae03-01aa75ed71a1",
+        "celex": "32013R1074"
+    },
+    {
+        "work-id": "6f4c5f6a-2d0f-11ef-a61b-01aa75ed71a1",
+        "celex": "32024R1702"
+    },
+    {
+        "work-id": "b55ce2fa-5701-11ec-91ac-01aa75ed71a1",
+        "celex": "32021R2158"
+    },
+    {
+        "work-id": "979a9aea-f710-11e9-8c1f-01aa75ed71a1",
+        "celex": "32019M9556"
+    },
+    {
+        "work-id": "2e98ff17-3a97-11e6-a825-01aa75ed71a1",
+        "celex": "32013R1306R(02)"
+    },
+    {
+        "work-id": "5c640484-ebe3-4314-9fc7-ad3ddf3155e8",
+        "celex": "32002M2770"
+    },
+    {
+        "work-id": "2080ff4b-c6b2-45c1-8460-ba561845899e",
+        "celex": "31997D0345"
+    },
+    {
+        "work-id": "4b3abd80-28e6-11e8-b5fe-01aa75ed71a1",
+        "celex": "32009L0136R(04)"
+    },
+    {
+        "work-id": "4f1d4ca6-fa81-11ef-b7db-01aa75ed71a1",
+        "celex": "32025R0431"
+    },
+    {
+        "work-id": "cc1f2a76-aa47-4c63-8fe8-541cbb170170",
+        "celex": "32009R0202"
+    },
+    {
+        "work-id": "b0aa82f2-3b7f-11e8-b5fe-01aa75ed71a1",
+        "celex": "32018D0551"
+    },
+    {
+        "work-id": "6027db17-748d-11ef-a8ba-01aa75ed71a1",
+        "celex": "32024L1233R(01)"
+    },
+    {
+        "work-id": "ee7fa9fb-6663-11e9-b6eb-01aa75ed71a1",
+        "celex": "32019D0641"
+    },
+    {
+        "work-id": "37999c89-50bc-4918-9f42-3c67523966f8",
+        "celex": "32008R0746"
+    },
+    {
+        "work-id": "1a7d7220-c625-4c33-bd96-90cdfcbeb167",
+        "celex": "32013M6957"
+    },
+    {
+        "work-id": "3dde0865-626d-48b5-bbd8-04ae1c344997",
+        "celex": "31997D0638"
+    },
+    {
+        "work-id": "71dbdb54-568c-4213-8526-9aa1138ec17c",
+        "celex": "31992R2169"
+    },
+    {
+        "work-id": "b241ad27-bfc9-433f-87dc-4e3ed2975f3f",
+        "celex": "32007M4892"
+    },
+    {
+        "work-id": "d1e13cb0-b53c-11e1-b84a-01aa75ed71a1",
+        "celex": "32010R1080R(01)"
+    },
+    {
+        "work-id": "7c58ef71-c960-11ed-a05c-01aa75ed71a1",
+        "celex": "32021R1152R(01)"
+    },
+    {
+        "work-id": "1613c31e-6ca8-11e9-9f05-01aa75ed71a1",
+        "celex": "32019D0683"
+    },
+    {
+        "work-id": "7b1b99d0-801d-11e3-9b7d-01aa75ed71a1",
+        "celex": "32014D0018"
+    },
+    {
+        "work-id": "54e9a92f-0206-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019D1864"
+    },
+    {
+        "work-id": "38a21ddc-8ad4-42c6-b758-20b3bb7b2f2a",
+        "celex": "32010D0811"
+    },
+    {
+        "work-id": "d427e3db-7363-11e7-b2f2-01aa75ed71a1",
+        "celex": "32017R1128R(01)"
+    },
+    {
+        "work-id": "137d67f7-f83a-11ec-b94a-01aa75ed71a1",
+        "celex": "32018D0134R(01)"
+    },
+    {
+        "work-id": "37d6d3a5-916b-11e2-b5c3-01aa75ed71a1",
+        "celex": "32013R0228"
+    },
+    {
+        "work-id": "0e7b46e6-035d-4ec3-9cc2-d1f20acf3f0d",
+        "celex": "32000D0682"
+    },
+    {
+        "work-id": "5db7cbe0-79f8-11ed-9887-01aa75ed71a1",
+        "celex": "32022D1212(01)"
+    },
+    {
+        "work-id": "5a6ee174-7bc4-11e4-97c9-01aa75ed71a1",
+        "celex": "32014D0047(01)"
+    },
+    {
+        "work-id": "12501575-cecc-4c7c-95bb-fffa1c4c4c81",
+        "celex": "32007R0294"
+    },
+    {
+        "work-id": "dacff0b3-b188-4a9c-b210-308bf5f01cce",
+        "celex": "32001M2267"
+    },
+    {
+        "work-id": "20b34435-21a5-4ed5-a430-bf7afb3404ab",
+        "celex": "32009R1186"
+    },
+    {
+        "work-id": "c13d610a-4785-4e82-8eda-f0572291b1da",
+        "celex": "32011D0678"
+    },
+    {
+        "work-id": "844fcd6b-d36b-11e2-bfa7-01aa75ed71a1",
+        "celex": "32004R0853R(11)"
+    },
+    {
+        "work-id": "2403e0dd-9495-41e4-9089-6dc3397864cb",
+        "celex": "31992R1833"
+    },
+    {
+        "work-id": "cb8ad0a5-8af7-11ec-8c40-01aa75ed71a1",
+        "celex": "32022R0187"
+    },
+    {
+        "work-id": "bd88dd6d-4461-11e8-a9f4-01aa75ed71a1",
+        "celex": "32018R0604"
+    },
+    {
+        "work-id": "72b85e0a-a42e-463d-b7f8-1888e3b08ce8",
+        "celex": "32006D0554"
+    },
+    {
+        "work-id": "b1df6189-909b-11ec-b4e4-01aa75ed71a1",
+        "celex": "32022R0212"
+    },
+    {
+        "work-id": "28063045-d073-4a38-ba4c-fc1a4a5d0d8a",
+        "celex": "32010M6069"
+    },
+    {
+        "work-id": "7c767789-f7f3-47a4-b379-77229e944c48",
+        "celex": "32000M2209"
+    },
+    {
+        "work-id": "f74a9c81-de51-40b6-b6d0-5812bbe6b041",
+        "celex": "32006D0232"
+    },
+    {
+        "work-id": "b6ffc33e-faac-4379-8a9b-84a347d56488",
+        "celex": "31999M1594"
+    },
+    {
+        "work-id": "3ae9edd0-f154-11ee-8e14-01aa75ed71a1",
+        "celex": "32024R1021"
+    },
+    {
+        "work-id": "be43b1f7-eb98-11e2-a22e-01aa75ed71a1",
+        "celex": "32013D0713(03)"
+    },
+    {
+        "work-id": "ce77a09f-7bf6-4829-bb19-cb2a6aa8bdf3",
+        "celex": "31994M0444"
+    },
+    {
+        "work-id": "edbf79d1-131e-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1319"
+    },
+    {
+        "work-id": "3a2d4e70-d38b-11e4-9de8-01aa75ed71a1",
+        "celex": "32011R0010R(07)"
+    },
+    {
+        "work-id": "d3f4c789-260f-4712-abaf-378ca9b4dd9a",
+        "celex": "31999M1694"
+    },
+    {
+        "work-id": "f74a4878-16f0-11e4-933d-01aa75ed71a1",
+        "celex": "32014H0729(27)"
+    },
+    {
+        "work-id": "9edebca8-fc29-434b-ac95-405b04a6171f",
+        "celex": "32003D0294"
+    },
+    {
+        "work-id": "64303b6d-e050-11eb-895a-01aa75ed71a1",
+        "celex": "32021R1123"
+    },
+    {
+        "work-id": "5c84a783-fa80-11ef-b7db-01aa75ed71a1",
+        "celex": "32024D1510R(01)"
+    },
+    {
+        "work-id": "56779b4f-3350-11e9-8d04-01aa75ed71a1",
+        "celex": "32016D1693R(01)"
+    },
+    {
+        "work-id": "9999e874-afa0-11ea-bb7a-01aa75ed71a1",
+        "celex": "31990D0611R(01)"
+    },
+    {
+        "work-id": "2c9edf05-4428-4607-b47f-d51695e6d82c",
+        "celex": "31994D1049"
+    },
+    {
+        "work-id": "5939b931-a78d-11e4-8e01-01aa75ed71a1",
+        "celex": "32006L0054R(01)"
+    },
+    {
+        "work-id": "71c981a9-e369-11e4-b1d3-01aa75ed71a1",
+        "celex": "32014L0045R(01)"
+    },
+    {
+        "work-id": "5c712c72-c4f2-4cb6-9d5c-bbc0c4e8d514",
+        "celex": "31982D0777"
+    },
+    {
+        "work-id": "d76c6232-94b4-4208-87ca-bb546b9028ce",
+        "celex": "32017M8316"
+    },
+    {
+        "work-id": "179e0ed2-a226-4c40-a6a0-657b34575153",
+        "celex": "31976D0790"
+    },
+    {
+        "work-id": "77944535-91a2-403f-9bf8-9b3a468dc938",
+        "celex": "32000D0707"
+    },
+    {
+        "work-id": "16a18027-25d0-11eb-9d7e-01aa75ed71a1",
+        "celex": "32020M9975"
+    },
+    {
+        "work-id": "bde73e1f-e7b8-11ec-a534-01aa75ed71a1",
+        "celex": "32021R0403R(02)"
+    },
+    {
+        "work-id": "3888ce97-f6ce-43a5-ad72-456c93cf6bce",
+        "celex": "32006M4025"
+    },
+    {
+        "work-id": "0748fcb7-6a56-11ef-a8ba-01aa75ed71a1",
+        "celex": "32024D05383"
+    },
+    {
+        "work-id": "9d79a4e5-4978-11eb-b59f-01aa75ed71a1",
+        "celex": "32019D1909R(01)"
+    },
+    {
+        "work-id": "06f767f4-ef3e-11eb-a71c-01aa75ed71a1",
+        "celex": "32021R1223"
+    },
+    {
+        "work-id": "cb211774-c4cf-11eb-a925-01aa75ed71a1",
+        "celex": "32021R0901"
+    },
+    {
+        "work-id": "d75cc5b2-aa2e-40cf-bbf9-6fa6a517d616",
+        "celex": "32003D0616"
+    },
+    {
+        "work-id": "cd582dfb-7408-11ea-a07e-01aa75ed71a1",
+        "celex": "32020M9742"
+    },
+    {
+        "work-id": "454077b8-552e-11e9-a8ed-01aa75ed71a1",
+        "celex": "32019M9253"
+    },
+    {
+        "work-id": "3760f353-1994-11f0-b1a3-01aa75ed71a1",
+        "celex": "32025D0704"
+    },
+    {
+        "work-id": "25f3b340-8456-11e5-b8b7-01aa75ed71a1",
+        "celex": "32015D1988"
+    },
+    {
+        "work-id": "ec5abe3e-5f36-11e4-9cbe-01aa75ed71a1",
+        "celex": "32014D0740"
+    },
+    {
+        "work-id": "748dfe76-c36a-483e-a5ab-cc1368192472",
+        "celex": "32005D0198"
+    },
+    {
+        "work-id": "2b2923fd-e598-11ee-8b2b-01aa75ed71a1",
+        "celex": "32024D0890"
+    },
+    {
+        "work-id": "4dd675d7-ad6a-42e4-9c93-f6d03d8b0cd0",
+        "celex": "31978D0122"
+    },
+    {
+        "work-id": "7612fa53-2f15-11e2-9b72-01aa75ed71a1",
+        "celex": "32012R1067"
+    },
+    {
+        "work-id": "766ba786-c1dd-11e8-8bb4-01aa75ed71a1",
+        "celex": "32009D0477R(02)"
+    },
+    {
+        "work-id": "324dc5d5-c9d3-474f-b3f6-b65e223462ef",
+        "celex": "31985Y0016"
+    },
+    {
+        "work-id": "4fcc6708-9691-4b3d-b80b-f5167537b8af",
+        "celex": "31988D0501"
+    },
+    {
+        "work-id": "c5fba6a4-cbf1-11e7-a5d5-01aa75ed71a1",
+        "celex": "32017D2104"
+    },
+    {
+        "work-id": "c26bbe76-e720-4db1-a5d5-1b42248b3860",
+        "celex": "31998R1426"
+    },
+    {
+        "work-id": "b77c2b17-a670-45ba-9804-1cee9f5667c1",
+        "celex": "32001E0759"
+    },
+    {
+        "work-id": "dc265d5a-5432-4986-8b6e-174f31674d31",
+        "celex": "32003L0008"
+    },
+    {
+        "work-id": "f9eafcc2-57e9-44cc-ae41-5cfa49a13d95",
+        "celex": "31994D0908"
+    },
+    {
+        "work-id": "8c4ce935-8239-11ec-8c40-01aa75ed71a1",
+        "celex": "32022R0128"
+    },
+    {
+        "work-id": "a7d67828-cca0-4411-90e9-4557e06fff40",
+        "celex": "32013M6982"
+    },
+    {
+        "work-id": "ba52efa7-8cea-4534-bb74-4a0efa887409",
+        "celex": "32001R2601"
+    },
+    {
+        "work-id": "61b6aaac-0075-11f0-9503-01aa75ed71a1",
+        "celex": "32025R0500"
+    },
+    {
+        "work-id": "f8f9801d-afbd-11e7-837e-01aa75ed71a1",
+        "celex": "32017R1382R(01)"
+    },
+    {
+        "work-id": "256120e0-31c3-11ee-946a-01aa75ed71a1",
+        "celex": "32022D0911R(01)"
+    },
+    {
+        "work-id": "e7c5ae27-2d34-11e6-b497-01aa75ed71a1",
+        "celex": "32016D0894"
+    },
+    {
+        "work-id": "15dad17d-89fa-11e6-b955-01aa75ed71a1",
+        "celex": "32016R1759"
+    },
+    {
+        "work-id": "8efdf172-9c00-4c64-a38b-d5935432cc2c",
+        "celex": "32005D0849"
+    },
+    {
+        "work-id": "3a1d5643-73df-45e4-bf4c-b8364aabe042",
+        "celex": "31999D0270"
+    },
+    {
+        "work-id": "e8501510-70c5-11e7-b2f2-01aa75ed71a1",
+        "celex": "32017D1373"
+    },
+    {
+        "work-id": "e56c874a-16a1-11e7-808e-01aa75ed71a1",
+        "celex": "32017R0271R(01)"
+    },
+    {
+        "work-id": "63451a96-dd08-11e8-afb3-01aa75ed71a1",
+        "celex": "32018M9119"
+    },
+    {
+        "work-id": "5840f543-b2a9-11e9-9d01-01aa75ed71a1",
+        "celex": "32019M9442"
+    },
+    {
+        "work-id": "e41e1288-87a5-4d5f-9482-b1fe3137baf0",
+        "celex": "31990A0202"
+    },
+    {
+        "work-id": "f9ceadcb-be53-4144-af15-05a625a6847c",
+        "celex": "32000M1956"
+    },
+    {
+        "work-id": "04a97d60-e02c-11e9-9c4e-01aa75ed71a1",
+        "celex": "32019R1583"
+    },
+    {
+        "work-id": "35b251c3-4a02-4685-9fb9-e569344b49aa",
+        "celex": "32008R1276R(03)"
+    },
+    {
+        "work-id": "4cb09093-1cb6-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1517"
+    },
+    {
+        "work-id": "cfe90698-fb07-11eb-b520-01aa75ed71a1",
+        "celex": "32021D1210R(01)"
+    },
+    {
+        "work-id": "fcd0a96d-94b9-11e2-ab01-01aa75ed71a1",
+        "celex": "32013R0261"
+    },
+    {
+        "work-id": "67bb8409-a91f-11e4-8e01-01aa75ed71a1",
+        "celex": "32015D0157"
+    },
+    {
+        "work-id": "48f95e57-262f-47da-834e-fedda165007d",
+        "celex": "32009D0382"
+    },
+    {
+        "work-id": "46f67613-494c-11e9-a8ed-01aa75ed71a1",
+        "celex": "32019D0425"
+    },
+    {
+        "work-id": "ef51c6ab-a06c-11ee-b164-01aa75ed71a1",
+        "celex": "32023R2854"
+    },
+    {
+        "work-id": "ea5dc38e-b7d8-4e58-81f6-5f896d1a203f",
+        "celex": "32007M4508"
+    },
+    {
+        "work-id": "2e54efd4-4058-11eb-b27b-01aa75ed71a1",
+        "celex": "32020M9798"
+    },
+    {
+        "work-id": "3acfc08f-0feb-4615-a300-6c9a2fb4fd17",
+        "celex": "32004D0689"
+    },
+    {
+        "work-id": "0b004869-32d1-4b19-a248-6d5f70c9feae",
+        "celex": "31993D0125"
+    },
+    {
+        "work-id": "3b565ccf-8f94-11ec-8c40-01aa75ed71a1",
+        "celex": "32015R2285R(03)"
+    },
+    {
+        "work-id": "95786b3a-4239-11ee-8548-01aa75ed71a1",
+        "celex": "32021D0482R(01)"
+    },
+    {
+        "work-id": "70ce51e8-68ac-422c-bf0e-d8a6de20fcfc",
+        "celex": "32006D0720"
+    },
+    {
+        "work-id": "e84f859f-5c2d-11e9-9c52-01aa75ed71a1",
+        "celex": "32019D0573"
+    },
+    {
+        "work-id": "9c930ce3-367c-4fbc-86ee-720608c23b3d",
+        "celex": "32010R0147"
+    },
+    {
+        "work-id": "faaf40f1-a4ea-4062-834a-bc3a283f0408",
+        "celex": "32013M6782"
+    },
+    {
+        "work-id": "b0fb9ca3-e533-4286-a554-62fb86ddd484",
+        "celex": "31998D0743"
+    },
+    {
+        "work-id": "6b5e543b-f962-11ef-b7db-01aa75ed71a1",
+        "celex": "32024R1789R(02)"
+    },
+    {
+        "work-id": "031a3a14-1ceb-4d23-ac79-5f74fac3ad20",
+        "celex": "32009D0117"
+    },
+    {
+        "work-id": "aaa4ec80-e26f-485c-a5d8-0f556c2a1250",
+        "celex": "32006D0642"
+    },
+    {
+        "work-id": "7f345cc9-0b62-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019D1925"
+    },
+    {
+        "work-id": "431648ac-3244-4ec8-97df-bab333d9002e",
+        "celex": "32009M4998"
+    },
+    {
+        "work-id": "58a801e4-755b-11e9-9f05-01aa75ed71a1",
+        "celex": "32019M9279"
+    },
+    {
+        "work-id": "cba86a23-6df7-4726-8483-4f9c07e9f9e0",
+        "celex": "31981R0729"
+    },
+    {
+        "work-id": "b8b9b47e-fbcc-41be-b804-008c53edb65d",
+        "celex": "32003G1216(01)"
+    },
+    {
+        "work-id": "be693c3c-3833-11ef-b441-01aa75ed71a1",
+        "celex": "32024R1820"
+    },
+    {
+        "work-id": "3bda3f78-1d22-456f-a280-0f9bdd3438e4",
+        "celex": "32007D0444"
+    },
+    {
+        "work-id": "bcc57482-bd6a-11e8-99ee-01aa75ed71a1",
+        "celex": "32018R1263"
+    },
+    {
+        "work-id": "835a44e1-149f-11ed-8fa0-01aa75ed71a1",
+        "celex": "32022M10784"
+    },
+    {
+        "work-id": "d24f2cc9-4544-11ed-92ed-01aa75ed71a1",
+        "celex": "32019R2088R(07)"
+    },
+    {
+        "work-id": "ce9c851e-aac4-4cdf-b97c-e9db30f3ab1b",
+        "celex": "32017M8705"
+    },
+    {
+        "work-id": "6d3c3b8b-67cc-11e3-a7e4-01aa75ed71a1",
+        "celex": "32013R1352"
+    },
+    {
+        "work-id": "99d97491-5107-11ee-9220-01aa75ed71a1",
+        "celex": "32023R1755"
+    },
+    {
+        "work-id": "3c26fbda-410d-11eb-b27b-01aa75ed71a1",
+        "celex": "32020D2141"
+    },
+    {
+        "work-id": "ac723c62-ae6e-11e3-86f9-01aa75ed71a1",
+        "celex": "32014R0271"
+    },
+    {
+        "work-id": "284e0721-d6be-49c4-a4ab-42ecf0d1ec59",
+        "celex": "32014M7192"
+    },
+    {
+        "work-id": "1f97b10c-ad3c-11eb-9767-01aa75ed71a1",
+        "celex": "32021R0726"
+    },
+    {
+        "work-id": "0808bfca-81c7-11ee-99ba-01aa75ed71a1",
+        "celex": "32023R2502"
+    },
+    {
+        "work-id": "4de2fba4-f336-4fa4-975e-829c82cd08fc",
+        "celex": "32011R1204"
+    },
+    {
+        "work-id": "4501fd85-35f5-11eb-b27b-01aa75ed71a1",
+        "celex": "32020D1835"
+    },
+    {
+        "work-id": "d38a9fd9-642f-11eb-aeb5-01aa75ed71a1",
+        "celex": "32021D0105"
+    },
+    {
+        "work-id": "2d88252d-4e71-11eb-b59f-01aa75ed71a1",
+        "celex": "32020M10062"
+    },
+    {
+        "work-id": "44134242-9def-11ec-83e1-01aa75ed71a1",
+        "celex": "32022R0379"
+    },
+    {
+        "work-id": "87f6463d-9976-4b88-b425-baea4572e7ed",
+        "celex": "31980D1060"
+    },
+    {
+        "work-id": "edf461da-5c08-41d7-bae6-6fb7a7b91516",
+        "celex": "32004D0064"
+    },
+    {
+        "work-id": "16a670e6-44ef-42b9-b996-1742d298f84f",
+        "celex": "32001L0023R(02)"
+    },
+    {
+        "work-id": "6b903641-6082-4f19-a9c7-752060d56536",
+        "celex": "31991R2211"
+    },
+    {
+        "work-id": "765a2166-e6a4-4fca-a243-35685c5f5ade",
+        "celex": "32007R1237"
+    },
+    {
+        "work-id": "6c2e93dd-0544-4452-8cfc-f34ba5ee01f4",
+        "celex": "31998M1108"
+    },
+    {
+        "work-id": "a7e84519-93d8-11ee-b164-01aa75ed71a1",
+        "celex": "32023R2755"
+    },
+    {
+        "work-id": "1fd21fd7-c17f-4d79-af35-319f77d1a459",
+        "celex": "31989L0665"
+    },
+    {
+        "work-id": "fcd53f59-ea45-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R0907"
+    },
+    {
+        "work-id": "c2f27bf4-c962-11e9-992f-01aa75ed71a1",
+        "celex": "32019D0023"
+    },
+    {
+        "work-id": "90386bf8-7317-11ea-a07e-01aa75ed71a1",
+        "celex": "32020D0462"
+    },
+    {
+        "work-id": "7705f427-8d28-41c2-aca7-5ba389e3ddb5",
+        "celex": "32008M5340"
+    },
+    {
+        "work-id": "add7e7f4-0c07-4562-87d7-a7e14a0dea03",
+        "celex": "31998Y1209(01)"
+    },
+    {
+        "work-id": "7bd6fd15-7f21-4711-bc7e-ac6658b40f7a",
+        "celex": "31994R1639"
+    },
+    {
+        "work-id": "5a143314-746d-40b9-a2ca-8b0571221fe4",
+        "celex": "32006M4485"
+    },
+    {
+        "work-id": "34e2f8ca-c406-11eb-a925-01aa75ed71a1",
+        "celex": "32020R0469R(06)"
+    },
+    {
+        "work-id": "77b8dba5-e506-11eb-a1a5-01aa75ed71a1",
+        "celex": "32021R1149"
+    },
+    {
+        "work-id": "3356ab6b-ec7a-11e3-8cd4-01aa75ed71a1",
+        "celex": "32014R0601"
+    },
+    {
+        "work-id": "fa481cbb-35f3-4824-b518-e298de6aa58f",
+        "celex": "31998D0707"
+    },
+    {
+        "work-id": "1bb24de3-3c31-46d7-8f64-85593321c846",
+        "celex": "32002D0894"
+    },
+    {
+        "work-id": "426933a1-bb70-4881-8839-25775363f80c",
+        "celex": "32009D0771"
+    },
+    {
+        "work-id": "58687d04-695d-4cf8-a1a2-a84a028e0110",
+        "celex": "31998D0508"
+    },
+    {
+        "work-id": "e61177bc-000b-11f0-9503-01aa75ed71a1",
+        "celex": "32025M11822"
+    },
+    {
+        "work-id": "4a81bbb1-aeb4-4b60-a7cf-b8267e82912b",
+        "celex": "32008D0278"
+    },
+    {
+        "work-id": "226d5e34-b115-4d2f-a54c-d66aa5385fda",
+        "celex": "31992L0043"
+    },
+    {
+        "work-id": "a7d3263a-1ef2-11e5-a342-01aa75ed71a1",
+        "celex": "32015D1024"
+    },
+    {
+        "work-id": "00f42636-c0ce-4bc7-97bb-f391a1f9fe16",
+        "celex": "31985S3699"
+    },
+    {
+        "work-id": "3fd4f4a3-7d54-4abc-b959-a0734ee35e18",
+        "celex": "32005M3791"
+    },
+    {
+        "work-id": "40f71f21-7ecc-11ef-a67d-01aa75ed71a1",
+        "celex": "32024R1860R(01)"
+    },
+    {
+        "work-id": "81a1bb80-0ca4-11e8-966a-01aa75ed71a1",
+        "celex": "32017D2181R(01)"
+    },
+    {
+        "work-id": "763bd570-1a90-4add-96cc-c22b93f22008",
+        "celex": "32009R0103"
+    },
+    {
+        "work-id": "da8afb63-dda2-4960-a5ed-e946e614d66f",
+        "celex": "32000M1998"
+    },
+    {
+        "work-id": "91d7dbd2-cd72-11ea-adf7-01aa75ed71a1",
+        "celex": "32017R2400R(03)"
+    },
+    {
+        "work-id": "14ec937f-268e-11e8-ac73-01aa75ed71a1",
+        "celex": "32016R0583R(01)"
+    },
+    {
+        "work-id": "209c3f25-db63-11ee-b9d9-01aa75ed71a1",
+        "celex": "32022R2454R(01)"
+    },
+    {
+        "work-id": "9fc5b82e-05d6-4e22-894d-da5eeaeee9f3",
+        "celex": "32011D0132"
+    },
+    {
+        "work-id": "959beec1-377e-11e6-a825-01aa75ed71a1",
+        "celex": "32004R0853R(15)"
+    },
+    {
+        "work-id": "b0a9b388-f792-11ec-b94a-01aa75ed71a1",
+        "celex": "32022M10435"
+    },
+    {
+        "work-id": "39e5a536-b532-4f8f-a49e-8b00f4b0beb7",
+        "celex": "32000M2181"
+    },
+    {
+        "work-id": "2fe15cf5-e1fd-4448-88c0-91db777a86f8",
+        "celex": "32007R1393R(01)"
+    },
+    {
+        "work-id": "3737c055-a3a6-11e9-9d01-01aa75ed71a1",
+        "celex": "32019D1182"
+    },
+    {
+        "work-id": "b8a960ce-5ad6-4b00-821d-23e564cae0e5",
+        "celex": "32001D0434"
+    },
+    {
+        "work-id": "26add194-ca1f-11e4-ab4d-01aa75ed71a1",
+        "celex": "32010D0183R(01)"
+    },
+    {
+        "work-id": "547785cf-f8bf-4777-92d1-31d145798191",
+        "celex": "32001H0613"
+    },
+    {
+        "work-id": "ea13ba7c-79d0-11e8-ac6a-01aa75ed71a1",
+        "celex": "32018L0912"
+    },
+    {
+        "work-id": "5248b192-e63e-4b00-b223-e42351a5fb5d",
+        "celex": "32011L0052"
+    },
+    {
+        "work-id": "26892364-1756-11eb-b57e-01aa75ed71a1",
+        "celex": "32020R1547"
+    },
+    {
+        "work-id": "131b9fb0-a983-11ec-83e1-01aa75ed71a1",
+        "celex": "32022R0428R(01)"
+    },
+    {
+        "work-id": "c6a8226e-6314-11e3-ab0f-01aa75ed71a1",
+        "celex": "32007R0727R(04)"
+    },
+    {
+        "work-id": "3c6a406a-f5b3-11ec-b976-01aa75ed71a1",
+        "celex": "32022R0991"
+    },
+    {
+        "work-id": "473dcfca-761d-499a-946e-00fd89a631c0",
+        "celex": "31991M0167"
+    },
+    {
+        "work-id": "d00d6ffa-d2d1-43f5-9a7b-fdfb04512031",
+        "celex": "32000M1716"
+    },
+    {
+        "work-id": "624a564b-a2cf-468b-b687-25ca4c019ce6",
+        "celex": "32001D0197"
+    },
+    {
+        "work-id": "b87118c4-87bf-4d03-a99a-d32a9a8755bd",
+        "celex": "32008D0542"
+    },
+    {
+        "work-id": "ece87d15-6a86-11e6-9b08-01aa75ed71a1",
+        "celex": "32016R1411"
+    },
+    {
+        "work-id": "5cca49c7-12e0-4a70-b2d4-a79093e940cf",
+        "celex": "31992M0253"
+    },
+    {
+        "work-id": "8457f65a-2f4a-11e4-8c3c-01aa75ed71a1",
+        "celex": "32014D0034"
+    },
+    {
+        "work-id": "57a66d3d-b5ca-11ee-b164-01aa75ed71a1",
+        "celex": "32024R0359"
+    },
+    {
+        "work-id": "f206ba0f-acee-4f82-9fed-074af4d99085",
+        "celex": "32000D0386"
+    },
+    {
+        "work-id": "6dd48565-5d26-11f0-a9d0-01aa75ed71a1",
+        "celex": "32025R1272"
+    },
+    {
+        "work-id": "729658b6-5580-11e7-a5ca-01aa75ed71a1",
+        "celex": "32011D0850R(01)"
+    },
+    {
+        "work-id": "7f4f0732-ca02-4659-9eeb-e580f041c3b0",
+        "celex": "31976D0754"
+    },
+    {
+        "work-id": "b29df4d8-1754-11eb-b57e-01aa75ed71a1",
+        "celex": "32020D1556"
+    },
+    {
+        "work-id": "cfcf0d23-255b-11f0-ac85-01aa75ed71a1",
+        "celex": "32022L2380R(01)"
+    },
+    {
+        "work-id": "c7bcb74a-d506-4dbc-84af-a8101700a733",
+        "celex": "31972R2351"
+    },
+    {
+        "work-id": "d640d985-11af-414d-ae05-3133505296ce",
+        "celex": "32006D0873"
+    },
+    {
+        "work-id": "30a8d49c-6eca-11e8-9483-01aa75ed71a1",
+        "celex": "32018D0613(01)"
+    },
+    {
+        "work-id": "c1ea5f0a-7c68-11ef-bbbe-01aa75ed71a1",
+        "celex": "32024R2499"
+    },
+    {
+        "work-id": "c2282472-ce52-4234-9e8f-5698a6e7988c",
+        "celex": "31988D0240"
+    },
+    {
+        "work-id": "25901953-4548-11e4-a0cb-01aa75ed71a1",
+        "celex": "32008D0615R(02)"
+    },
+    {
+        "work-id": "425d8a75-435c-11ea-b81b-01aa75ed71a1",
+        "celex": "32020R0126"
+    },
+    {
+        "work-id": "af235b8b-26ed-11f0-8a44-01aa75ed71a1",
+        "celex": "32025D0819"
+    },
+    {
+        "work-id": "6d716ff6-a062-41d9-a8c8-35cc79361002",
+        "celex": "32003R0876"
+    },
+    {
+        "work-id": "f1a31a8f-f0d2-11ed-a05c-01aa75ed71a1",
+        "celex": "32023M11089"
+    },
+    {
+        "work-id": "25ee7467-617a-40cc-ae5b-5a7074b315ed",
+        "celex": "32010R0320"
+    },
+    {
+        "work-id": "c63e047e-9bdf-11ef-a130-01aa75ed71a1",
+        "celex": "32023R0516R(02)"
+    },
+    {
+        "work-id": "8bfc8b3b-6757-11e9-9f05-01aa75ed71a1",
+        "celex": "32019R0649"
+    },
+    {
+        "work-id": "5b301bbf-bb4b-41e8-8391-11ec9aef71b5",
+        "celex": "31998M1117"
+    },
+    {
+        "work-id": "c2ef6490-9393-479d-ae88-855ab750bf35",
+        "celex": "32000D0749"
+    },
+    {
+        "work-id": "19513d9d-d5dc-11ee-b9d9-01aa75ed71a1",
+        "celex": "32024R0573R(01)"
+    },
+    {
+        "work-id": "dc0c4a64-8385-11e5-b8b7-01aa75ed71a1",
+        "celex": "32015R1978"
+    },
+    {
+        "work-id": "af501aa5-403c-11eb-b27b-01aa75ed71a1",
+        "celex": "32020D2126"
+    },
+    {
+        "work-id": "47e26105-dff0-11e3-8cd4-01aa75ed71a1",
+        "celex": "32014R0510"
+    },
+    {
+        "work-id": "00a4ef6f-ae51-4e6e-b520-b6ffd5db5012",
+        "celex": "32006D0957"
+    },
+    {
+        "work-id": "80eb0878-33a1-11eb-b27b-01aa75ed71a1",
+        "celex": "32020D1808"
+    },
+    {
+        "work-id": "88d0c237-fb4f-11e7-b8f5-01aa75ed71a1",
+        "celex": "32018R0070"
+    },
+    {
+        "work-id": "653a0157-0ea2-45db-ad27-a97dc32c785f",
+        "celex": "32001D0371"
+    },
+    {
+        "work-id": "901b6d9a-1dc7-11e2-91ce-01aa75ed71a1",
+        "celex": "32012D0656"
+    },
+    {
+        "work-id": "96500dbb-8339-11e3-9b7d-01aa75ed71a1",
+        "celex": "32014R0042R(01)"
+    },
+    {
+        "work-id": "7b2399bc-c7ff-11ea-adf7-01aa75ed71a1",
+        "celex": "32018R0273R(02)"
+    },
+    {
+        "work-id": "62a044cd-02a3-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1141R(01)"
+    },
+    {
+        "work-id": "7a07a7a8-6a87-47fa-b98a-7d4532b7233d",
+        "celex": "32009M5487"
+    },
+    {
+        "work-id": "77699a9f-ee73-11e9-a32c-01aa75ed71a1",
+        "celex": "32009L0030R(05)"
+    },
+    {
+        "work-id": "08b6e647-8423-11ee-99ba-01aa75ed71a1",
+        "celex": "32023R2497"
+    },
+    {
+        "work-id": "41e0d30a-e0ef-4d55-85ce-7b6b6e41ae46",
+        "celex": "32001D0118R(02)"
+    },
+    {
+        "work-id": "a2ce51bd-6a57-11e9-9f05-01aa75ed71a1",
+        "celex": "32019D0009"
+    },
+    {
+        "work-id": "16416674-7212-11e4-b593-01aa75ed71a1",
+        "celex": "32014R1209"
+    },
+    {
+        "work-id": "300ae99d-facb-11ed-a05c-01aa75ed71a1",
+        "celex": "32023R1021"
+    },
+    {
+        "work-id": "6f5a3246-a148-11e9-9d01-01aa75ed71a1",
+        "celex": "32019D1167"
+    },
+    {
+        "work-id": "aca24ed9-bab0-11ea-811c-01aa75ed71a1",
+        "celex": "32020R0893"
+    },
+    {
+        "work-id": "44ac0d3c-2aee-11e9-8d04-01aa75ed71a1",
+        "celex": "32018M9067"
+    },
+    {
+        "work-id": "c4af72c1-12d4-11e9-81b4-01aa75ed71a1",
+        "celex": "32014L0023R(05)"
+    },
+    {
+        "work-id": "139613dc-22ec-46a3-a7d6-c176d767c2ae",
+        "celex": "31996D0729"
+    },
+    {
+        "work-id": "a82000cd-3ed2-11e2-b7ce-01aa75ed71a1",
+        "celex": "32012D0747"
+    },
+    {
+        "work-id": "a30edda0-e074-11ea-ad25-01aa75ed71a1",
+        "celex": "32020R1054R(02)"
+    },
+    {
+        "work-id": "16802186-cbe9-4320-b2b1-774df88e02da",
+        "celex": "32003D0665"
+    },
+    {
+        "work-id": "7e8efd0d-051a-11ea-8c1f-01aa75ed71a1",
+        "celex": "32019D1893"
+    },
+    {
+        "work-id": "d7e7eb59-de0c-4a7e-9eee-ad1cb8f1cea6",
+        "celex": "32010D0005(01)"
+    },
+    {
+        "work-id": "eb4a3d0a-ec15-11e9-9c4e-01aa75ed71a1",
+        "celex": "32019R0787R(01)"
+    },
+    {
+        "work-id": "84ab9599-5841-11ee-9220-01aa75ed71a1",
+        "celex": "32023R1669R(01)"
+    },
+    {
+        "work-id": "c7371314-c952-11ed-a05c-01aa75ed71a1",
+        "celex": "32016R1237R(04)"
+    },
+    {
+        "work-id": "60a1db18-4962-4eb6-9cf5-95285c43865b",
+        "celex": "32007D0428"
+    },
+    {
+        "work-id": "0deb2a02-3d21-11e7-a08e-01aa75ed71a1",
+        "celex": "32017R0693R(01)"
+    },
+    {
+        "work-id": "bb8b8cb4-b9fa-11ec-b6f4-01aa75ed71a1",
+        "celex": "32022D0611"
+    },
+    {
+        "work-id": "a7be44a2-24dd-11ed-8fa0-01aa75ed71a1",
+        "celex": "32022R1423"
+    },
+    {
+        "work-id": "6b48f035-3e52-11e4-8c3c-01aa75ed71a1",
+        "celex": "32014R0871"
+    },
+    {
+        "work-id": "84ce5b57-f398-45d9-8f2b-02a76a3fe2fa",
+        "celex": "31986D0281"
+    },
+    {
+        "work-id": "c5ba31ac-3b91-11e7-a08e-01aa75ed71a1",
+        "celex": "32017R0837"
+    },
+    {
+        "work-id": "6b1a041d-3052-11ea-af81-01aa75ed71a1",
+        "celex": "32019R1387R(02)"
+    },
+    {
+        "work-id": "7b8b62e2-301b-11e4-8c3c-01aa75ed71a1",
+        "celex": "32014D0495"
+    },
+    {
+        "work-id": "dc13294e-80c2-439e-bdc7-7454eb886c32",
+        "celex": "31986L0655"
+    },
+    {
+        "work-id": "06dcbf9f-7ad2-46d4-971b-65c0743351c2",
+        "celex": "31979R2342"
+    },
+    {
+        "work-id": "613a1c26-2dcb-11e9-8d04-01aa75ed71a1",
+        "celex": "32019D0241"
+    },
+    {
+        "work-id": "68b23c56-f527-4b56-8c5d-0c1842ab79de",
+        "celex": "32005R1139R(01)"
+    },
+    {
+        "work-id": "6c830a5a-7ecc-11ef-a67d-01aa75ed71a1",
+        "celex": "32024D2566"
+    },
+    {
+        "work-id": "b0e82c96-1720-4b13-a8c8-daac12ff0073",
+        "celex": "31995Y0705(03)"
+    },
+    {
+        "work-id": "454453b4-d65c-4acb-9db9-e859beb4f431",
+        "celex": "32006M4161"
+    },
+    {
+        "work-id": "0235a6e7-3c67-11ea-ba6e-01aa75ed71a1",
+        "celex": "32020D0048"
+    },
+    {
+        "work-id": "a20ae147-b379-11ed-8912-01aa75ed71a1",
+        "celex": "32023D0408"
+    },
+    {
+        "work-id": "cd6c13ca-799f-4e90-8892-2e8866f81298",
+        "celex": "32010D0284"
+    },
+    {
+        "work-id": "595797ea-ab29-4a54-9188-5ed1113dea96",
+        "celex": "32003M3142"
+    },
+    {
+        "work-id": "abe83a70-ee0f-11e3-8cd4-01aa75ed71a1",
+        "celex": "32014D0554"
+    },
+    {
+        "work-id": "6a87b14f-faf4-11e5-b713-01aa75ed71a1",
+        "celex": "32016R0524"
+    },
+    {
+        "work-id": "ef87bb66-a15b-4985-9e9f-0ae6c8d1b817",
+        "celex": "31996R1735"
+    },
+    {
+        "work-id": "0c508672-5303-11e6-89bd-01aa75ed71a1",
+        "celex": "32016R1192"
+    },
+    {
+        "work-id": "9d306173-5623-40ed-8a1d-2eb9f9008b05",
+        "celex": "32014M7380"
+    },
+    {
+        "work-id": "4d1b2964-edd7-11ec-a534-01aa75ed71a1",
+        "celex": "32022D0911"
+    },
+    {
+        "work-id": "9ddbcc4f-7e2a-4987-9429-5ffc600b165f",
+        "celex": "32011R1016"
+    },
+    {
+        "work-id": "5586ef6b-b4d0-415d-aa79-78a77d3b2271",
+        "celex": "31998D0667"
+    },
+    {
+        "work-id": "d5e4dfdc-e1d8-11e5-8a50-01aa75ed71a1",
+        "celex": "32016D0286"
+    },
+    {
+        "work-id": "ecc0e8bb-2543-11e5-a342-01aa75ed71a1",
+        "celex": "32011D0886R(01)"
+    },
+    {
+        "work-id": "2b12c383-4748-11ec-91ac-01aa75ed71a1",
+        "celex": "32021D1997"
+    },
+    {
+        "work-id": "68e017bb-1edc-4f7a-8f35-2f1b31f92f1b",
+        "celex": "32008R0923"
+    },
+    {
+        "work-id": "5743af16-e569-413b-9b88-7d35886a625c",
+        "celex": "32007D0392"
+    },
+    {
+        "work-id": "008ad66c-584a-4551-97ed-98f6d46946cb",
+        "celex": "32011D0089"
+    },
+    {
+        "work-id": "c80bf6dd-31a2-4981-aadc-7c7262417a0f",
+        "celex": "32009D0746"
+    },
+    {
+        "work-id": "3d560cf4-9489-11e8-8bc1-01aa75ed71a1",
+        "celex": "32018D1082"
+    },
+    {
+        "work-id": "3968f4ac-31c2-11ee-946a-01aa75ed71a1",
+        "celex": "32022R1629R(02)"
+    },
+    {
+        "work-id": "ef409ce8-c82b-11eb-a925-01aa75ed71a1",
+        "celex": "32021D0919"
+    },
+    {
+        "work-id": "acea5b9d-cbbd-11ec-b6f4-01aa75ed71a1",
+        "celex": "32022M10707"
+    },
+    {
+        "work-id": "2964d6bd-c884-11e4-bbe1-01aa75ed71a1",
+        "celex": "32015R0403"
+    },
+    {
+        "work-id": "17cd5d0e-05c7-11ef-a251-01aa75ed71a1",
+        "celex": "32024R1028"
+    },
+    {
+        "work-id": "d80446fe-0660-11ee-b12e-01aa75ed71a1",
+        "celex": "32023R1115"
+    },
+    {
+        "work-id": "085f8ae5-068b-4dd2-8040-d2fde669a2ec",
+        "celex": "31998D0276"
+    },
+    {
+        "work-id": "aee94a52-7f8f-11ef-a67d-01aa75ed71a1",
+        "celex": "32024D2549"
+    },
+    {
+        "work-id": "09e1a702-55dc-11e9-a8ed-01aa75ed71a1",
+        "celex": "32018R1832R(02)"
+    },
+    {
+        "work-id": "5bc69de1-dde1-49eb-ab28-2cb5259dfefb",
+        "celex": "32010R0410"
+    },
+    {
+        "work-id": "48c9d019-9561-11e5-983e-01aa75ed71a1",
+        "celex": "32015R2196"
+    },
+    {
+        "work-id": "68b3a30d-6b7b-11e4-9680-01aa75ed71a1",
+        "celex": "32014D0786"
+    },
+    {
+        "work-id": "056dfe3b-5b3b-11e4-8ccf-01aa75ed71a1",
+        "celex": "32014R1130"
+    },
+    {
+        "work-id": "14e9f01f-8a13-11ec-8c40-01aa75ed71a1",
+        "celex": "32020R1641R(01)"
+    },
+    {
+        "work-id": "6289b2d0-6a08-11e2-9294-01aa75ed71a1",
+        "celex": "32011D0638R(02)"
+    },
+    {
+        "work-id": "7499a8b0-3259-4425-ab46-c23bfc9f715c",
+        "celex": "31982D0951"
+    },
+    {
+        "work-id": "e93dcda2-4ecb-11e9-a8ed-01aa75ed71a1",
+        "celex": "32018D2048R(01)"
+    },
+    {
+        "work-id": "94cab297-6d6f-11e9-9f05-01aa75ed71a1",
+        "celex": "32009D0770R(01)"
+    },
+    {
+        "work-id": "33ab2388-6e1b-11ee-9220-01aa75ed71a1",
+        "celex": "32023D2221"
+    },
+    {
+        "work-id": "ebd0ffba-e5aa-4cc9-9484-12977ab4dc43",
+        "celex": "32006D0681"
+    },
+    {
+        "work-id": "f5ead021-750c-11e2-9294-01aa75ed71a1",
+        "celex": "32012D0827R(01)"
+    }
+]
