@@ -1,2 +1,95 @@
+# -------------------------------
+# Python
+# -------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Pytest / Coverage
+.cache
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------------
+# OS-specific junk files
+# -------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+# -------------------------------
+# Project-specific ignores
+# -------------------------------
+
+# Node.js
 node_modules/
 .next/
+
+# Environment files
+*.env
+backend/.env
+
+# ChromaDB data
+backend/data_ingestion/chroma/
+
+# Large raw zip file
+backend/data_ingestion/raw/eu/eurlex-download/LEG_EN_HTML_20250721_04_08.zip
+backend/data_ingestion/raw/eu/eurlex-download/LEG_MTD_20250709_22_36.zip
