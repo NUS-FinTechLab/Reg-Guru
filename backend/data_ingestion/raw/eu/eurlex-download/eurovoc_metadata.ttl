@@ -1,0 +1,1052 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix lime: <http://www.w3.org/ns/lemon/lime#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix mdr: <http://semanticturkey.uniroma2.it/ns/mdr>
+# check and fill this prefix
+@prefix cat: <http://place.here.the.dcat.catalog.info> .
+
+# DCAT-3 SECTION
+# This part is a preamble using DCAT-3 information, which is then linked to VoID/Lime descriptors
+
+# the catalog info should actually be contained...in the catalog, wherever this is
+cat:catalog	dcat:record		cat:record_eurovoc-abs,
+							cat:record_eurovoc-20250207,		
+cat:record_agv-abs
+	a		 				dcat:CatalogRecord ;
+	foaf:primaryTopic		cat:dataset_eurovoc-abs ;
+	dcterms:issued 			"2025-02-07"^^xsd:date ;
+	dcterms:conformsTo		<https://www.w3.org/TR/vocab-dcat/> ;
+	prov:wasGeneratedBy  	creation-activity_record-eurovoc-abs-rec .
+	
+cat:record_eurovoc-20250207
+	a		 				dcat:CatalogRecord ;
+	foaf:primaryTopic		cat:dataset_eurovoc-20250207 ;
+	dcterms:issued 			"2025-02-07"^^xsd:date ;
+	dcterms:conformsTo		<https://www.w3.org/TR/vocab-dcat/> ;
+	prov:wasGeneratedBy  	creation-activity_record-eurovoc-20250207-rec .
+	
+	
+cat:creation-activity_eurovoc-abs-rec
+	rdf:type 				prov:Activity ;
+	prov:startedAtTime 		"2025-02-07T13:54:00Z"^^xsd:dateTime ;
+	prov:wasAttributedTo	<http://art.uniroma2.it/stellato> ;
+	prov:generated			cat:record_eurovoc-abs .
+
+cat:creation-activity_record-eurovoc-20250207-rec
+	rdf:type 				prov:Activity ;
+	prov:startedAtTime 		"2025-02-07T13:54:00Z"^^xsd:dateTime ;
+	prov:wasAttributedTo	<http://art.uniroma2.it/stellato> ;
+	prov:generated			cat:record_eurovoc-20250207 .
+
+
+# EuroVoc's DCAT Abstract Dataset description
+
+cat:dataset_eurovoc-abs
+	rdf:type dcat:Dataset, mdr:DatasetAbstraction ;
+	dcterms:title "EuroVoc";
+	rdfs:label "EuroVoc";
+	dcterms:description "EuroVoc is a multilingual, multidisciplinary thesaurus covering the activities of the EU";
+	foaf:homepage <https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/eurovoc>;
+	dcterms:creator <http://publications.europa.eu/resource/authority/corporate-body/PUBL>;
+	dcterms:publisher <http://publications.europa.eu/resource/authority/corporate-body/PUBL>;	
+	dct:created  "1982"^^xsd:gYear ;
+	# pls check the license!
+	dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+	dcat:landingPage <https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/eurovoc> ;
+	# isReferencedBy <...> ;
+	# dct:subject <http://dbpedia.org/resource/...> , <http://dbpedia.org/resource/...> ;
+	void:uriSpace "http://eurovoc.europa.eu/" ;
+	dcat:currentVersion	:dataset_agv-20250402;
+
+
+# EuroVoc's DCAT Dataset Version
+cat:dataset_eurovoc-20250207
+	rdf:type dcat:Dataset, mdr:DatasetVersion ; # as we move all RDF details to distribs, maybe this class is not needed 
+	dcterms:title "EuroVoc 4.21"^^xsd:string ;
+	dcat:distribution :eurovoc-dump-skos-ap_4.21, :eurovoc-dump-skos-ap-act_4.21, :eurovoc-dump-xml_4.21, <http://eurovoc.europa.eu/void.ttl#EuroVoc_4.21> .
+
+# EuroVoc's distribution files and their associated distribution schemes
+
+:eurovoc-dump-skos-ap_4.21 a dcat:Distribution ;
+	dcat:downloadURL 						<https://op.europa.eu/o/opportal-service/euvoc-download-handler?cellarURI=http%3A%2F%2Fpublications.europa.eu%2Fresource%2Fdistribution%2Feurovoc%2F20250207-0%2Fzip%2Fskos_xl%2Feurovoc_skos.zip&fileName=eurovoc_skos.zip> ;
+	dcat:mediaType <https://www.iana.org/assignments/media-types/application/rdf+xml> ;  
+	mdr:distributionScheme	<https://op.europa.eu/distrScheme/SKOS_distScheme> ;
+	dcat:compressFormat 					<http://www.iana.org/assignments/media-types/application/zip> .
+
+:eurovoc-dump-skos-ap-act_4.21 a dcat:Distribution ;
+	dcat:downloadURL <https://op.europa.eu/o/opportal-service/euvoc-download-handler?cellarURI=http%3A%2F%2Fpublications.europa.eu%2Fresource%2Fdistribution%2Feurovoc%2F20250207-0%2Fzip%2Fskos_ap_eu%2Feurovoc_skos_ap.zip&fileName=eurovoc_skos_ap.zip> ;
+	dcat:mediaType <https://www.iana.org/assignments/media-types/application/rdf+xml> ;  
+	mdr:distributionScheme	<https://op.europa.eu/distrScheme/SKOS-AP-ACT> ;
+	dcat:compressFormat <http://www.iana.org/assignments/media-types/application/zip> .
+
+:eurovoc-dump-xml_4.21 a dcat:Distribution ;
+	dcat:downloadURL <https://op.europa.eu/o/opportal-service/euvoc-download-handler?cellarURI=http%3A%2F%2Fpublications.europa.eu%2Fresource%2Fdistribution%2Feurovoc%2F20250207-0%2Fzip%2Feurovoc_dtd%2Feurovoc_xml.zip&fileName=eurovoc_xml.zip> ;
+	dcat:mediaType <https://www.iana.org/assignments/media-types/application/xml> ;  
+	mdr:distributionScheme	<https://op.europa.eu/distrScheme/XML> ;
+	dcat:compressFormat <http://www.iana.org/assignments/media-types/application/zip> .
+
+
+# Publications Office Distribution Schemes. These should actually be on their own URLs, not here
+
+<https://op.europa.eu/distrScheme/SKOS_distScheme>  a mdr:DistributionScheme ;
+	rdfs:comment "The base RDF version of the dataset with the core set of elements. This is the version of the dataset that it should be used in most cases." .
+
+<https://op.europa.eu/distrScheme/SKOS-AP-ACT_distScheme>  a mdr:DistributionScheme ;
+	rdfs:comment "The complete RDF version of the dataset containing complementary data including editorial info (e.g. dates when a concept was submitted, accepted and created), SKOS-XL notations of the labels, etc. This is a version that can be useful for reference purposes in cases where the full set of information about the concepts are needed." .
+	
+<https://op.europa.eu/distrScheme/XML_distScheme>  a mdr:DistributionScheme ;
+	rdfs:comment "An XML structured version of the information found also in the SKOS core version" .
+
+
+	dcat:accessService :lod_agv-20250402 ;
+	dcat:accessService <https://agrovoc.fao.org/showvoc/> .
+
+
+
+# Publications Office Services
+
+:europa-showvoc
+	a 								dcat:DataService, st:SemanticTurkeyInstance ;
+	dcterms:type 					st:ShowVocInstance ;
+	dcterms:conformsTo 				st:semantic-turkey_api ;  
+	dcterms:title 					"ShowVoc installation at the Publications Office of the EU"@en ;
+	dcterms:description 			"ShowVoc installation at the Publications Office of the EU"@en ;
+	dcat:endpointURL 				<https://showvoc.op.europa.eu/> .
+
+
+:depl_europa-showvoc_eurovoc-4.21
+	a 							mdr:Deployment, st:SemanticTurkeyProject ;
+	mdr:deployedDistribution  	<http://eurovoc.europa.eu/void.ttl#EuroVoc_4.21> ;
+	dcat:accessService 			:europa-showvoc ;
+	st:project					:europa-showvoc#OP_EuroVoc ;
+	prov:generatedAtTime   		"2025-05-07T01:52:02Z"^^xsd:dateTime .
+	# prov:wasGeneratedBy 			... .
+	
+
+
+# VOID DESCRIPTORS
+# This part contains the VoID/Lime descriptors, properly linked to DCAT information in the previous section
+
+<http://eurovoc.europa.eu/void.ttl> a void:DatasetDescription;
+  foaf:primaryTopic <http://eurovoc.europa.eu/void.ttl#EuroVoc> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_4.21> a dcat:Distribution, void:Dataset;
+  mdr:deployment 		:depl_europa-showvoc_eurovoc-4.21 ;
+  void:triples 4211719;
+  void:distinctSubjects 472321;
+  void:distinctObjects 956233;
+  dcterms:conformsTo <http://www.w3.org/2004/02/skos/core>;
+  mdr:distributionScheme	<https://op.europa.eu/distrScheme/SKOS_distScheme> ;
+  void:entities 7615;
+  void:classPartition _:165cf92f1abb4bcc839622f052ddfe8590, _:165cf92f1abb4bcc839622f052ddfe8591,
+    _:165cf92f1abb4bcc839622f052ddfe8592;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_de_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_it_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_da_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_sr_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_bg_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_sv_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_hr_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_mk_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_sk_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_pl_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_el_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_ga_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_es_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_en_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_ro_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_lv_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_nl_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_cs_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_fi_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_sl_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_mt_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_lt_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_pt_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_et_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_fr_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_hu_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_sq_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_bs_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_no_lexicalization_set>, <http://eurovoc.europa.eu/void.ttl#EuroVoc_tr_lexicalization_set>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_c2f12a78-6935-46f2-a7a1-8c0773e45162_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_36bd6da4-8df9-4d80-aa66-39944872fb01_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_217fdd8d-d143-4181-a2f8-7bd815afbbf7_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_8198eb7c-3887-49ef-827a-8504ee362280_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_dba0c280-36e6-42a0-b4c1-dae7bee49d3d_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_7308aa2d-9116-4b0a-9f99-b9fd318bd14e_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_244c6ebf-8b3e-4b1a-920c-39ef855f121e_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_6e0b2472-b7c8-4174-8b03-79aae17fe3b2_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_4339652c-8ca3-4da7-b6dc-b9cdc68a9864_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_309550c4-b055-4f3e-b256-b355a57296ba_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_73d6c103-e7cd-4f47-abff-fc28cb8afd6b_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_6a2b652f-0af8-4c2d-ac30-22838108b940_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_3a801871-c0a5-43f5-b416-c4368837e481_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#ac1ef4ae-a6e0-4681-bc88-7c78a85bec38_3a801871-c0a5-43f5-b416-c4368837e481_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_7f1aad7e-4082-4cec-a4f2-72ed4c5f4268_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_bf8bac5d-cd1a-4873-8e48-875ad3a01373_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_309550c4-b055-4f3e-b256-b355a57296ba_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_08f4c6d2-3b9e-4a56-b81a-97034c761c3f_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_3738f471-5fb7-499a-a5e2-eed548371ea3_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_3a801871-c0a5-43f5-b416-c4368837e481_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_41a7f180-787c-4b18-83c3-a9923e2b837c_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_c74eddbf-79fb-4c58-9192-5091ac269e7b_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_dd2fddf8-148a-418d-a927-7e24c8c5d69a_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_5ce580c8-10d1-43f5-9daa-b15573cc69ce_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_217fdd8d-d143-4181-a2f8-7bd815afbbf7_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_c2f12a78-6935-46f2-a7a1-8c0773e45162_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_9a79782a-c583-4c54-8e8b-926ba2bbc03a_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_ed770289-1674-4d58-abe8-c6375af80d52_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_4469fefa-47bf-4255-b9d8-d20d5c7a8b6e_linkset>;
+  dcterms:title "EuroVoc";
+  rdfs:label "EuroVoc";
+  dcterms:description "EuroVoc is a multilingual, multidisciplinary thesaurus covering the activities of the EU";
+  foaf:homepage <https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/eurovoc>;
+  dcterms:creator <http://publications.europa.eu/resource/authority/corporate-body/PUBL>;
+  dcterms:publisher <http://publications.europa.eu/resource/authority/corporate-body/PUBL>;
+  dcterms:issued "2025-02-07"^^xsd:date;
+  dcterms:modified "2025-02-07"^^xsd:date;
+  void:dataDump <https://op.europa.eu/o/opportal-service/euvoc-download-handler?cellarURI=http%3A%2F%2Fpublications.europa.eu%2Fresource%2Fdistribution%2Feurovoc%2F20250207-0%2Fzip%2Fskos_ap_eu%2Feurovoc_skos_ap.zip&fileName=eurovoc_skos_ap.zip>;
+  void:uriSpace "http://eurovoc.europa.eu/" .
+
+_:165cf92f1abb4bcc839622f052ddfe8590 void:class <http://www.w3.org/2004/02/skos/core#Concept>;
+  void:entities 7486 .
+
+_:165cf92f1abb4bcc839622f052ddfe8591 void:class <http://www.w3.org/2004/02/skos/core#Collection>;
+  void:entities 0 .
+
+_:165cf92f1abb4bcc839622f052ddfe8592 void:class <http://www.w3.org/2004/02/skos/core#ConceptScheme>;
+  void:entities 129 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_de_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 18368;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.413;
+  lime:percentage 1.0;
+  lime:language "de";
+  dcterms:language <http://lexvo.org/id/iso639-3/deu>, <http://id.loc.gov/vocabulary/iso639-1/de> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_it_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 19466;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.557;
+  lime:percentage 1.0;
+  lime:language "it";
+  dcterms:language <http://lexvo.org/id/iso639-3/ita>, <http://id.loc.gov/vocabulary/iso639-1/it> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_da_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 16542;
+  lime:references 7612;
+  lime:avgNumOfLexicalizations 2.173;
+  lime:percentage 1.0;
+  lime:language "da";
+  dcterms:language <http://lexvo.org/id/iso639-3/dan>, <http://id.loc.gov/vocabulary/iso639-1/da> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_sr_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 8696;
+  lime:references 7092;
+  lime:avgNumOfLexicalizations 1.142;
+  lime:percentage 0.932;
+  lime:language "sr";
+  dcterms:language <http://lexvo.org/id/iso639-3/srp>, <http://id.loc.gov/vocabulary/iso639-1/sr> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_bg_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 10413;
+  lime:references 7576;
+  lime:avgNumOfLexicalizations 1.368;
+  lime:percentage 0.995;
+  lime:language "bg";
+  dcterms:language <http://lexvo.org/id/iso639-3/bul>, <http://id.loc.gov/vocabulary/iso639-1/bg> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_sv_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 16206;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.129;
+  lime:percentage 1.0;
+  lime:language "sv";
+  dcterms:language <http://lexvo.org/id/iso639-3/swe>, <http://id.loc.gov/vocabulary/iso639-1/sv> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_hr_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 15832;
+  lime:references 7595;
+  lime:avgNumOfLexicalizations 2.08;
+  lime:percentage 0.998;
+  lime:language "hr";
+  dcterms:language <http://lexvo.org/id/iso639-3/hrv>, <http://id.loc.gov/vocabulary/iso639-1/hr> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_mk_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 19563;
+  lime:references 7304;
+  lime:avgNumOfLexicalizations 2.57;
+  lime:percentage 0.96;
+  lime:language "mk";
+  dcterms:language <http://lexvo.org/id/iso639-3/mkd>, <http://id.loc.gov/vocabulary/iso639-1/mk> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_sk_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 15671;
+  lime:references 7605;
+  lime:avgNumOfLexicalizations 2.058;
+  lime:percentage 0.999;
+  lime:language "sk";
+  dcterms:language <http://lexvo.org/id/iso639-3/slk>, <http://id.loc.gov/vocabulary/iso639-1/sk> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_pl_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 10404;
+  lime:references 7595;
+  lime:avgNumOfLexicalizations 1.367;
+  lime:percentage 0.998;
+  lime:language "pl";
+  dcterms:language <http://lexvo.org/id/iso639-3/pol>, <http://id.loc.gov/vocabulary/iso639-1/pl> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_el_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 16876;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.217;
+  lime:percentage 1.0;
+  lime:language "el";
+  dcterms:language <http://lexvo.org/id/iso639-3/ell>, <http://id.loc.gov/vocabulary/iso639-1/el> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_ga_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 8811;
+  lime:references 7571;
+  lime:avgNumOfLexicalizations 1.158;
+  lime:percentage 0.995;
+  lime:language "ga";
+  dcterms:language <http://lexvo.org/id/iso639-3/gle>, <http://id.loc.gov/vocabulary/iso639-1/ga> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_es_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 17602;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.312;
+  lime:percentage 1.0;
+  lime:language "es";
+  dcterms:language <http://lexvo.org/id/iso639-3/spa>, <http://id.loc.gov/vocabulary/iso639-1/es> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_en_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 17441;
+  lime:references 7615;
+  lime:avgNumOfLexicalizations 2.291;
+  lime:percentage 1.0;
+  lime:language "en";
+  dcterms:language <http://lexvo.org/id/iso639-3/eng>, <http://id.loc.gov/vocabulary/iso639-1/en> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_ro_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 14798;
+  lime:references 7595;
+  lime:avgNumOfLexicalizations 1.944;
+  lime:percentage 0.998;
+  lime:language "ro";
+  dcterms:language <http://lexvo.org/id/iso639-3/ron>, <http://id.loc.gov/vocabulary/iso639-1/ro> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_lv_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 15807;
+  lime:references 7595;
+  lime:avgNumOfLexicalizations 2.076;
+  lime:percentage 0.998;
+  lime:language "lv";
+  dcterms:language <http://lexvo.org/id/iso639-3/lav>, <http://id.loc.gov/vocabulary/iso639-1/lv> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_nl_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 16963;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.228;
+  lime:percentage 1.0;
+  lime:language "nl";
+  dcterms:language <http://lexvo.org/id/iso639-3/nld>, <http://id.loc.gov/vocabulary/iso639-1/nl> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_cs_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 22737;
+  lime:references 7605;
+  lime:avgNumOfLexicalizations 2.986;
+  lime:percentage 0.999;
+  lime:language "cs";
+  dcterms:language <http://lexvo.org/id/iso639-3/ces>, <http://id.loc.gov/vocabulary/iso639-1/cs> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_fi_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 15754;
+  lime:references 7612;
+  lime:avgNumOfLexicalizations 2.069;
+  lime:percentage 1.0;
+  lime:language "fi";
+  dcterms:language <http://lexvo.org/id/iso639-3/fin>, <http://id.loc.gov/vocabulary/iso639-1/fi> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_sl_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 10423;
+  lime:references 7604;
+  lime:avgNumOfLexicalizations 1.369;
+  lime:percentage 0.999;
+  lime:language "sl";
+  dcterms:language <http://lexvo.org/id/iso639-3/slv>, <http://id.loc.gov/vocabulary/iso639-1/sl> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_mt_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 10223;
+  lime:references 7565;
+  lime:avgNumOfLexicalizations 1.343;
+  lime:percentage 0.994;
+  lime:language "mt";
+  dcterms:language <http://lexvo.org/id/iso639-3/mlt>, <http://id.loc.gov/vocabulary/iso639-1/mt> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_lt_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 17108;
+  lime:references 7605;
+  lime:avgNumOfLexicalizations 2.247;
+  lime:percentage 0.999;
+  lime:language "lt";
+  dcterms:language <http://lexvo.org/id/iso639-3/lit>, <http://id.loc.gov/vocabulary/iso639-1/lt> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_pt_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 16780;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.204;
+  lime:percentage 1.0;
+  lime:language "pt";
+  dcterms:language <http://lexvo.org/id/iso639-3/por>, <http://id.loc.gov/vocabulary/iso639-1/pt> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_et_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 15541;
+  lime:references 7573;
+  lime:avgNumOfLexicalizations 2.041;
+  lime:percentage 0.995;
+  lime:language "et";
+  dcterms:language <http://lexvo.org/id/iso639-3/est>, <http://id.loc.gov/vocabulary/iso639-1/et> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_fr_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 16986;
+  lime:references 7613;
+  lime:avgNumOfLexicalizations 2.231;
+  lime:percentage 1.0;
+  lime:language "fr";
+  dcterms:language <http://lexvo.org/id/iso639-3/fra>, <http://id.loc.gov/vocabulary/iso639-1/fr> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_hu_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 18463;
+  lime:references 7605;
+  lime:avgNumOfLexicalizations 2.425;
+  lime:percentage 0.999;
+  lime:language "hu";
+  dcterms:language <http://lexvo.org/id/iso639-3/hun>, <http://id.loc.gov/vocabulary/iso639-1/hu> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_sq_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 14405;
+  lime:references 7156;
+  lime:avgNumOfLexicalizations 1.892;
+  lime:percentage 0.94;
+  lime:language "sq";
+  dcterms:language <http://lexvo.org/id/iso639-3/sqi>, <http://id.loc.gov/vocabulary/iso639-1/sq> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_bs_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 2;
+  lime:references 1;
+  lime:avgNumOfLexicalizations 0.001;
+  lime:percentage 0.001;
+  lime:language "bs";
+  dcterms:language <http://lexvo.org/id/iso639-3/bos>, <http://id.loc.gov/vocabulary/iso639-1/bs> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_no_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 8;
+  lime:references 8;
+  lime:avgNumOfLexicalizations 0.002;
+  lime:percentage 0.002;
+  lime:language "no";
+  dcterms:language <http://lexvo.org/id/iso639-3/nor>, <http://id.loc.gov/vocabulary/iso639-1/no> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_tr_lexicalization_set> a lime:LexicalizationSet;
+  lime:lexicalizationModel <http://www.w3.org/2008/05/skos-xl>;
+  lime:referenceDataset <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  lime:lexicalizations 2;
+  lime:references 2;
+  lime:avgNumOfLexicalizations 0.001;
+  lime:percentage 0.001;
+  lime:language "tr";
+  dcterms:language <http://lexvo.org/id/iso639-3/tur>, <http://id.loc.gov/vocabulary/iso639-1/tr> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_c2f12a78-6935-46f2-a7a1-8c0773e45162_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#c2f12a78-6935-46f2-a7a1-8c0773e45162>;
+  void:triples 116;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_c2f12a78-6935-46f2-a7a1-8c0773e45162_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_c2f12a78-6935-46f2-a7a1-8c0773e45162_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_c2f12a78-6935-46f2-a7a1-8c0773e45162_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#c2f12a78-6935-46f2-a7a1-8c0773e45162>;
+  void:triples 2035 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_c2f12a78-6935-46f2-a7a1-8c0773e45162_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#c2f12a78-6935-46f2-a7a1-8c0773e45162>;
+  void:triples 1919;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_36bd6da4-8df9-4d80-aa66-39944872fb01_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#36bd6da4-8df9-4d80-aa66-39944872fb01>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_36bd6da4-8df9-4d80-aa66-39944872fb01_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_36bd6da4-8df9-4d80-aa66-39944872fb01_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_36bd6da4-8df9-4d80-aa66-39944872fb01_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#36bd6da4-8df9-4d80-aa66-39944872fb01>;
+  void:triples 2 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_36bd6da4-8df9-4d80-aa66-39944872fb01_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#36bd6da4-8df9-4d80-aa66-39944872fb01>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_217fdd8d-d143-4181-a2f8-7bd815afbbf7_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#217fdd8d-d143-4181-a2f8-7bd815afbbf7>;
+  void:triples 9;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_217fdd8d-d143-4181-a2f8-7bd815afbbf7_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_217fdd8d-d143-4181-a2f8-7bd815afbbf7_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_217fdd8d-d143-4181-a2f8-7bd815afbbf7_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#217fdd8d-d143-4181-a2f8-7bd815afbbf7>;
+  void:triples 10 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_217fdd8d-d143-4181-a2f8-7bd815afbbf7_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#217fdd8d-d143-4181-a2f8-7bd815afbbf7>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#ac1ef4ae-a6e0-4681-bc88-7c78a85bec38_3a801871-c0a5-43f5-b416-c4368837e481_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#ac1ef4ae-a6e0-4681-bc88-7c78a85bec38>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#3a801871-c0a5-43f5-b416-c4368837e481>;
+  void:triples 3;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_7f1aad7e-4082-4cec-a4f2-72ed4c5f4268_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#7f1aad7e-4082-4cec-a4f2-72ed4c5f4268>;
+  void:triples 246;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_bf8bac5d-cd1a-4873-8e48-875ad3a01373_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#bf8bac5d-cd1a-4873-8e48-875ad3a01373>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_309550c4-b055-4f3e-b256-b355a57296ba_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#309550c4-b055-4f3e-b256-b355a57296ba>;
+  void:triples 3;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_08f4c6d2-3b9e-4a56-b81a-97034c761c3f_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#08f4c6d2-3b9e-4a56-b81a-97034c761c3f>;
+  void:triples 11;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_8198eb7c-3887-49ef-827a-8504ee362280_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#8198eb7c-3887-49ef-827a-8504ee362280>;
+  void:triples 3;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_8198eb7c-3887-49ef-827a-8504ee362280_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_8198eb7c-3887-49ef-827a-8504ee362280_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_8198eb7c-3887-49ef-827a-8504ee362280_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#8198eb7c-3887-49ef-827a-8504ee362280>;
+  void:triples 1368 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_8198eb7c-3887-49ef-827a-8504ee362280_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#8198eb7c-3887-49ef-827a-8504ee362280>;
+  void:triples 1365;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_3738f471-5fb7-499a-a5e2-eed548371ea3_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#3738f471-5fb7-499a-a5e2-eed548371ea3>;
+  void:triples 4;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#a8b8321f-bcde-4b1f-9612-9551b7d61cbe>;
+  void:triples 2276;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#a8b8321f-bcde-4b1f-9612-9551b7d61cbe>;
+  void:triples 2647 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#a8b8321f-bcde-4b1f-9612-9551b7d61cbe>;
+  void:triples 371;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_3a801871-c0a5-43f5-b416-c4368837e481_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#3a801871-c0a5-43f5-b416-c4368837e481>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_dba0c280-36e6-42a0-b4c1-dae7bee49d3d_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#dba0c280-36e6-42a0-b4c1-dae7bee49d3d>;
+  void:triples 1904;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_dba0c280-36e6-42a0-b4c1-dae7bee49d3d_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_dba0c280-36e6-42a0-b4c1-dae7bee49d3d_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_dba0c280-36e6-42a0-b4c1-dae7bee49d3d_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#dba0c280-36e6-42a0-b4c1-dae7bee49d3d>;
+  void:triples 2003 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_dba0c280-36e6-42a0-b4c1-dae7bee49d3d_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#dba0c280-36e6-42a0-b4c1-dae7bee49d3d>;
+  void:triples 99;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_7308aa2d-9116-4b0a-9f99-b9fd318bd14e_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#7308aa2d-9116-4b0a-9f99-b9fd318bd14e>;
+  void:triples 196;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_7308aa2d-9116-4b0a-9f99-b9fd318bd14e_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_7308aa2d-9116-4b0a-9f99-b9fd318bd14e_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_7308aa2d-9116-4b0a-9f99-b9fd318bd14e_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#7308aa2d-9116-4b0a-9f99-b9fd318bd14e>;
+  void:triples 215 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_7308aa2d-9116-4b0a-9f99-b9fd318bd14e_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#7308aa2d-9116-4b0a-9f99-b9fd318bd14e>;
+  void:triples 19;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#0b95f953-0e21-42b4-87cf-7ed14ac1aa82>;
+  void:triples 2;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_41a7f180-787c-4b18-83c3-a9923e2b837c_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#41a7f180-787c-4b18-83c3-a9923e2b837c>;
+  void:triples 6;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_244c6ebf-8b3e-4b1a-920c-39ef855f121e_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#244c6ebf-8b3e-4b1a-920c-39ef855f121e>;
+  void:triples 2379;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_244c6ebf-8b3e-4b1a-920c-39ef855f121e_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_244c6ebf-8b3e-4b1a-920c-39ef855f121e_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_244c6ebf-8b3e-4b1a-920c-39ef855f121e_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#244c6ebf-8b3e-4b1a-920c-39ef855f121e>;
+  void:triples 2790 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_244c6ebf-8b3e-4b1a-920c-39ef855f121e_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#244c6ebf-8b3e-4b1a-920c-39ef855f121e>;
+  void:triples 411;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_c74eddbf-79fb-4c58-9192-5091ac269e7b_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#c74eddbf-79fb-4c58-9192-5091ac269e7b>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_6e0b2472-b7c8-4174-8b03-79aae17fe3b2_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#6e0b2472-b7c8-4174-8b03-79aae17fe3b2>;
+  void:triples 26;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_6e0b2472-b7c8-4174-8b03-79aae17fe3b2_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_6e0b2472-b7c8-4174-8b03-79aae17fe3b2_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_6e0b2472-b7c8-4174-8b03-79aae17fe3b2_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#6e0b2472-b7c8-4174-8b03-79aae17fe3b2>;
+  void:triples 75 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_6e0b2472-b7c8-4174-8b03-79aae17fe3b2_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#6e0b2472-b7c8-4174-8b03-79aae17fe3b2>;
+  void:triples 49;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_4339652c-8ca3-4da7-b6dc-b9cdc68a9864_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#4339652c-8ca3-4da7-b6dc-b9cdc68a9864>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_4339652c-8ca3-4da7-b6dc-b9cdc68a9864_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_4339652c-8ca3-4da7-b6dc-b9cdc68a9864_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_4339652c-8ca3-4da7-b6dc-b9cdc68a9864_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#4339652c-8ca3-4da7-b6dc-b9cdc68a9864>;
+  void:triples 9 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_4339652c-8ca3-4da7-b6dc-b9cdc68a9864_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#4339652c-8ca3-4da7-b6dc-b9cdc68a9864>;
+  void:triples 8;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_dd2fddf8-148a-418d-a927-7e24c8c5d69a_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#dd2fddf8-148a-418d-a927-7e24c8c5d69a>;
+  void:triples 8;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_5ce580c8-10d1-43f5-9daa-b15573cc69ce_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#5ce580c8-10d1-43f5-9daa-b15573cc69ce>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_217fdd8d-d143-4181-a2f8-7bd815afbbf7_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#217fdd8d-d143-4181-a2f8-7bd815afbbf7>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_c2f12a78-6935-46f2-a7a1-8c0773e45162_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#c2f12a78-6935-46f2-a7a1-8c0773e45162>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_9a79782a-c583-4c54-8e8b-926ba2bbc03a_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#9a79782a-c583-4c54-8e8b-926ba2bbc03a>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_309550c4-b055-4f3e-b256-b355a57296ba_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#309550c4-b055-4f3e-b256-b355a57296ba>;
+  void:triples 39;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_309550c4-b055-4f3e-b256-b355a57296ba_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_309550c4-b055-4f3e-b256-b355a57296ba_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_309550c4-b055-4f3e-b256-b355a57296ba_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#309550c4-b055-4f3e-b256-b355a57296ba>;
+  void:triples 294 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_309550c4-b055-4f3e-b256-b355a57296ba_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#309550c4-b055-4f3e-b256-b355a57296ba>;
+  void:triples 255;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_73d6c103-e7cd-4f47-abff-fc28cb8afd6b_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#73d6c103-e7cd-4f47-abff-fc28cb8afd6b>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_73d6c103-e7cd-4f47-abff-fc28cb8afd6b_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_73d6c103-e7cd-4f47-abff-fc28cb8afd6b_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_73d6c103-e7cd-4f47-abff-fc28cb8afd6b_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#73d6c103-e7cd-4f47-abff-fc28cb8afd6b>;
+  void:triples 3 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_73d6c103-e7cd-4f47-abff-fc28cb8afd6b_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#73d6c103-e7cd-4f47-abff-fc28cb8afd6b>;
+  void:triples 2;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8_a8b8321f-bcde-4b1f-9612-9551b7d61cbe_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#a8b8321f-bcde-4b1f-9612-9551b7d61cbe>;
+  void:triples 1;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_ed770289-1674-4d58-abe8-c6375af80d52_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#ed770289-1674-4d58-abe8-c6375af80d52>;
+  void:triples 8;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#0b95f953-0e21-42b4-87cf-7ed14ac1aa82>;
+  void:triples 1779;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_exactMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_closeMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#0b95f953-0e21-42b4-87cf-7ed14ac1aa82>;
+  void:triples 1809 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_0b95f953-0e21-42b4-87cf-7ed14ac1aa82_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#0b95f953-0e21-42b4-87cf-7ed14ac1aa82>;
+  void:triples 30;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_6a2b652f-0af8-4c2d-ac30-22838108b940_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#6a2b652f-0af8-4c2d-ac30-22838108b940>;
+  void:triples 7;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_6a2b652f-0af8-4c2d-ac30-22838108b940_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_6a2b652f-0af8-4c2d-ac30-22838108b940_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_6a2b652f-0af8-4c2d-ac30-22838108b940_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#6a2b652f-0af8-4c2d-ac30-22838108b940>;
+  void:triples 10 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_6a2b652f-0af8-4c2d-ac30-22838108b940_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#6a2b652f-0af8-4c2d-ac30-22838108b940>;
+  void:triples 3;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_3a801871-c0a5-43f5-b416-c4368837e481_closeMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#3a801871-c0a5-43f5-b416-c4368837e481>;
+  void:triples 381;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_3a801871-c0a5-43f5-b416-c4368837e481_linkset>
+  a void:Linkset;
+  void:subset <http://eurovoc.europa.eu/void.ttl#EuroVoc_3a801871-c0a5-43f5-b416-c4368837e481_closeMatch_linkset>,
+    <http://eurovoc.europa.eu/void.ttl#EuroVoc_3a801871-c0a5-43f5-b416-c4368837e481_exactMatch_linkset>;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#3a801871-c0a5-43f5-b416-c4368837e481>;
+  void:triples 3998 .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_3a801871-c0a5-43f5-b416-c4368837e481_exactMatch_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#3a801871-c0a5-43f5-b416-c4368837e481>;
+  void:triples 3617;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#exactMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#EuroVoc_4469fefa-47bf-4255-b9d8-d20d5c7a8b6e_linkset>
+  a void:Linkset;
+  void:subjectsTarget <http://eurovoc.europa.eu/void.ttl#EuroVoc>;
+  void:objectsTarget <http://eurovoc.europa.eu/void.ttl#4469fefa-47bf-4255-b9d8-d20d5c7a8b6e>;
+  void:triples 3050;
+  void:linkPredicate <http://www.w3.org/2004/02/skos/core#closeMatch> .
+
+<http://eurovoc.europa.eu/void.ttl#6e0b2472-b7c8-4174-8b03-79aae17fe3b2> a void:Dataset;
+  void:uriSpace "http://eige.europa.eu/taxonomy/term/" .
+
+<http://eurovoc.europa.eu/void.ttl#6a2b652f-0af8-4c2d-ac30-22838108b940> a void:Dataset;
+  void:uriSpace "https://catalogue.bnf.fr/ark:/12148/" .
+
+<http://eurovoc.europa.eu/void.ttl#36bd6da4-8df9-4d80-aa66-39944872fb01> a void:Dataset;
+  void:uriSpace "http://agrovoc.uniroma2.it/agrovoc/agrovoc/en/page/" .
+
+<http://eurovoc.europa.eu/void.ttl#8198eb7c-3887-49ef-827a-8504ee362280> a void:Dataset;
+  void:uriSpace "http://vocabularies.unesco.org/thesaurus/" .
+
+<http://eurovoc.europa.eu/void.ttl#9a79782a-c583-4c54-8e8b-926ba2bbc03a> a void:Dataset;
+  void:uriSpace "http://vocabularies.unesco.org/browser/thesaurus/" .
+
+<http://eurovoc.europa.eu/void.ttl#244c6ebf-8b3e-4b1a-920c-39ef855f121e> a void:Dataset;
+  void:uriSpace "http://metadata.un.org/thesaurus/" .
+
+<http://eurovoc.europa.eu/void.ttl#dd2fddf8-148a-418d-a927-7e24c8c5d69a> a void:Dataset;
+  void:uriSpace "http://data.uba.de/umt/" .
+
+<http://eurovoc.europa.eu/void.ttl#ac1ef4ae-a6e0-4681-bc88-7c78a85bec38> a void:Dataset;
+  void:uriSpace "itm:n#" .
+
+<http://eurovoc.europa.eu/void.ttl#ed770289-1674-4d58-abe8-c6375af80d52> a void:Dataset;
+  void:uriSpace "http://inspire.ec.europa.eu/featureconcept/" .
+
+<http://eurovoc.europa.eu/void.ttl#a8b8321f-bcde-4b1f-9612-9551b7d61cbe> a void:Dataset;
+  void:uriSpace "http://zbw.eu/stw/descriptor/" .
+
+<http://eurovoc.europa.eu/void.ttl#3a801871-c0a5-43f5-b416-c4368837e481> a void:Dataset;
+  void:uriSpace "http://data.europa.eu/bkc/" .
+
+<http://eurovoc.europa.eu/void.ttl#5ce580c8-10d1-43f5-9daa-b15573cc69ce> a void:Dataset;
+  void:uriSpace "http://data.europa.eu/esco/isco/" .
+
+<http://eurovoc.europa.eu/void.ttl#309550c4-b055-4f3e-b256-b355a57296ba> a void:Dataset;
+  void:uriSpace "http://catalogue.bnf.fr/ark:/12148/" .
+
+<http://eurovoc.europa.eu/void.ttl#73d6c103-e7cd-4f47-abff-fc28cb8afd6b> a void:Dataset;
+  void:uriSpace "http://lod.gesis.org/thesoz/" .
+
+<http://eurovoc.europa.eu/void.ttl#41a7f180-787c-4b18-83c3-a9923e2b837c> a void:Dataset;
+  void:uriSpace "http://inspire.ec.europa.eu/theme/" .
+
+<http://eurovoc.europa.eu/void.ttl#3738f471-5fb7-499a-a5e2-eed548371ea3> a void:Dataset;
+  void:uriSpace "http://sns.uba.de/umthes/" .
+
+<http://eurovoc.europa.eu/void.ttl#c2f12a78-6935-46f2-a7a1-8c0773e45162> a void:Dataset;
+  void:uriSpace "http://www.eionet.europa.eu/gemet/concept/" .
+
+<http://eurovoc.europa.eu/void.ttl#7f1aad7e-4082-4cec-a4f2-72ed4c5f4268> a void:Dataset;
+  void:uriSpace "http://publications.europa.eu/resource/authority/country/" .
+
+<http://eurovoc.europa.eu/void.ttl#7308aa2d-9116-4b0a-9f99-b9fd318bd14e> a void:Dataset;
+  void:uriSpace "http://d-nb.info/gnd/" .
+
+<http://eurovoc.europa.eu/void.ttl#dba0c280-36e6-42a0-b4c1-dae7bee49d3d> a void:Dataset;
+  void:uriSpace "http://id.loc.gov/authorities/subjects/" .
+
+<http://eurovoc.europa.eu/void.ttl#4469fefa-47bf-4255-b9d8-d20d5c7a8b6e> a void:Dataset;
+  void:uriSpace "http://www.wikidata.org/entity/" .
+
+<http://eurovoc.europa.eu/void.ttl#0b95f953-0e21-42b4-87cf-7ed14ac1aa82> a void:Dataset;
+  void:uriSpace "http://aims.fao.org/aos/agrovoc/" .
+
+<http://eurovoc.europa.eu/void.ttl#eccc5683-bfa3-4ebe-a902-718f169d77b8> a void:Dataset;
+  void:uriSpace "http://eurovoc.europa.eu/" .
+
+<http://eurovoc.europa.eu/void.ttl#4339652c-8ca3-4da7-b6dc-b9cdc68a9864> a void:Dataset;
+  void:uriSpace "http://data.bnf.fr/ark:/12148/" .
+
+<http://eurovoc.europa.eu/void.ttl#08f4c6d2-3b9e-4a56-b81a-97034c761c3f> a void:Dataset;
+  void:uriSpace "https://sns.uba.de/umthes/" .
+
+<http://eurovoc.europa.eu/void.ttl#bf8bac5d-cd1a-4873-8e48-875ad3a01373> a void:Dataset;
+  void:uriSpace "http://data.europa.eu/esco/occupation/" .
+
+<http://eurovoc.europa.eu/void.ttl#c74eddbf-79fb-4c58-9192-5091ac269e7b> a void:Dataset;
+  void:uriSpace "http://aims.fao.org/aos/biotechglossary/" .
+
+<http://eurovoc.europa.eu/void.ttl#217fdd8d-d143-4181-a2f8-7bd815afbbf7> a void:Dataset;
+  void:uriSpace "http://id.nlm.nih.gov/mesh/" .
