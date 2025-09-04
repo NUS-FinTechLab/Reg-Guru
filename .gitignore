@@ -88,7 +88,12 @@ node_modules/
 backend/.env
 
 # ChromaDB data
-backend/data_ingestion/chroma/
+backend/data_ingestion/chroma/eu/*
+backend/data_ingestion/chroma/sg/*
+backend/data_ingestion/chroma/us/*
+!backend/data_ingestion/chroma/eu/.gitkeep
+!backend/data_ingestion/chroma/sg/.gitkeep
+!backend/data_ingestion/chroma/us/.gitkeep
 
 # Large raw zip file
 backend/data_ingestion/raw/eu/eurlex-download/LEG_EN_HTML_20250721_04_08.zip
