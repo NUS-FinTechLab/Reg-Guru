@@ -4,6 +4,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -98,3 +99,10 @@ backend/data_ingestion/chroma/us/*
 # Large raw zip file
 backend/data_ingestion/raw/eu/eurlex-download/LEG_EN_HTML_20250721_04_08.zip
 backend/data_ingestion/raw/eu/eurlex-download/LEG_MTD_20250709_22_36.zip
+
+# MAS
+/backend/MAS/downloads
+/backend/MAS/2e9b6224-eb46-4bf3-8374-97bf89333861
+/backend/MAS/venv
+/backend/MAS/chroma.sqlite3
+/backend/MAS/.idea
