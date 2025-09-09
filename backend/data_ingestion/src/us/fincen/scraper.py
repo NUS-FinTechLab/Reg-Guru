@@ -61,6 +61,7 @@ class FincenScraper:
         # Create destination directory if it doesn't exist
         os.makedirs(DESTINATION_DIR, exist_ok=True)
         
+        downloaded_files = []
         for pdfLink in pdfLinks:
             print(f"Found PDF link: {pdfLink}")
             # Extract filename from URL
@@ -72,4 +73,6 @@ class FincenScraper:
             # Create full destination path
             dest_path = os.path.join(DESTINATION_DIR, filename)
             downloadPdf(pdfLink, dest_path)
+            downloaded_files.append(dest_path)
         
+        return downloaded_files

@@ -8,6 +8,7 @@ sys.path.insert(0, src_dir)
 
 from common.pipeline_base import IngestionPipeline
 from scraper import FincenScraper
+from process import process_fincen_data
 
 class FincenPipeline(IngestionPipeline):
     """FinCEN-specific pipeline implementation."""
@@ -22,13 +23,8 @@ class FincenPipeline(IngestionPipeline):
     
     def process(self, raw_data):
         """Convert raw data into structured docs (list of dicts)."""
-        # For now, return the raw data as a simple document structure
-        docs = [{
-            "content": raw_data,
-            "source": "fincen_advisories",
-            "type": "html"
-        }]
-        return docs
+        processed_data = process_fincen_data(raw_data)
+        return processed_data
     
     def embed(self, docs):
         """Embed documents into Chroma or other vector DB."""
