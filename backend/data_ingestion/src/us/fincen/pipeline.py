@@ -23,7 +23,6 @@ class FincenPipeline(IngestionPipeline):
     def process(self, raw_data):
         """Convert raw data into structured docs (list of dicts)."""
         # For now, return the raw data as a simple document structure
-        # This can be expanded later to parse the scraped HTML content
         docs = [{
             "content": raw_data,
             "source": "fincen_advisories",
@@ -33,7 +32,6 @@ class FincenPipeline(IngestionPipeline):
     
     def embed(self, docs):
         """Embed documents into Chroma or other vector DB."""
-        # Placeholder implementation - would integrate with vector DB
         print(f"Embedding {len(docs)} documents")
         for i, doc in enumerate(docs):
             print(f"Document {i+1}: {doc['source']} ({doc['type']})")
