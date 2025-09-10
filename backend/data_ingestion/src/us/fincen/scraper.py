@@ -29,6 +29,8 @@ class FincenScraper:
         advisoryLinks = set()
         current_url = self.advisoryUrl
 
+        i = 0
+        
         # Process all pages starting with the base URL
         while True:
             print(f"Scraping URL: {current_url}")
@@ -50,11 +52,13 @@ class FincenScraper:
             current_url = self.advisoryUrl + next_link['href']
             html = getHtml(current_url)
             soup = BeautifulSoup(html, 'html.parser')
+            if i == 0: break
             
         # Go into each advisory link and scrape the content
         pdfLinks = set()
         for link in advisoryLinks:
             pdfLinks.update(getPdfLinks(link))
+            if i == 0: break
             
         pdfLinks = [self.baseUrl + link if link.startswith('/') else link for link in pdfLinks]
             

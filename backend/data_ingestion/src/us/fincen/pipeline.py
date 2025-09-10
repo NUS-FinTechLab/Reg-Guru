@@ -7,11 +7,12 @@ src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
 from common.pipeline_base import IngestionPipeline
+from embedding import embed_into_chromadb
 from scraper import FincenScraper
 from process import process_fincen_data
 
 class FincenPipeline(IngestionPipeline):
-    """FinCEN-specific pipeline implementation."""
+    """FinCEN-specific pipeline implementation with FlagEmbedding support."""
     
     def __init__(self):
         self.scraper = FincenScraper()
@@ -28,10 +29,7 @@ class FincenPipeline(IngestionPipeline):
     
     def embed(self, docs):
         """Embed documents into Chroma or other vector DB."""
-        print(f"Embedding {len(docs)} documents")
-        for i, doc in enumerate(docs):
-            print(f"Document {i+1}: {doc['source']} ({doc['type']})")
-
+        embed_into_chromadb(docs)
 
 if __name__ == "__main__":
     pipeline = FincenPipeline()

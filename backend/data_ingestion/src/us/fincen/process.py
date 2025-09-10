@@ -1,4 +1,4 @@
-import os
+import pdfplumber
 
 def process_fincen_data(file_paths):
     """
@@ -10,18 +10,26 @@ def process_fincen_data(file_paths):
     Returns:
         list: List of processed data dictionaries, one for each PDF file
     """
+    print(file_paths)
     processed_docs = []
     
     for file_path in file_paths:
         # Extract filename for better identification
-        filename = os.path.basename(file_path)
+        if file_path.endswith(".pdf"):
+            chunks = []
+            metadata = []
+
+            with pdfplumber.open(file_path) as pdf:
+                for page_number, page in enumerate(pdf.pages, start=1):
+                    text = page.extract_text()
+                    if text:
+                        chunks.append(text)
+                        metadata.append({"page": f"Page {page_number}"})
         
         doc = {
-            "content": file_path,  # Store the file path as content for now
-            "source": "fincen",
-            "type": "pdf",
-            "filename": filename,
-            "file_path": file_path
+            "content": "\n".join(chunks),
+            "metadata": metadata,
+            "type": "fincen_advisory",
         }
         processed_docs.append(doc)
     
