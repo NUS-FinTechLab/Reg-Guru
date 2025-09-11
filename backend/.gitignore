@@ -1,5 +1,6 @@
 # Python venvs
 .venv/
+.venv-bgem3/
 venv/
 env/
 ENV/
