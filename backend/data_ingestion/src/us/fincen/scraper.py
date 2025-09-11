@@ -1,4 +1,3 @@
-import requests
 from bs4 import BeautifulSoup
 import sys
 import os
@@ -65,7 +64,7 @@ class FincenScraper:
         # Create destination directory if it doesn't exist
         os.makedirs(DESTINATION_DIR, exist_ok=True)
         
-        downloaded_files = []
+        downloaded_files = {}
         for pdfLink in pdfLinks:
             print(f"Found PDF link: {pdfLink}")
             # Extract filename from URL
