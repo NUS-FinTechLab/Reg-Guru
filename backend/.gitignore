@@ -1,0 +1,10 @@
+# Python venvs
+.venv/
+venv/
+env/
+ENV/
+
+# Python build/cache junk
+__pycache__/
+*.py[cod]
+*.egg-info/
