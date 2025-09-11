@@ -53,18 +53,40 @@ class FincenScraper:
             soup = BeautifulSoup(html, 'html.parser')
             if i == 0: break
             
+        files_information = []
+            
         # Go into each advisory link and scrape the content
         pdfLinks = set()
         for link in advisoryLinks:
-            pdfLinks.update(getPdfLinks(link))
-            if i == 0: break
+            html = getHtml(link)
+            soup = BeautifulSoup(html, 'html.parser')
             
+            # Get all PDF links on the page
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                if href.lower().endswith('.pdf'):
+                    pdfLinks.add(href)
+                    
+            # Get the metadata (year, title)
+            timeTag = soup.find("time")
+            
+            subjectField = soup.find("div", class_="field--name-field-advisory-subject")
+            items = subjectField.find_all("div", class_="field__item")
+            title = items[0].get_text(strip=True)
+            
+            print(timeTag, title)
+            files_information.append({
+                'url': link,
+                'year': timeTag.get_text(strip=True) if timeTag else 'N/A',
+                'title': title if title else 'N/A'
+            })
+
         pdfLinks = [self.baseUrl + link if link.startswith('/') else link for link in pdfLinks]
             
         # Create destination directory if it doesn't exist
         os.makedirs(DESTINATION_DIR, exist_ok=True)
         
-        downloaded_files = {}
+        downloaded_files = []
         for pdfLink in pdfLinks:
             print(f"Found PDF link: {pdfLink}")
             # Extract filename from URL
@@ -78,4 +100,4 @@ class FincenScraper:
             downloadPdf(pdfLink, dest_path)
             downloaded_files.append(dest_path)
         
-        return downloaded_files
+        return downloaded_files, files_information
