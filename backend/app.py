@@ -32,7 +32,7 @@ def options_handler(path):
     return response
 
 # Configuration
-VECTORSTORE_DIRECTORY = "Database"
+VECTORSTORE_DIRECTORY = "database"
 TEMP_DIR = "temp"
 QUERIES_FILE = "saved_queries.json"
 FEEDBACK_DB = "feedback_logs.csv"

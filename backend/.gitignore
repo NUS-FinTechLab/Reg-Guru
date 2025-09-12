@@ -9,3 +9,6 @@ ENV/
 __pycache__/
 *.py[cod]
 *.egg-info/
+
+# pdf files
+*.pdf

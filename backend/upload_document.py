@@ -6,12 +6,12 @@ from typing import List
 import os
 
 class DocumentUploader:
-    def __init__(self, vectorstore_directory: str = "Database"):
+    def __init__(self, vectorstore_directory: str = "database"):
         """
         Initialize DocumentUploader with the directory for the vector store.
         
         Args:
-            vectorstore_directory: Directory to store vector databases (default: "Database")
+            vectorstore_directory: Directory to store vector databases (default: "database")
         """
         self.vectorstore_directory = os.path.abspath(vectorstore_directory)
         os.makedirs(self.vectorstore_directory, exist_ok=True)
