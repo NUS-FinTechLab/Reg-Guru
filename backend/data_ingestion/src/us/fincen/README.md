@@ -18,6 +18,7 @@ This pipeline uses a dedicated virtual environment named `.venv-bgem3` with spec
 ### Setting up the Environment
 
 1. **Activate the existing environment**:
+
    ```bash
    source .venv-bgem3/bin/activate
    ```
@@ -41,32 +42,14 @@ This pipeline uses a dedicated virtual environment named `.venv-bgem3` with spec
 ## Usage
 
 1. **Activate the environment**:
+
    ```bash
    source .venv-bgem3/bin/activate
    ```
 
 2. **Run the pipeline**:
    ```python
-   from pipeline import FincenPipeline
-   
-   pipeline = FincenPipeline()
-   pipeline.ingest()
-   ```
-
-3. **Individual components**:
-   ```python
-   # Scraping
-   from scraper import FincenScraper
-   scraper = FincenScraper()
-   documents = scraper.scrape()
-   
-   # Processing
-   from process import process_fincen_data
-   processed_docs = process_fincen_data(documents)
-   
-   # Embedding
-   from embedding import embed_into_chromadb
-   embed_into_chromadb(processed_docs)
+   python3 pipeline.py
    ```
 
 ## Configuration
@@ -76,22 +59,26 @@ This pipeline uses a dedicated virtual environment named `.venv-bgem3` with spec
 - **Chunk Overlap**: 200 characters
 - **Embedding Model**: BGE-M3 (multilingual)
 
-## Hardware Requirements
+## Testing
 
-- **GPU**: Recommended for faster embedding generation (CUDA-compatible)
-- **Memory**: Minimum 8GB RAM, 16GB+ recommended for large document sets
-- **Storage**: Sufficient space for raw documents and vector database
+   ```python
+   chromadb_client = get_testing_chromadb_client('us', 'chromadb_fincen')
+   test_collection = chromadb_client.get_collection(name=FINCEN_COLLECTION_NAME)
+   query_texts=[
+      "Which chemical was classified as a substance of very high concern for its endocrine-disrupting effects under the EU Commission Implementing Decision 2019/1194?",
+      "On what date did EU Regulation 402/2010 become effective?"
+   ]
+
+   embedded_query = embed_batch(query_texts, batch_size=2)
+   results = test_collection.query(
+      query_embeddings=embedded_query,
+      n_results=1
+   )
+
+   print(results['documents'])
+    ```
 
 ## Notes for Developers
 
-- This environment is specifically tuned for BGE-M3 embeddings
-- GPU acceleration is enabled through CUDA packages
-- The pipeline integrates with the common embedding helper utilities
-- ChromaDB is used as the vector store backend
-- Documents are chunked with overlap to maintain context continuity
-
-## Troubleshooting
-
-- **CUDA Issues**: Ensure CUDA drivers are installed and compatible
-- **Memory Issues**: Reduce batch size in embedding operations
-- **Import Errors**: Verify the environment is activated and dependencies are installed
+- The venv is used because of a compatibility issue in BgeM3 embedding model since it's not supporting NumPy >= 2.
+```
