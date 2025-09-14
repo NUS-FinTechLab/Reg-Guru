@@ -3,13 +3,29 @@ import mimetypes
 import subprocess
 from bs4 import BeautifulSoup
 import os
+import sys
+import psycopg2
+from datetime import datetime
+from dotenv import load_dotenv
 
-def process_fincen_data(raw_data):
+# Load environment variables
+load_dotenv()
+
+# Add the parent directories to the Python path to resolve imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(current_dir, '..', '..')
+sys.path.insert(0, src_dir)
+
+from common.helper import feed_exists_pg, insert_feed_if_not_exists_pg
+
+def process_fincen_data(raw_data, db_path=None):
     """
     Process FinCEN file paths and return a list of dictionaries with structured information.
+    Note: Duplicate filtering is now handled in the scraper phase to avoid unnecessary downloads.
     
     Args:
         raw_data: Dictionary containing downloaded files and their information
+        db_path: Deprecated parameter (kept for compatibility)
         
     Returns:
         list: List of processed data dictionaries, one for each file
@@ -17,17 +33,36 @@ def process_fincen_data(raw_data):
     file_paths = raw_data.get('downloaded_files', [])
     files_information = raw_data.get('files_information', [])
     processed_docs = []
+    
+    # Set up database connection for recording processed documents
+    conn = None
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            dbname=os.getenv("DB_NAME")
+        )
+        print(f"Connected to PostgreSQL database for recording processed documents")
+    except Exception as e:
+        print(f"Warning: Could not connect to database: {str(e)}")
+    processed_count = 0
 
     for file_path, file_info in zip(file_paths, files_information):
         if not os.path.exists(file_path):
-            print(f"Warning: File {file_path} does not exist, skipping...")
             continue
+            
+        # Extract metadata
+        url = file_info.get('url', 'N/A')
+        title = file_info.get('title', 'N/A')
+        timestamp = file_info.get('timestamp', 'N/A')
             
         chunks = []
         metadata = {
-            "timestamp": file_info.get('timestamp', 'N/A'),
-            "title": file_info.get('title', 'N/A'),
-            "link": file_info.get('url', 'N/A')
+            "timestamp": timestamp,
+            "title": title,
+            "link": url
         }
 
         try:
@@ -43,7 +78,6 @@ def process_fincen_data(raw_data):
                 # Process as HTML/text file
                 chunks = process_html_file(file_path)
             else:
-                print(f"Warning: Unsupported file type {mime_type} for {file_path}, skipping...")
                 continue
                 
         except Exception as e:
@@ -59,6 +93,34 @@ def process_fincen_data(raw_data):
         print(doc)
         
         processed_docs.append(doc)
+        processed_count += 1
+        
+        # Record that we've processed this document (if database connection available)
+        if conn:
+            try:
+                # Create feed record: (id, url, timestamp, title, inserted_at)
+                current_time = datetime.now().isoformat()
+                # Generate a simple ID based on URL hash for consistency
+                doc_id = abs(hash(url)) % (10**8)  # Simple ID generation
+                feed_data = (doc_id, url, timestamp, title, current_time)
+                
+                was_inserted, row_id = insert_feed_if_not_exists_pg(conn, feed_data)
+                if was_inserted:
+                    print(f"Recorded document in database: {title}")
+                
+            except Exception as e:
+                print(f"Warning: Could not record document in database: {str(e)}")
+    
+    # Close database connection
+    if conn:
+        conn.close()
+    
+    # Print processing summary
+    total_docs = len(file_paths)
+    print(f"\n=== Processing Summary ===")
+    print(f"Total documents to process: {total_docs}")
+    print(f"Documents successfully processed: {processed_count}")
+    print(f"Documents failed to process: {total_docs - processed_count}")
     
     return processed_docs
 

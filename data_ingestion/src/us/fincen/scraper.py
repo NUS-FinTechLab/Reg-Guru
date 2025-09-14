@@ -5,13 +5,18 @@ from urllib.parse import urlparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import psycopg2
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
-from common.helper import downloadPdf, getHtml, getPdfLinks
+from common.helper import downloadPdf, getHtml, getPdfLinks, feed_exists_pg
 
 BASE_URL = "https://www.fincen.gov"
 ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"
@@ -23,6 +28,33 @@ class FincenScraper:
     def __init__(self):
         self.baseUrl = BASE_URL
         self.advisoryUrl = ADVISORY_URL
+        self.db_conn = None
+        self._setup_database_connection()
+    
+    def _setup_database_connection(self):
+        """Set up database connection using environment variables"""
+        try:
+            self.db_conn = psycopg2.connect(
+                host=os.getenv("DB_HOST"),
+                port=os.getenv("DB_PORT"),
+                user=os.getenv("DB_USER"),
+                password=os.getenv("DB_PASSWORD"),
+                dbname=os.getenv("DB_NAME")
+            )
+            print(f"Connected to PostgreSQL database for duplicate checking")
+        except Exception as e:
+            print(f"Warning: Could not connect to database: {str(e)}")
+            print("Proceeding without duplicate filtering...")
+    
+    def _is_document_processed(self, url, title):
+        """Check if document already exists in database"""
+        if not self.db_conn:
+            return False
+        try:
+            return feed_exists_pg(self.db_conn, url, title)
+        except Exception as e:
+            print(f"Warning: Error checking database: {str(e)}")
+            return False
     
     def datetime_to_timestamp(self, datetime_str):
         """Convert ISO datetime string to timestamp"""
@@ -44,15 +76,7 @@ class FincenScraper:
             html = getHtml(link)
             soup = BeautifulSoup(html, 'html.parser')
             
-            # Get only the first PDF link on the page
-            first_pdf_link = None
-            for a in soup.find_all('a', href=True):
-                href = a['href']
-                if href.lower().endswith('.pdf'):
-                    first_pdf_link = href
-                    break  # Only take the first PDF link found
-            
-            # Get the metadata (year, title)
+            # Get the metadata (year, title) first for duplicate checking
             timeTag = soup.find("time")
             
             subjectField = soup.find("div", class_="field--name-field-advisory-subject")
@@ -65,6 +89,19 @@ class FincenScraper:
             # Extract datetime attribute from time tag
             datetime_value = timeTag.get('datetime') if timeTag else None
             timestamp = self.datetime_to_timestamp(datetime_value)
+            
+            # Check if document already exists in database before processing PDF links
+            if self._is_document_processed(link, title):
+                print(f"Document already processed, skipping: {title}")
+                return None
+            
+            # Get only the first PDF link on the page
+            first_pdf_link = None
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                if href.lower().endswith('.pdf'):
+                    first_pdf_link = href
+                    break  # Only take the first PDF link found
             
             print(f"Processed: {datetime_value}, {title}, Timestamp: {timestamp}")
             
@@ -105,6 +142,15 @@ class FincenScraper:
         except Exception as e:
             print(f"Error downloading PDF {pdf_link}: {str(e)}")
             return None
+    
+    def close_connection(self):
+        """Close database connection"""
+        if self.db_conn:
+            try:
+                self.db_conn.close()
+                print("Database connection closed")
+            except Exception as e:
+                print(f"Error closing database connection: {str(e)}")
 
     def scrape(self, max_workers=10):
         """
@@ -116,7 +162,7 @@ class FincenScraper:
         
         advisoryLinks = set()
         current_url = self.advisoryUrl
-                
+
         # Process all pages starting with the base URL
         while True:
             print(f"Scraping URL: {current_url}")
@@ -146,6 +192,7 @@ class FincenScraper:
         
         files_information = []
         all_pdf_links = set()
+        filtered_count = 0
         
         # Process advisory links in parallel
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -160,7 +207,7 @@ class FincenScraper:
                 link = future_to_link[future]
                 try:
                     result = future.result()
-                    if result:
+                    if result:  # Only process non-None results (not filtered duplicates)
                         files_information.append({
                             'url': result['url'],
                             'timestamp': result['timestamp'],
@@ -168,10 +215,11 @@ class FincenScraper:
                         })
                         # Collect all PDF links for downloading
                         all_pdf_links.update(result['pdf_links'])
+                    else:
+                        filtered_count += 1  # Count filtered duplicates
                 except Exception as e:
                     print(f"Error processing {link}: {str(e)}")
         
-        print(f"Found {len(all_pdf_links)} PDF files to download")
         
         # Download PDFs in parallel
         downloaded_files = []
@@ -193,6 +241,16 @@ class FincenScraper:
                     print(f"Error downloading {pdf_link}: {str(e)}")
         
         print(f"Successfully downloaded {len(downloaded_files)} PDF files")
+        
+        # Close database connection
+        self.close_connection()
+        
+        # Print final summary
+        print(f"\n=== Scraping Summary ===")
+        print(f"Total advisories found: {len(advisoryLinks)}")
+        print(f"Duplicate documents filtered: {filtered_count}")
+        print(f"New documents to process: {len(files_information)}")
+        print(f"PDF files downloaded: {len(downloaded_files)}")
         
         # Combine downloaded files and files information into a single dictionary
         return {

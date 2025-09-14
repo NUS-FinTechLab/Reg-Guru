@@ -103,21 +103,6 @@ export function AppSidebar() {
                         </div>
                     </div>
                 </div>
-                <SidebarGroup>
-                    <SidebarGroupLabel>
-                        <div className={"w-full flex justify-between items-center"}>
-                            <p className={"font-mono uppercase "}>UPLOADED DOCUMENTS</p>
-                            <Link href={"/chat/history"}>
-                                <p className={" text-xs"}>See all</p>
-                            </Link>
-                        </div>
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent className={""}>
-                        <SidebarMenu>
-                            
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className={"absolute bottom-4"}>
                 <div className={"px-2"}>

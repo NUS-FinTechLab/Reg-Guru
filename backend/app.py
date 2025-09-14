@@ -6,7 +6,6 @@ import shutil
 import json
 from dotenv import load_dotenv
 from datetime import datetime
-from upload_document import DocumentUploader
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -37,34 +36,15 @@ TEMP_DIR = "temp"
 QUERIES_FILE = "saved_queries.json"
 FEEDBACK_DB = "feedback_logs.csv"
 BACKUP_DIR = "feedback_backups"
-DOCUMENTS_LIST_FILE = "uploaded_documents.json"
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize components
-uploader = DocumentUploader(vectorstore_directory=VECTORSTORE_DIRECTORY)
 llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
 embeddings = OpenAIEmbeddings()
 
 # Document tracking functions
-def load_uploaded_documents():
-    try:
-        with open(DOCUMENTS_LIST_FILE, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def save_uploaded_document(filename, file_hash):
-    documents = load_uploaded_documents()
-    documents.append({
-        "filename": filename,
-        "hash": file_hash,
-        "upload_time": datetime.now().isoformat()
-    })
-    with open(DOCUMENTS_LIST_FILE, 'w') as f:
-        json.dump(documents, f)
-
 def get_file_hash(file_path):
     with open(file_path, 'rb') as f:
         return md5(f.read()).hexdigest()
@@ -139,40 +119,6 @@ def cleanup_temp():
 atexit.register(cleanup_temp)
 
 # API Endpoints
-@app.route('/api/upload_document', methods=['POST'])
-def upload_document():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    file = request.files['file']
-    if not file.filename:
-        return jsonify({"error": "Empty file name"}), 400
-
-    try:
-        os.makedirs(TEMP_DIR, exist_ok=True)
-        temp_path = os.path.join(TEMP_DIR, file.filename)
-        file.save(temp_path)
-        
-        # Check for duplicates
-        current_hash = get_file_hash(temp_path)
-        existing_docs = load_uploaded_documents()
-        
-        if any(doc['hash'] == current_hash for doc in existing_docs):
-            os.remove(temp_path)
-            return jsonify({"error": "File already exists in database"}), 409
-        
-        # Process new file
-        uploader.upload_documents([temp_path])
-        save_uploaded_document(file.filename, current_hash)
-        os.remove(temp_path)
-        
-        return jsonify({
-            "message": "Document processed successfully",
-            "filename": file.filename
-        }), 200
-    except Exception as e:
-        return jsonify({"error": f"Document processing failed: {str(e)}"}), 500
-
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.json
@@ -231,10 +177,6 @@ def save_query():
 @app.route('/api/get_queries', methods=['GET'])
 def get_queries():
     return jsonify(load_queries()), 200
-
-@app.route('/api/get_documents', methods=['GET'])
-def get_documents():
-    return jsonify(load_uploaded_documents()), 200
 
 @app.route('/api/log_feedback', methods=['POST'])
 def log_feedback():

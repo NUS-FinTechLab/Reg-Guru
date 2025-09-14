@@ -16,7 +16,7 @@ class FincenPipeline(IngestionPipeline):
     
     def __init__(self):
         self.scraper = FincenScraper()
-    
+
     def ingest(self):
         """Download or read raw data using the scraper."""
         raw_data = self.scraper.scrape()
