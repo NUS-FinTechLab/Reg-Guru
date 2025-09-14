@@ -80,9 +80,9 @@ $RECYCLE.BIN/
 # Project-specific ignores
 # -------------------------------
 
-# Node.js
-node_modules/
-.next/
+# Node.js (frontend)
+frontend/node_modules/
+frontend/.next/
 
 # Environment files
 *.env
