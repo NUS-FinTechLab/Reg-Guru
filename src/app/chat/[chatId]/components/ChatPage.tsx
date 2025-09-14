@@ -20,7 +20,6 @@ interface Message {
 
 export default function ChatPage() {
     const { chatId } = useParams();
-    const [documentFile, setDocumentFile] = useState<any>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -181,7 +180,6 @@ export default function ChatPage() {
                 body: JSON.stringify({
                     question: input,
                     answer: data.response,
-                    document: documentFile?.name || "Current Document",
                 }),
             });
         } catch (error) {

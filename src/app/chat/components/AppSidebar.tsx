@@ -1,46 +1,14 @@
-import {ArrowRight, ArrowUp, Cog, CogIcon, FileText, Paperclip, Plus, Search} from "lucide-react"
+import { Cog, FileText, Paperclip, Plus, Search } from "lucide-react"
 
 import {
     Sidebar,
-    SidebarContent, SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel, SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+    SidebarContent, SidebarFooter, SidebarHeader,
 } from "@/components/ui/sidebar"
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, } from "@/components/ui/tooltip"
 import Image from "next/image";
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import {Input} from "@/components/ui/input";
-import {AnimatePresence, motion} from "framer-motion";
-
-// Menu items.
-const items = [
-    {
-        title: "Dummy Chat Message 1",
-        url: "",
-        icon: FileText,
-    },
-    {
-        title: "Dummy Chat Message 2",
-        url: "#",
-        icon: Paperclip,
-        time: "10 mins ago"
-    },
-    {
-        title: "Dummy Chat Message 3",
-        url: "#",
-        icon: Paperclip,
-    },
-    {
-        title: "Dummy Chat Message 4",
-        url: "#",
-        icon: Paperclip,
-    },
-]
+import { Input } from "@/components/ui/input";
 
 export function AppSidebar() {
     return (
@@ -69,7 +37,7 @@ export function AppSidebar() {
                                 <TooltipTrigger asChild>
                                     <Button asChild className={"cursor-pointer w-10 h-10 rounded-full  text-gray-400"} variant={"outline"}>
                                         <Link href={"/chat"}>
-                                            <Plus className={""}/>
+                                            <Plus className={""} />
                                         </Link>
                                     </Button>
                                 </TooltipTrigger>
@@ -89,17 +57,17 @@ export function AppSidebar() {
                                 placeholder="Search chats"
                                 className="pl-4 pr-12 py-5 max-w-lg w-full rounded-full"
                             />
-                                    <div
-                                        className="absolute right-1 top-1/2 transform -translate-y-1/2"
-                                    >
-                                        <Button
-                                            // onClick={handleSend}
-                                            size="icon"
-                                            className="h-8 w-8 rounded-full cursor-pointer "
-                                        >
-                                            <Search className="h-4 w-4"/>
-                                        </Button>
-                                    </div>
+                            <div
+                                className="absolute right-1 top-1/2 transform -translate-y-1/2"
+                            >
+                                <Button
+                                    // onClick={handleSend}
+                                    size="icon"
+                                    className="h-8 w-8 rounded-full cursor-pointer "
+                                >
+                                    <Search className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -108,7 +76,7 @@ export function AppSidebar() {
                 <div className={"px-2"}>
                     <Button asChild className={"cursor-pointer w-10 h-10 rounded-full  text-gray-400"} variant={"outline"}>
                         <Link href={"#"}>
-                            <Cog className={""}/>
+                            <Cog className={""} />
                         </Link>
                     </Button>
                 </div>
