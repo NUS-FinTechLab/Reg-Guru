@@ -1,5 +1,7 @@
 import os
 import psycopg2
+import psycopg2.extras
+
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -13,7 +15,8 @@ def db_execute(statement, params=None):
         password=os.getenv("DB_PASSWORD"),
         dbname=os.getenv("DB_NAME")
     )
-    cur = conn.cursor()
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if params:
         cur.execute(statement, params)
     else:
@@ -26,7 +29,6 @@ def db_execute(statement, params=None):
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Query executed.")
     return result
 
 query = [
@@ -84,8 +86,8 @@ query = [
         remark TEXT
         );"""
 ]
-for statement in query:
-    db_execute(query)
+# for statement in query:
+#     db_execute(query)
 
 if __name__ == "__main__":
     print("Initialise database.")
