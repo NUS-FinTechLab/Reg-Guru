@@ -5,18 +5,14 @@ from urllib.parse import urlparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
-import psycopg2
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
-from common.helper import downloadPdf, getHtml, getPdfLinks, feed_exists_pg
+from common.helper import downloadPdf, getHtml, getPdfLinks
+from common.base_scraper import BaseScraper
 
 BASE_URL = "https://www.fincen.gov"
 ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"
@@ -24,37 +20,11 @@ ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/
 # Global variable for destination directory
 DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'us', 'fincen')
 
-class FincenScraper:
+class FincenScraper(BaseScraper):
     def __init__(self):
+        super().__init__()  # Initialize the base class (database connection)
         self.baseUrl = BASE_URL
         self.advisoryUrl = ADVISORY_URL
-        self.db_conn = None
-        self._setup_database_connection()
-    
-    def _setup_database_connection(self):
-        """Set up database connection using environment variables"""
-        try:
-            self.db_conn = psycopg2.connect(
-                host=os.getenv("DB_HOST"),
-                port=os.getenv("DB_PORT"),
-                user=os.getenv("DB_USER"),
-                password=os.getenv("DB_PASSWORD"),
-                dbname=os.getenv("DB_NAME")
-            )
-            print(f"Connected to PostgreSQL database for duplicate checking")
-        except Exception as e:
-            print(f"Warning: Could not connect to database: {str(e)}")
-            print("Proceeding without duplicate filtering...")
-    
-    def _is_document_processed(self, url, title):
-        """Check if document already exists in database"""
-        if not self.db_conn:
-            return False
-        try:
-            return feed_exists_pg(self.db_conn, url, title)
-        except Exception as e:
-            print(f"Warning: Error checking database: {str(e)}")
-            return False
     
     def datetime_to_timestamp(self, datetime_str):
         """Convert ISO datetime string to timestamp"""
@@ -143,15 +113,6 @@ class FincenScraper:
             print(f"Error downloading PDF {pdf_link}: {str(e)}")
             return None
     
-    def close_connection(self):
-        """Close database connection"""
-        if self.db_conn:
-            try:
-                self.db_conn.close()
-                print("Database connection closed")
-            except Exception as e:
-                print(f"Error closing database connection: {str(e)}")
-
     def scrape(self, max_workers=10):
         """
         Scrape FinCEN advisories with parallel processing

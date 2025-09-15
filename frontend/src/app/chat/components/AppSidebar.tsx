@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 
 export function AppSidebar() {
     return (
-        <Sidebar variant={"floating"} className={""}>
+        <Sidebar variant={"floating"} className={"w-full max-w-sm"}>
             <SidebarHeader>
                 <div className={"my-2 px-2 flex justify-between items-center"} >
                     <div className="flex items-center gap-2">
