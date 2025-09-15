@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { User } from "lucide-react";
 
 interface Message {
@@ -35,15 +35,11 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
             </div>
           </div>
 
-          <AnimatePresence initial={false}>
-            {group.messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+          {group.messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+            >
                 <div className={`flex items-start gap-2 py-2 max-w-[90%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
                   {message.role === "bot" ? (
                     <div className="flex-shrink-0">
@@ -59,18 +55,17 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                       className={`p-3 rounded-2xl ${
                         message.role === "user"
                           ? "rounded-tr-none bg-[#f1f1f1] dark:bg-[#171717]"
-                          : "bg-[#F0F5FC] text-[#559BFE] dark:bg-gray-800 rounded-tl-none"
+                          : "bg-[#F0F5FC] text-black dark:text-white dark:bg-gray-800 rounded-tl-none"
                       }`}
                     >
-                      <div className="text-sm" dangerouslySetInnerHTML={{ __html: message.text }} />
-                      <span className="text-xs opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>
+                      <div dangerouslySetInnerHTML={{ __html: message.text }} />
+                      <span className="text-sm opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>
                     </div>
                     <div className={"py-2"}>{/* reserved for actions */}</div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
         </div>
       ))}
 

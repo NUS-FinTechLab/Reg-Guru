@@ -216,7 +216,7 @@ export default function ChatPage() {
     const messageGroups = groupMessagesByDate();
 
     return (
-        <main className="flex flex-col rounded-2xl container px-2 w-full h-screen">
+        <div className="flex flex-col rounded-2xl container px-2 w-full h-screen">
             {/* Header */}
             <ChatHeader isTyping={isTyping} />
             {/* Messages area */}
@@ -253,6 +253,6 @@ export default function ChatPage() {
 
             {/* Input area */}
             <ChatInput value={input} onChange={setInput} onSend={handleSend} inputRef={inputRef} />
-        </main>
+        </div>
     );
 }
