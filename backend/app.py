@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 import atexit
 from app.config import DEBUG, HOST, PORT, CORS_ORIGINS, CORS_METHODS, CORS_HEADERS
-from app.utils import initialize_directories, setup_scheduler, cleanup_temp
+from app.utils import initialize_directories, cleanup_temp
 from app.routes import api
 
 # Create Flask app
