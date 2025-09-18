@@ -30,12 +30,21 @@ class BaseScraper(ABC):
             print(f"Warning: Could not connect to database: {str(e)}")
             print("Proceeding without duplicate filtering...")
     
-    def _is_document_processed(self, url, title):
-        """Check if document already exists in database"""
+    def _is_document_processed(self, url, title, region='us'):
+        """Check if document already exists in database
+        
+        Args:
+            url: The document URL to check
+            title: The document title to check
+            region: The region code (us, sg, eu) to determine which feeds table to check
+            
+        Returns:
+            bool: True if document exists, False otherwise
+        """
         if not self.db_conn:
             return False
         try:
-            return feed_exists_pg(self.db_conn, url, title)
+            return feed_exists_pg(self.db_conn, url, title, region)
         except Exception as e:
             print(f"Warning: Error checking database: {str(e)}")
             return False

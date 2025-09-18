@@ -102,7 +102,7 @@ def process_sso_data(raw_data):
                 doc_id = abs(hash(url)) % (10**8)  # Simple ID generation
                 feed_data = (doc_id, url, None, title, current_time)  # timestamp is None for SSO
                 
-                was_inserted, row_id = insert_feed_if_not_exists_pg(conn, feed_data)
+                was_inserted, row_id = insert_feed_if_not_exists_pg(conn, feed_data, "sg")
                 if was_inserted:
                     print(f"Recorded document in database: {title}")
                 
@@ -131,6 +131,8 @@ def process_pdf_file(file_path):
                 text = page.extract_text()
                 if text:
                     chunks.append(text)
+
+            print(f"CHUNK: {chunks}")
     except Exception as e:
         print(f"Error processing PDF {file_path}: {str(e)}")
     return chunks

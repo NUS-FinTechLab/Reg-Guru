@@ -14,7 +14,7 @@ from common.helper import downloadPdf, getHtml, getPdfLinks
 from common.base_scraper import BaseScraper
 
 BASE_URL = "https://sso.agc.gov.sg"
-CURRENT_BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=20&SortBy=Title&SortOrder=ASC"
+CURRENT_BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
 
 # Global variable for destination directory
 DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'sg', 'sso')
@@ -41,7 +41,9 @@ class SsoScraper(BaseScraper):
             
             # Look for table rows containing document information
             # Target the structure: <tr> containing both title and PDF download link
-            rows = soup.find_all('tr', class_='')  # Empty class as shown in your example
+            empty_rows = soup.find_all('tr', class_='')
+            alternate_rows = soup.find_all('tr', class_='alternate')
+            rows = empty_rows + alternate_rows  # Combine both types of rows
             
             for row in rows:
                 try:
@@ -172,7 +174,7 @@ class SsoScraper(BaseScraper):
         # Add initial delay to respect robots.txt crawl-delay
         print("Initial delay before first request (6 seconds)...")
         time.sleep(6)
-        
+
         # Navigate through all pages to collect document information
         while current_url:
             try:
@@ -224,7 +226,7 @@ class SsoScraper(BaseScraper):
                 full_pdf_url = urljoin(self.base_url, pdf_href) if pdf_href.startswith('/') else pdf_href
 
                 # Check if document already exists in database
-                if self._is_document_processed(full_pdf_url, title):
+                if self._is_document_processed(full_pdf_url, title, region='sg'):
                     print(f"Document already processed, skipping: {title}")
                     filtered_count += 1
                     continue

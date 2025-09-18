@@ -135,7 +135,6 @@ export default function ChatPage() {
     const handleSend = async (input: string) => {
         if (!input.trim()) return;
 
-
         // Add user message
         const userMessage: Message = {
             id: Date.now(),
