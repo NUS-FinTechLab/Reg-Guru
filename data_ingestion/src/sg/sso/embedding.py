@@ -1,36 +1,61 @@
-import pdfplumber
 import os
-import chromadb
+import sys
 
-chroma_client = chromadb.PersistentClient(path="./")
-collection = chroma_client.get_or_create_collection(name="embeddings")
+# Add the parent directories to the Python path to resolve imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(current_dir, '..', '..')
+sys.path.insert(0, src_dir)
 
-def insert_into_chromadb(file_name, chunks, metadata):
-    collection.add(
-        documents=chunks,
-        metadatas=metadata,
-        ids=[f"{file_name}_page_{i + 1}" for i in range(len(chunks))],
-    )
+from common.embedding_helper import get_testing_chromadb_client, get_text_splitter, embed_batch, embed_texts
 
-pdf_dir = "downloads"
+# SSO-specific configuration
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 200
 
-# Loop through all PDF files in the directory
-for pdf_file in os.listdir(pdf_dir):
-    pdf_path = os.path.join(pdf_dir, pdf_file)
+def embed_into_chromadb(docs, collection_name="sg_embeddings"):
+    """Embed SSO documents into Chroma vector database."""
+    chroma_client = get_testing_chromadb_client('sg', 'chromadb_sg')
+    collection = chroma_client.get_or_create_collection(name=collection_name)
+    
+    # Split documents into chunks for better embedding
+    text_splitter = get_text_splitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
 
-    print(f"Processing {pdf_path}")
-
-    if pdf_file.endswith(".pdf"):
-        chunks = []
-        metadata = []
+    all_chunks = []
+    all_metadata = []
+    chunk_ids = []
+    
+    for i, doc in enumerate(docs):
+        content = doc.get('content', '')
+        if not content.strip():
+            continue
+            
+        # Split content into chunks for better embedding
+        chunks = text_splitter.split_text(content)
         
-        with pdfplumber.open(pdf_path) as pdf:
-            for page_number, page in enumerate(pdf.pages, start=1):
-                text = page.extract_text()
-                if text:
-                    chunks.append(text)
-                    metadata.append({"page": f"Page {page_number}"})
+        for j, chunk in enumerate(chunks):
+            if not chunk.strip():
+                continue
+            
+            all_chunks.append(chunk)
+            all_metadata.append(doc.get('metadata', {}))
+            chunk_ids.append((i, j))  # Store document and chunk indices
 
-        insert_into_chromadb(pdf_file, chunks, metadata)
-
-    print(f"Finished processing {pdf_path}")
+    if not all_chunks:
+        return collection
+    
+    # Batch embed all chunks for efficiency
+    embeddings = embed_batch(all_chunks, batch_size=16)
+    
+    # Store in ChromaDB in batches
+    batch_size = 100
+    for i in range(0, len(all_chunks), batch_size):
+        end_idx = min(i + batch_size, len(all_chunks))
+        
+        collection.add(
+            documents=all_chunks[i:end_idx],
+            metadatas=all_metadata[i:end_idx],
+            embeddings=embeddings[i:end_idx],
+            ids=[f"doc{doc_idx}_chunk{chunk_idx}" for doc_idx, chunk_idx in chunk_ids[i:end_idx]],
+        )
+        
+    return collection

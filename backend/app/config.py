@@ -23,7 +23,6 @@ CORS_METHODS = ["GET", "POST", "OPTIONS"]
 CORS_HEADERS = ["Content-Type"]
 
 # Directory and file paths
-VECTORSTORE_DIRECTORY = "database"
 TEMP_DIR = "temp"
 QUERIES_FILE = "saved_queries.json"
 FEEDBACK_DB = "feedback_logs.csv"

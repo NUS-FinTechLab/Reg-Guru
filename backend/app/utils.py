@@ -10,7 +10,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from apscheduler.schedulers.background import BackgroundScheduler
 from .config import (
-    VECTORSTORE_DIRECTORY, TEMP_DIR, QUERIES_FILE, FEEDBACK_DB, BACKUP_DIR,
+    TEMP_DIR, QUERIES_FILE, FEEDBACK_DB, BACKUP_DIR,
     MODEL_NAME, MODEL_TEMPERATURE, RETRIEVAL_K, PROMPT_TEMPLATE
 )
 
@@ -55,7 +55,7 @@ def save_queries(queries):
     with open(QUERIES_FILE, 'w') as f:
         json.dump(queries, f)
 
-def process_chat_query(user_message):
+def process_chat_query(user_message, region):
     """Process a chat query using the RAG system."""
     if not user_message.strip():
         raise ValueError("Empty message")

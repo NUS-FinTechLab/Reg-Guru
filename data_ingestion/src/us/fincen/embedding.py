@@ -9,18 +9,17 @@ sys.path.insert(0, src_dir)
 from common.embedding_helper import get_testing_chromadb_client, get_text_splitter, embed_batch, embed_texts
 
 # FinCEN-specific configuration
-FINCEN_COLLECTION_NAME = "fincen_embeddings"
-FINCEN_CHUNK_SIZE = 1000
-FINCEN_CHUNK_OVERLAP = 200
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 200
 
-def embed_into_chromadb(docs, collection_name=FINCEN_COLLECTION_NAME):
+def embed_into_chromadb(docs, collection_name="us_embeddings"):
     """Embed FinCEN documents into Chroma vector database."""
-    chroma_client = get_testing_chromadb_client('us', 'chromadb_fincen')
+    chroma_client = get_testing_chromadb_client('us', 'chromadb_us')
     collection = chroma_client.get_or_create_collection(name=collection_name)
     
     # Split documents into chunks for better embedding
-    text_splitter = get_text_splitter(chunk_size=FINCEN_CHUNK_SIZE, chunk_overlap=FINCEN_CHUNK_OVERLAP)
-    
+    text_splitter = get_text_splitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+
     all_chunks = []
     all_metadata = []
     chunk_ids = []
