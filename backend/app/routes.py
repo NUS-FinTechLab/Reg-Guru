@@ -21,9 +21,15 @@ def chat():
     data = request.json
     print("Received data:", data) 
     user_message = data.get("message", {}).get("text", "").strip()
+    region = data.get("region", "us").lower()  # Default to US if no region specified
+    
+    # Validate region
+    valid_regions = ['us', 'eu', 'sg']
+    if region not in valid_regions:
+        return jsonify({"error": f"Invalid region '{region}'. Must be one of: {valid_regions}"}), 400
     
     try:
-        response = process_chat_query(user_message)
+        response = process_chat_query(user_message, region)
         return jsonify({"response": response}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

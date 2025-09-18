@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ToggleTheme } from "@/components/layout/toogle-theme";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,9 +16,11 @@ import { MoreVertical, Pencil, Share, Trash2 } from "lucide-react";
 
 interface ChatHeaderProps {
   isTyping: boolean;
+  region: string;
+  onRegionChange: (region: string) => void;
 }
 
-export default function ChatHeader({ isTyping }: ChatHeaderProps) {
+export default function ChatHeader({ isTyping, region, onRegionChange }: ChatHeaderProps) {
   return (
     <header className="flex z-10 items-center justify-between p-6 border rounded-2xl my-2 bg-white dark:bg-[#171717]">
       <div className="flex items-center gap-3">
@@ -39,7 +42,21 @@ export default function ChatHeader({ isTyping }: ChatHeaderProps) {
           </div>
         </div>
       </div>
+      
       <div className={"flex items-center space-x-4"}>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white">Region:</span>
+          <Select value={region} onValueChange={onRegionChange}>
+            <SelectTrigger className="w-20 text-white">
+              <SelectValue placeholder="Select region" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="SG">SG</SelectItem>
+              <SelectItem value="US">US</SelectItem>
+              <SelectItem value="EU">EU</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <ToggleTheme />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

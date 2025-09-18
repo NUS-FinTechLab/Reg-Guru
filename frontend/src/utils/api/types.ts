@@ -8,6 +8,7 @@ export interface Message {
 
 export interface ChatRequest {
     message: Message;
+    region?: string;
 }
 
 export interface ChatResponse {

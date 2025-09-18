@@ -22,6 +22,7 @@ export default function ChatPage() {
     const { chatId } = useParams();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
+    const [region, setRegion] = useState("US"); // Default to US
     const [isTyping, setIsTyping] = useState(false);
     const [autoScroll, setAutoScroll] = useState(true);
     const [showScrollButton, setShowScrollButton] = useState(false);
@@ -118,7 +119,7 @@ export default function ChatPage() {
     const groupMessagesByDate = () => {
         const groups: { [key: string]: Message[] } = {};
 
-        messages.forEach(message => {
+        messages.forEach((message: Message) => {
             const dateKey = new Date(message.timestamp).toDateString();
             if (!groups[dateKey]) {
                 groups[dateKey] = [];
@@ -142,7 +143,7 @@ export default function ChatPage() {
             role: "user",
             timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, userMessage]);
+        setMessages((prev: Message[]) => [...prev, userMessage]);
         setInput("");
         setAutoScroll(true);
 
@@ -151,7 +152,7 @@ export default function ChatPage() {
 
         try {
             // Send chat message using the new API function
-            const data = await sendChatMessage({ message: userMessage });
+            const data = await sendChatMessage({ message: userMessage, region });
 
             // Add bot response to messages
             const botMessage: Message = {
@@ -160,7 +161,7 @@ export default function ChatPage() {
                 role: "bot",
                 timestamp: new Date(),
             };
-            setMessages((prev) => [...prev, botMessage]);
+            setMessages((prev: Message[]) => [...prev, botMessage]);
 
         } catch (error) {
             console.error("Error:", error);
@@ -171,7 +172,7 @@ export default function ChatPage() {
                 role: "bot",
                 timestamp: new Date(),
             };
-            setMessages((prev) => [...prev, errorMessage]);
+            setMessages((prev: Message[]) => [...prev, errorMessage]);
         } finally {
             setIsTyping(false);
         }
@@ -198,7 +199,7 @@ export default function ChatPage() {
     return (
         <div className="flex flex-col rounded-2xl container px-2 w-full h-screen">
             {/* Header */}
-            <ChatHeader isTyping={isTyping} />
+            <ChatHeader isTyping={isTyping} region={region} onRegionChange={setRegion} />
             {/* Messages area */}
             <ScrollArea
                 className="flex-1 px-0 py-2 overflow-y-auto"
@@ -232,7 +233,12 @@ export default function ChatPage() {
             )}
 
             {/* Input area */}
-            <ChatInput value={input} onChange={setInput} onSend={handleSend} inputRef={inputRef} />
+            <ChatInput 
+                value={input} 
+                onChange={setInput} 
+                onSend={handleSend} 
+                inputRef={inputRef}
+            />
         </div>
     );
 }

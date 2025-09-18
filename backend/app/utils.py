@@ -4,8 +4,6 @@ import csv
 from datetime import datetime
 from hashlib import md5
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from apscheduler.schedulers.background import BackgroundScheduler
 from .config import (
@@ -42,37 +40,50 @@ def cleanup_temp():
     if scheduler.running:
         scheduler.shutdown()
 
-def process_chat_query(user_message):
-    """Process a chat query using the RAG system."""
+def process_chat_query(user_message, region="us"):
+    """Process chat query using ChromaDB for a specific region."""
     if not user_message.strip():
         raise ValueError("Empty message")
+    
+    try:
+        # Retrieve respective ChromaDB collection based on region
+        collection = get_chroma_collection(region)
+        
+        if collection.count() == 0:
+            raise FileNotFoundError(f"No documents found in {region} region collection")
+        
+        # Query the collection for relevant documents
+        results = collection.query(
+            query_texts=[user_message],
+            n_results=RETRIEVAL_K
+        )
+        
+        # Extract documents from results
+        documents = results.get('documents', [[]])[0]
+        
+        if not documents:
+            return f"No relevant documents found for your query in the {region} region."
+        
+        # Construct prompt with retrieved documents
+        context = "\n\n".join(documents)
+        enhanced_prompt = f"""Based on the following regulatory documents from the {region.upper()} region, please answer the user's question:
 
-    if not os.path.exists(os.path.join(VECTORSTORE_DIRECTORY, "index.faiss")):
-        raise FileNotFoundError("No documents uploaded yet")
+Context from regulatory documents:
+{context}
 
-    print("Loading vectorstore...")
-    vectorstore = FAISS.load_local(
-        folder_path=VECTORSTORE_DIRECTORY,
-        embeddings=embeddings,
-        allow_dangerous_deserialization=True
-    )
-    print("Vectorstore loaded successfully.")
+User question: {user_message}
 
-    print("Initializing QA chain...")
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vectorstore.as_retriever(search_kwargs={"k": RETRIEVAL_K}),
-        chain_type_kwargs={"prompt": prompt},
-        return_source_documents=False
-    )
-    print("QA chain initialized successfully.")
-
-    print(f"Processing query: {user_message}")
-    response = qa_chain.invoke({"query": user_message})
-    print(f"Query processed successfully. Response: {response}")
-
-    return response["result"]
+Please provide a comprehensive answer based on the regulatory information provided above."""
+        
+        # Get response from LLM
+        response = llm.invoke(enhanced_prompt)
+        
+        # Return the response
+        return response.content if hasattr(response, 'content') else str(response)
+        
+    except Exception as e:
+        print(f"Error processing query for region {region}: {str(e)}")
+        raise Exception(f"Failed to process query for {region} region: {str(e)}")
 
 def log_feedback(query, response, rating, comments=""):
     """Log user feedback to CSV file."""

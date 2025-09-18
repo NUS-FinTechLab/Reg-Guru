@@ -18,8 +18,8 @@ export default function ChatInput({ value, onChange, onSend, inputRef }: ChatInp
         <Input
               ref={inputRef}
               value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && onSend(value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && onSend(value)}
               placeholder="Type a message..."
               className="pl-8 pr-16 py-8 w-full rounded-full md:text-lg file:text-lg"
             />
