@@ -4,6 +4,12 @@ export interface Message {
     text: string;
     role: "user" | "bot";
     timestamp: Date;
+    sources?: Source[]; // Add sources to message for bot responses
+}
+
+export interface Source {
+    title: string;
+    link: string;
 }
 
 export interface ChatRequest {
@@ -13,6 +19,7 @@ export interface ChatRequest {
 
 export interface ChatResponse {
     response: string;
+    sources?: Source[];
 }
 
 export interface FeedbackRequest {

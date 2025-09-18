@@ -29,8 +29,15 @@ def chat():
         return jsonify({"error": f"Invalid region '{region}'. Must be one of: {valid_regions}"}), 400
     
     try:
-        response = process_chat_query(user_message, region)
-        return jsonify({"response": response}), 200
+        result = process_chat_query(user_message, region)
+        if isinstance(result, tuple):
+            response, sources = result
+        else:
+            response = result
+            sources = {'sources': []}
+        
+        print("Sources:", sources)
+        return jsonify({"response": response, "sources": sources['sources']}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except FileNotFoundError as e:

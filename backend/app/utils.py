@@ -62,24 +62,37 @@ def process_chat_query(user_message, region="us"):
         documents = results.get('documents', [[]])[0]
         
         if not documents:
-            return f"No relevant documents found for your query in the {region} region."
+            return f"No relevant documents found for your query in the {region} region.", {'sources': []}
         
-        # Construct prompt with retrieved documents
+        # Construct prompt with retrieved documents using the template
         context = "\n\n".join(documents)
-        enhanced_prompt = f"""Based on the following regulatory documents from the {region.upper()} region, please answer the user's question:
-
-Context from regulatory documents:
-{context}
-
-User question: {user_message}
-
-Please provide a comprehensive answer based on the regulatory information provided above."""
+        
+        # Use the prompt template from config
+        formatted_prompt = prompt.format(context=context, question=user_message)
         
         # Get response from LLM
-        response = llm.invoke(enhanced_prompt)
+        response = llm.invoke(formatted_prompt)
+        
+        # Extract source information for frontend display
+        metadatas = results.get('metadatas', [[]])[0]
+        sources = []
+        seen_links = set()  # To avoid duplicate links
+        
+        for metadata in metadatas:
+            if metadata and 'link' in metadata and 'title' in metadata:
+                link = metadata['link']
+                title = metadata['title']
+                # Only add unique links
+                if link not in seen_links:
+                    sources.append({
+                        'title': title,
+                        'link': link
+                    })
+                    seen_links.add(link)
         
         # Return the response
-        return response.content if hasattr(response, 'content') else str(response)
+        response_content = response.content if hasattr(response, 'content') else str(response)
+        return response_content, {'sources': sources}
         
     except Exception as e:
         print(f"Error processing query for region {region}: {str(e)}")
@@ -183,17 +196,11 @@ def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
         context_docs = [doc['content'] for doc in all_docs[:RETRIEVAL_K]]
         context = "\n\n".join(context_docs)
         
-        enhanced_prompt = f"""Based on the following regulatory documents, please answer the user's question:
-
-Context from regulatory documents:
-{context}
-
-User question: {user_message}
-
-Please provide a comprehensive answer based on the regulatory information provided above."""
+        # Use the prompt template from config
+        formatted_prompt = prompt.format(context=context, question=user_message)
         
         try:
-            response = llm.invoke(enhanced_prompt)
+            response = llm.invoke(formatted_prompt)
             combined_response = response.content if hasattr(response, 'content') else str(response)
             
             # If we also have FAISS response, mention it

@@ -7,16 +7,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { sendChatMessage } from "@/utils/api";
+import { Message } from "@/utils/api/types";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
-
-interface Message {
-    id: number;
-    text: string;
-    role: "user" | "bot";
-    timestamp: Date;
-}
 
 export default function ChatPage() {
     const { chatId } = useParams();
@@ -154,12 +148,13 @@ export default function ChatPage() {
             // Send chat message using the new API function
             const data = await sendChatMessage({ message: userMessage, region });
 
-            // Add bot response to messages
+            // Add bot response to messages with sources
             const botMessage: Message = {
                 id: Date.now(),
                 text: data.response,
                 role: "bot",
                 timestamp: new Date(),
+                sources: data.sources || [], // Include sources from API response
             };
             setMessages((prev: Message[]) => [...prev, botMessage]);
 

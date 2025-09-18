@@ -3,13 +3,8 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
-
-interface Message {
-  id: number;
-  text: string;
-  role: "user" | "bot";
-  timestamp: Date;
-}
+import SourceLinks from "@/components/ui/source-links";
+import { Message } from "@/utils/api/types";
 
 interface MessageGroup {
   date: Date;
@@ -61,7 +56,12 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                       <div dangerouslySetInnerHTML={{ __html: message.text }} />
                       <span className="text-sm opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>
                     </div>
-                    <div className={"py-2"}>{/* reserved for actions */}</div>
+                    <div className={"py-2"}>
+                      {/* Show source links for bot messages */}
+                      {message.role === "bot" && message.sources && (
+                        <SourceLinks sources={message.sources} />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

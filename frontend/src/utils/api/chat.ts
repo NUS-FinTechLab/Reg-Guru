@@ -3,17 +3,24 @@ import { ChatRequest, ChatResponse } from "./types";
 
 /**
  * Send a chat message to the backend
- * @param message - The message object containing user input
- * @returns Promise with the bot's response
+ * @param request - The chat request containing message and region
+ * @returns Promise with the bot's response and sources
  */
-export const sendChatMessage = async (message: ChatRequest): Promise<ChatResponse> => {
+export const sendChatMessage = async (request: ChatRequest): Promise<ChatResponse> => {
     try {
+        const requestBody = {
+            message: {
+                text: request.message.text
+            },
+            region: request.region?.toLowerCase() || "us"
+        };
+
         const response = await fetch(`${SERVER_URL}/api/chat`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json" 
             },
-            body: JSON.stringify(message),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
