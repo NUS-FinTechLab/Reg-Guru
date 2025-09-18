@@ -3,8 +3,6 @@ import os
 import sys
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 
 # Add the parent directories to the Python path to resolve imports
@@ -26,12 +24,17 @@ class SsoScraper(BaseScraper):
         super().__init__()  # Initialize the base class (database connection)
         self.base_url = BASE_URL
         self.browse_url = CURRENT_BROWSE_URL
+        self.last_fetched_html = None
 
     def extract_documents_from_page(self, page_url):
         """Extract document information (title, PDF link) from a single page"""
         try:
             print(f"Processing page: {page_url}")
+            # Add delay to respect website policy (6 seconds between requests)
+            time.sleep(6)
             html = getHtml(page_url)
+            # Store HTML for reuse to avoid duplicate requests
+            self.last_fetched_html = html
             soup = BeautifulSoup(html, 'html.parser')
             
             documents = []
@@ -85,6 +88,8 @@ class SsoScraper(BaseScraper):
         """Download a single PDF file - handles SSO URLs by appending base URL"""
         try:
             print(f"Downloading PDF: {pdf_link}")
+            # Add delay to respect website policy (6 seconds between requests)
+            time.sleep(6)
             
             parsed_url = urlparse(pdf_link)
             path_parts = [part for part in parsed_url.path.split('/') if part]
@@ -121,7 +126,7 @@ class SsoScraper(BaseScraper):
             print(f"Error downloading PDF {pdf_link}: {str(e)}")
             return None
 
-    def get_next_page_url(self, soup, current_url):
+    def get_next_page_url(self, soup):
         """Extract the next page URL from the current page - specifically for SSO pagination"""
         try:
             # Look for the specific SSO next page button pattern
@@ -150,7 +155,7 @@ class SsoScraper(BaseScraper):
             print(f"Error finding next page URL: {str(e)}")
             return None
 
-    def scrape(self, max_workers=10):
+    def scrape(self):
         """
         Scrape SSO documents with parallel processing
         max_workers: Number of concurrent threads to use
@@ -164,31 +169,38 @@ class SsoScraper(BaseScraper):
         
         print(f"Starting SSO scraping from: {current_url}")
         
+        # Add initial delay to respect robots.txt crawl-delay
+        print("Initial delay before first request (6 seconds)...")
+        time.sleep(6)
+        
         # Navigate through all pages to collect document information
         while current_url:
             try:
-                page_count += 1
-                print(f"\n=== Processing Page {page_count} ===")
+                # For finding next page, we need to parse the same HTML that was already fetched
+                # This avoids making another request
                 print(f"URL: {current_url}")
                 
-                html = getHtml(current_url)
-                soup = BeautifulSoup(html, 'html.parser')
-                
-                # Extract document information from current page
+                # Extract document information from current page (includes delay and HTML request)
                 page_documents = self.extract_documents_from_page(current_url)
                 all_documents.extend(page_documents)
                 
                 print(f"Page {page_count}: Found {len(page_documents)} documents")
                 print(f"Total documents so far: {len(all_documents)}")
                 
+                html = self.last_fetched_html  # We'll modify extract_documents_from_page to store this
+                if not html:
+                    continue
+                soup = BeautifulSoup(html, 'html.parser')
+                
                 # Find next page URL
-                next_url = self.get_next_page_url(soup, current_url)
+                next_url = self.get_next_page_url(soup)
                 
                 if next_url and next_url != current_url:
                     current_url = next_url
                     print(f"Moving to next page: {next_url}")
-                    # Add a small delay to be respectful to the server
-                    time.sleep(1)
+                    # Add delay to respect website policy (6 seconds between requests)
+                    print("Waiting 6 seconds before next page request...")
+                    time.sleep(6)
                 else:
                     print("No more pages found or next button is disabled")
                     break
@@ -230,26 +242,19 @@ class SsoScraper(BaseScraper):
                 print(f"Error processing document {doc.get('title', 'Unknown')}: {str(e)}")
                 filtered_count += 1
         
-        # Download PDFs in parallel
+        # Download PDFs sequentially with delays (no parallel processing due to website policy)
         downloaded_files = []
         if all_pdf_links:
-            print(f"\n=== Starting Parallel PDF Downloads ===")
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                # Submit all PDF download tasks
-                future_to_pdf = {
-                    executor.submit(self.download_pdf_file, pdf_link): pdf_link 
-                    for pdf_link in all_pdf_links
-                }
-                
-                # Collect download results as they complete
-                for future in as_completed(future_to_pdf):
-                    pdf_link = future_to_pdf[future]
-                    try:
-                        result = future.result()
-                        if result:
-                            downloaded_files.append(result)
-                    except Exception as e:
-                        print(f"Error downloading {pdf_link}: {str(e)}")
+            print(f"\n=== Starting Sequential PDF Downloads (with 6-second delays) ===")
+            total_links = len(all_pdf_links)
+            for i, pdf_link in enumerate(all_pdf_links, 1):
+                print(f"Progress: {i}/{total_links}")
+                try:
+                    result = self.download_pdf_file(pdf_link)
+                    if result:
+                        downloaded_files.append(result)
+                except Exception as e:
+                    print(f"Error downloading {pdf_link}: {str(e)}")
         
         # Close database connection
         self.close_connection()

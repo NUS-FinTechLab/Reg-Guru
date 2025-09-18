@@ -7,9 +7,9 @@ src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
 from common import IngestionPipeline
-from .embedding import embed_into_chromadb
-from .scraper import FincenScraper
-from .process import process_fincen_data
+from us.fincen.embedding import embed_into_chromadb
+from us.fincen.scraper import FincenScraper
+from us.fincen.process import process_fincen_data
 
 class FincenPipeline(IngestionPipeline):
     """FinCEN-specific pipeline implementation with FlagEmbedding support."""

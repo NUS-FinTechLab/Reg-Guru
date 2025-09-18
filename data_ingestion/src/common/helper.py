@@ -7,7 +7,10 @@ import psycopg2
 def getHtml(url):
     r"""Sends a GET request.
     """
-    response = requests.get(url, timeout=50)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers, timeout=50)
     response.raise_for_status()
     
     return response.text
@@ -29,7 +32,10 @@ def getPdfLinks(url):
 def downloadPdf(url, dest_path):
     r"""Downloads a PDF from a given URL to the specified destination path.
     """
-    response = requests.get(url, stream=True, timeout=50)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers, stream=True, timeout=50)
     response.raise_for_status()
     
     with open(dest_path, 'wb') as f:

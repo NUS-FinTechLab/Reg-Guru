@@ -1,20 +1,13 @@
 import pdfplumber
-import mimetypes
 import subprocess
 from bs4 import BeautifulSoup
 import os
-import sys
 import psycopg2
 from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
 
 from common.helper import feed_exists_pg, insert_feed_if_not_exists_pg
 

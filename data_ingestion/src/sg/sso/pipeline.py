@@ -7,9 +7,9 @@ src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
 from common import IngestionPipeline
-from .embedding import embed_into_chromadb
-from .scraper import SsoScraper
-from .process import process_sso_data
+from sg.sso.embedding import embed_into_chromadb
+from sg.sso.scraper import SsoScraper
+from sg.sso.process import process_sso_data
 
 class SsoPipeline(IngestionPipeline):
     """SSO-specific pipeline implementation with FlagEmbedding support."""

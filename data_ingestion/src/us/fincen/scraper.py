@@ -4,7 +4,6 @@ import os
 from urllib.parse import urlparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -118,15 +117,18 @@ class FincenScraper(BaseScraper):
         Scrape FinCEN advisories with parallel processing
         max_workers: Number of concurrent threads to use
         """
+        print("🌐 Fetching FinCEN advisory page...")
         html = getHtml(self.advisoryUrl)
         soup = BeautifulSoup(html, 'html.parser')
         
         advisoryLinks = set()
         current_url = self.advisoryUrl
+        page_count = 0
 
         # Process all pages starting with the base URL
         while True:
-            print(f"Scraping URL: {current_url}")
+            page_count += 1
+            print(f"📄 Processing page {page_count}: {current_url}")
             
             # Get all links to responding advisory resources page
             links = soup.find_all('a', href=True)
@@ -135,6 +137,7 @@ class FincenScraper(BaseScraper):
             links = [a['href'] for a in links if '/resources/advisories/' in a['href']]
             links = [self.baseUrl + link if link.startswith('/') else link for link in links]
             advisoryLinks.update(links)
+            print(f"  📎 Found {len(links)} advisory links on this page")
             
             # Look for the next page link
             next_link = soup.find("a", class_="usa-pagination__next-page")
