@@ -1,6 +1,5 @@
 import os
 import shutil
-import json
 import csv
 from datetime import datetime
 from hashlib import md5
@@ -10,7 +9,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from apscheduler.schedulers.background import BackgroundScheduler
 from .config import (
-    VECTORSTORE_DIRECTORY, TEMP_DIR, QUERIES_FILE, FEEDBACK_DB, BACKUP_DIR,
+    VECTORSTORE_DIRECTORY, TEMP_DIR, FEEDBACK_DB, BACKUP_DIR,
     MODEL_NAME, MODEL_TEMPERATURE, RETRIEVAL_K, PROMPT_TEMPLATE
 )
 
@@ -41,19 +40,6 @@ def cleanup_temp():
         shutil.rmtree(TEMP_DIR)
     if scheduler.running:
         scheduler.shutdown()
-
-def load_queries():
-    """Load saved queries from JSON file."""
-    try:
-        with open(QUERIES_FILE, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def save_queries(queries):
-    """Save queries to JSON file."""
-    with open(QUERIES_FILE, 'w') as f:
-        json.dump(queries, f)
 
 def process_chat_query(user_message):
     """Process a chat query using the RAG system."""
@@ -86,17 +72,6 @@ def process_chat_query(user_message):
     print(f"Query processed successfully. Response: {response}")
 
     return response["result"]
-
-def save_query_record(question, answer, document="Current Document"):
-    """Save a query record to the queries file."""
-    queries = load_queries()
-    queries.append({
-        "question": question,
-        "answer": answer,
-        "timestamp": datetime.now().isoformat(),
-        "document": document
-    })
-    save_queries(queries)
 
 def log_feedback(query, response, rating, comments=""):
     """Log user feedback to CSV file."""

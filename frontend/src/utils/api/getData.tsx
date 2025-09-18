@@ -1,38 +1,9 @@
-import {SERVER_URL} from "@/utils/constants";
-import { string } from "zod";
-export const getData = async () => {
-    try {
-        console.log("SERVER_URL", process.env.NEXT_PUBLIC_BACKEND_URL);
-        const [queriesRes, docsRes] = await Promise.all([
-            fetch(`${SERVER_URL}/api/get_queries`),
-            fetch(`${SERVER_URL}/api/get_documents`)
-        ]);
-        const savedQueries = await queriesRes.json();
-        const uploadedDocuments = await docsRes.json();
+// This file is deprecated. Please use the new API functions from /utils/api/index.ts
+// Re-exporting for backward compatibility
 
-        return {savedQueries, uploadedDocuments}
-    } catch (error) {
-        console.error("Error loading data:", error);
-    }
-};
+import { getAllData } from "./queries";
 
-export class fileNames {
-    filenames! : string[];
-    constructor(filenames : string[]) {
-        this.filenames = filenames;
-    }
-}
-
-export const getFileNames = async (): Promise<fileNames> => {
-    try {
-        const res = await fetch(SERVER_URL + "/api/get_documents", {next : {revalidate : 3600}});
-        const data = await res.json();
-        return new fileNames(data.map((x: any) => x.filename));
-    } catch (error) {
-        console.log("Error loading data: ", error);
-    }
-    const some : fileNames = {
-        filenames: [],
-    }
-    return some;
-}
+/**
+ * @deprecated Use getAllData from @/utils/api instead
+ */
+export const getData = getAllData;

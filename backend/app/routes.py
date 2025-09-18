@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from .utils import (
-    process_chat_query, load_queries, save_query_record, log_feedback
+    process_chat_query, log_feedback
 )
 
 # Create Blueprint
@@ -32,30 +32,6 @@ def chat():
     except Exception as e:
         print(f"Error during query processing: {str(e)}")
         return jsonify({"error": f"Failed to process query: {str(e)}"}), 500
-
-@api.route('/save_query', methods=['POST'])
-def save_query():
-    """Save a query and its response."""
-    data = request.json
-    
-    try:
-        save_query_record(
-            question=data.get("question"),
-            answer=data.get("answer"),
-            document=data.get("document", "Current Document")
-        )
-        return jsonify({"status": "success"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@api.route('/get_queries', methods=['GET'])
-def get_queries():
-    """Retrieve all saved queries."""
-    try:
-        queries = load_queries()
-        return jsonify(queries), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @api.route('/log_feedback', methods=['POST'])
 def log_feedback_route():

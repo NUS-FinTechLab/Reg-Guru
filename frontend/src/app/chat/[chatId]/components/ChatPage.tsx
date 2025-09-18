@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { SERVER_URL } from "@/utils/constants";
+import { sendChatMessage } from "@/utils/api";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
@@ -148,20 +148,10 @@ export default function ChatPage() {
 
         // Show typing indicator
         setIsTyping(true);
-        // set initial message
 
         try {
-            const response = await fetch(SERVER_URL + "/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
+            // Send chat message using the new API function
+            const data = await sendChatMessage({ message: userMessage });
 
             // Add bot response to messages
             const botMessage: Message = {
@@ -172,15 +162,6 @@ export default function ChatPage() {
             };
             setMessages((prev) => [...prev, botMessage]);
 
-            // Save to query history
-            await fetch(SERVER_URL + "/api/save_query", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    question: input,
-                    answer: data.response,
-                }),
-            });
         } catch (error) {
             console.error("Error:", error);
             // Add error message from bot

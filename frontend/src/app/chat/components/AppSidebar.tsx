@@ -1,4 +1,4 @@
-import { Cog, FileText, Paperclip, Plus, Search } from "lucide-react"
+import { Cog, Plus, Search } from "lucide-react"
 
 import {
     Sidebar,
@@ -57,13 +57,10 @@ export function AppSidebar() {
                                 placeholder="Search chats"
                                 className="pl-4 pr-12 py-5 max-w-lg w-full rounded-full"
                             />
-                            <div
-                                className="absolute right-1 top-1/2 transform -translate-y-1/2"
-                            >
+                            <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
                                 <Button
-                                    // onClick={handleSend}
                                     size="icon"
-                                    className="h-8 w-8 rounded-full cursor-pointer "
+                                    className="h-8 w-8 rounded-full cursor-pointer"
                                 >
                                     <Search className="h-4 w-4" />
                                 </Button>

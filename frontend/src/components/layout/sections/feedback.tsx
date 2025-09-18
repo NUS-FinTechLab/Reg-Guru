@@ -4,11 +4,12 @@ import {Building2, Mail, Phone} from "lucide-react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-
+import {useState} from "react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
+import { testApi } from "@/utils/api";
 
 const formSchema = z.object({
     firstName: z.string().min(2).max(255),
@@ -18,6 +19,9 @@ const formSchema = z.object({
 });
 
 export const FeedbackSection = () => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -28,10 +32,37 @@ export const FeedbackSection = () => {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         const { firstName, lastName, email, message } = values;
-        console.log(values);
-        window.location.href = `mailto:mail@example.com?body=Hello I am ${firstName} ${lastName}, my Email is ${email}. %0D%0A${message}`;
+        setIsSubmitting(true);
+        setSubmitStatus('idle');
+
+        try {
+            // Test the API first to ensure it's working
+            await testApi();
+            
+            // For now, we'll still use mailto since there's no specific feedback endpoint
+            // But we've validated the API is working
+            const subject = "Feedback from Reg-Guru Website";
+            const body = `Hello,
+
+I am ${firstName} ${lastName}, and my email is ${email}.
+
+${message}
+
+Best regards,
+${firstName}`;
+
+            window.location.href = `mailto:fintech@comp.nus.edu.sg?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            setSubmitStatus('success');
+            form.reset();
+        } catch (error) {
+            console.error("Error submitting feedback:", error);
+            setSubmitStatus('error');
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -161,7 +192,25 @@ export const FeedbackSection = () => {
                                     />
                                 </div>
 
-                                <Button className="mt-4 cursor-pointer">Send message</Button>
+                                <Button 
+                                    className="mt-4 cursor-pointer" 
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "Sending..." : "Send message"}
+                                </Button>
+
+                                {submitStatus === 'success' && (
+                                    <div className="mt-2 text-sm text-green-600">
+                                        Thank you! Your email client should open with your feedback message.
+                                    </div>
+                                )}
+
+                                {submitStatus === 'error' && (
+                                    <div className="mt-2 text-sm text-red-600">
+                                        There was an error processing your feedback. Please try again.
+                                    </div>
+                                )}
                             </form>
                         </Form>
                     </CardContent>
