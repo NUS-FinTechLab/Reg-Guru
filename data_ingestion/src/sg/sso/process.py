@@ -85,7 +85,7 @@ def process_sso_data(raw_data):
         doc = {
             "content": "\n".join(chunks),
             "metadata": metadata,
-            "type": "sso_act",  # Changed to reflect SSO document type
+            "type": "sso_act", 
         }
         
         print(doc)

@@ -155,7 +155,7 @@ class FincenScraper(BaseScraper):
         os.makedirs(DESTINATION_DIR, exist_ok=True)
         
         files_information = []
-        all_pdf_links = set()
+        all_pdf_links = []
         filtered_count = 0
         
         # Process advisory links in parallel
@@ -177,8 +177,10 @@ class FincenScraper(BaseScraper):
                             'timestamp': result['timestamp'],
                             'title': result['title']
                         })
-                        # Collect all PDF links for downloading
-                        all_pdf_links.update(result['pdf_links'])
+                        # Collect all PDF links for downloading (avoid duplicates)
+                        for pdf_link in result['pdf_links']:
+                            if pdf_link not in all_pdf_links:
+                                all_pdf_links.append(pdf_link)
                     else:
                         filtered_count += 1  # Count filtered duplicates
                 except Exception as e:

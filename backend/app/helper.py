@@ -24,8 +24,7 @@ def get_chroma_collection(region):
         response = json.loads(result.stdout)
         if "error" in response:
             raise Exception(response["error"])
-        
-        # Return a mock collection object with query method
+
         return ChromaDBCollection(region, python_path, script_path)
         
     except Exception as e:

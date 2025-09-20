@@ -7,32 +7,20 @@ import { ChatRequest, ChatResponse } from "./types";
  * @returns Promise with the bot's response and sources
  */
 export const sendChatMessage = async (request: ChatRequest): Promise<ChatResponse> => {
-    try {
-        const requestBody = {
-            message: {
-                text: request.message.text
-            },
+    const response = await fetch(`${SERVER_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            message: { text: request.message.text },
             region: request.region?.toLowerCase() || "us"
-        };
+        }),
+    });
 
-        const response = await fetch(`${SERVER_URL}/api/chat`, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json" 
-            },
-            body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error("Error sending chat message:", error);
-        throw error;
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    return response.json();
 };
 
 /**

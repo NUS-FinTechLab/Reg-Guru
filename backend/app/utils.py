@@ -3,6 +3,7 @@ import shutil
 import csv
 from datetime import datetime
 from hashlib import md5
+import json
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -58,14 +59,26 @@ def process_chat_query(user_message, region="us"):
             n_results=RETRIEVAL_K
         )
         
-        # Extract documents from results
+        # Extract documents and metadata from results
         documents = results.get('documents', [[]])[0]
+        metadatas = results.get('metadatas', [[]])[0]
+        
+        print("Results:", json.dumps(results, indent=4))
         
         if not documents:
             return f"No relevant documents found for your query in the {region} region.", {'sources': []}
         
-        # Construct prompt with retrieved documents using the template
-        context = "\n\n".join(documents)
+        # Construct prompt with retrieved documents including titles
+        context_parts = []
+        for i, document in enumerate(documents):
+            # Get the title from metadata if available
+            title = "Untitled Document"
+            if i < len(metadatas) and metadatas[i] and 'title' in metadatas[i]:
+                title = metadatas[i]['title']
+            
+            context_parts.append(f"Document: {title}\nContent: {document}")
+        
+        context = "\n\n".join(context_parts)
         
         # Use the prompt template from config
         formatted_prompt = prompt.format(context=context, question=user_message)
@@ -74,7 +87,6 @@ def process_chat_query(user_message, region="us"):
         response = llm.invoke(formatted_prompt)
         
         # Extract source information for frontend display
-        metadatas = results.get('metadatas', [[]])[0]
         sources = []
         seen_links = set()  # To avoid duplicate links
         
@@ -193,8 +205,17 @@ def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
     
     # If we have ChromaDB results, create a combined response
     if all_docs:
-        context_docs = [doc['content'] for doc in all_docs[:RETRIEVAL_K]]
-        context = "\n\n".join(context_docs)
+        # Build context with document titles
+        context_parts = []
+        for doc in all_docs[:RETRIEVAL_K]:
+            # Get the title from metadata if available
+            title = "Untitled Document"
+            if doc.get('metadata') and 'title' in doc['metadata']:
+                title = doc['metadata']['title']
+            
+            context_parts.append(f"Document: {title}\nContent: {doc['content']}")
+        
+        context = "\n\n".join(context_parts)
         
         # Use the prompt template from config
         formatted_prompt = prompt.format(context=context, question=user_message)

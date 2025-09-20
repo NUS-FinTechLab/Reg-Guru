@@ -213,7 +213,6 @@ class SsoScraper(BaseScraper):
         
         # Process documents to check for duplicates and collect information
         files_information = []
-        all_pdf_links = set()
         filtered_count = 0
         
         print(f"\n=== Processing Documents ===")
@@ -237,7 +236,6 @@ class SsoScraper(BaseScraper):
                     'timestamp': None,
                     'title': title
                 })
-                all_pdf_links.add(full_pdf_url)
                 print(f"Processing document: {title}")
                 
             except Exception as e:
@@ -246,18 +244,20 @@ class SsoScraper(BaseScraper):
         
         # Download PDFs sequentially with delays (no parallel processing due to website policy)
         downloaded_files = []
-        if all_pdf_links:
-            print(f"\n=== Starting Sequential PDF Downloads (with 6-second delays) ===")
-            total_links = len(all_pdf_links)
-            for i, pdf_link in enumerate(all_pdf_links, 1):
-                print(f"Progress: {i}/{total_links}")
-                try:
-                    result = self.download_pdf_file(pdf_link)
-                    if result:
-                        downloaded_files.append(result)
-                except Exception as e:
-                    print(f"Error downloading {pdf_link}: {str(e)}")
-        
+        print(f"\n=== Starting Sequential PDF Downloads (with 6-second delays) ===")
+        for i, info in enumerate(files_information, 1):
+            pdf_link = info['url']  # already absolute
+            print(f"Progress: {i}/{len(files_information)}")
+            try:
+                path = self.download_pdf_file(pdf_link)
+                if path:
+                    downloaded_files.append(path)
+                else:
+                    downloaded_files.append(None)  # preserve index alignment
+            except Exception as e:
+                print(f"Error downloading {pdf_link}: {str(e)}")
+                downloaded_files.append(None)
+                
         # Close database connection
         self.close_connection()
         

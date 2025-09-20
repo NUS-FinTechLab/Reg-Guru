@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/layout/theme-provider"
 import "./globals.css";
-import {Inter_Tight, JetBrains_Mono} from "next/font/google";
+import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 
 const geistSans = Inter_Tight({
   variable: "--font-geist-sans",
