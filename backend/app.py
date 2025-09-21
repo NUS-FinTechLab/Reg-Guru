@@ -1,209 +1,30 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_cors import CORS
-import os
 import atexit
-import shutil
-import json
-from dotenv import load_dotenv
-from datetime import datetime
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.prompts import ChatPromptTemplate
-import csv
-from hashlib import md5
-from apscheduler.schedulers.background import BackgroundScheduler
+from app.config import DEBUG, HOST, PORT, CORS_ORIGINS, CORS_METHODS, CORS_HEADERS
+from app.utils import initialize_directories, cleanup_temp
+from app.routes import api
 
+# Create Flask app
 app = Flask(__name__)
+
+# Configure CORS
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["https://cheerful-cocada-8192f4.netlify.app", "http://localhost:3000", "http://127.0.0.1:3000"],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
+        "origins": CORS_ORIGINS,
+        "methods": CORS_METHODS,
+        "allow_headers": CORS_HEADERS
     }
 })
 
-@app.route('/api/<path:path>', methods=['OPTIONS'])
-def options_handler(path):
-    response = jsonify({'success': True})
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    return response
+# Register blueprints
+app.register_blueprint(api)
 
-# Configuration
-VECTORSTORE_DIRECTORY = "database"
-TEMP_DIR = "temp"
-QUERIES_FILE = "saved_queries.json"
-FEEDBACK_DB = "feedback_logs.csv"
-BACKUP_DIR = "feedback_backups"
+# Initialize application
+initialize_directories()
 
-load_dotenv()
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
-# Initialize components
-llm = ChatOpenAI(model="gpt-4o", temperature=0.1)
-embeddings = OpenAIEmbeddings()
-
-# Document tracking functions
-def get_file_hash(file_path):
-    with open(file_path, 'rb') as f:
-        return md5(f.read()).hexdigest()
-
-# Ensure directories exist
-os.makedirs(BACKUP_DIR, exist_ok=True)
-if not os.path.exists(FEEDBACK_DB):
-    with open(FEEDBACK_DB, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(["timestamp", "query", "response", "rating", "comments"])
-
-# Feedback Backup Function
-def backup_feedback():
-    if os.path.exists(FEEDBACK_DB):
-        backup_path = os.path.join(BACKUP_DIR, f"feedback_{datetime.now().date()}.csv")
-        shutil.copy2(FEEDBACK_DB, backup_path)
-
-# Initialise backup scheduler
-scheduler = BackgroundScheduler()
-scheduler.add_job(backup_feedback, 'cron', hour=0)
-scheduler.start()
-
-# Query Storage Functions
-def load_queries():
-    try:
-        with open(QUERIES_FILE, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def save_queries(queries):
-    with open(QUERIES_FILE, 'w') as f:
-        json.dump(queries, f)
-
-# Prompt template
-prompt_template = """
-You are Reg-Guru, an advanced AI-powered regulatory compliance assistant developed to support the financial industry. Your primary function is to help compliance officers, legal analysts, auditors, and regulatory consultants interpret and respond to complex regulatory documents, guidelines, and legal frameworks.
-
-Reg-Guru is built using a Retrieval-Augmented Generation (RAG) architecture, incorporating a FAISS-indexed document store of financial regulations, policy papers, legal interpretations, and compliance manuals. You leverage natural language understanding and domain-specific reasoning to provide concise, precise, and contextually grounded answers.
-
-Your key responsibilities include:
-- Interpreting and summarizing complex financial regulations (e.g., Basel III, MAS Notices, GDPR, FATF, etc.).
-- Assisting users in determining whether specific actions or business practices are compliant with regulatory standards.
-- Identifying relevant clauses or excerpts in regulatory documents that support your answers.
-- Reducing ambiguity in legal language and helping users translate regulatory requirements into operational steps.
-- Comparing regulations across jurisdictions if needed (e.g., Singapore vs. EU).
-
-Answer each query in a structured, formal, and accurate tone. Prioritize factual correctness, legal defensibility, and clarity. If the user question is ambiguous, ask for clarification instead of making assumptions. Do not speculate beyond the content of the retrieved documents unless general knowledge of financial compliance best practices applies.
-
-Your answers should reflect the tone of a well-trained regulatory advisor—confident, cautious, and informed.
-
-Whenever applicable, cite or paraphrase the relevant regulation or source that your answer is based on. If the information is not available in the current knowledge base, respond honestly and state that the necessary regulatory text was not found.
-
-You are not a substitute for legal counsel, but you aim to significantly reduce the burden of initial regulatory research and document interpretation.
-
-Answer the question in a concise manner based on the following context:
-{context}
-
-Question: {question}
-
-If the context does not contain the answer, use other sources.
-"""
-prompt = ChatPromptTemplate.from_template(prompt_template)
-
-# Cleanup function
-def cleanup_temp():
-    if os.path.exists(TEMP_DIR):
-        shutil.rmtree(TEMP_DIR)
-    if scheduler.running:
-        scheduler.shutdown()
-
+# Register cleanup function
 atexit.register(cleanup_temp)
 
-# API Endpoints
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    data = request.json
-    print("Received data:", data) 
-    user_message = data.get("message", {}).get("text", "").strip()
-    
-    if not user_message:
-        return jsonify({"error": "Empty message"}), 400
-
-    try:
-        if not os.path.exists(os.path.join(VECTORSTORE_DIRECTORY, "index.faiss")):
-            return jsonify({"error": "No documents uploaded yet"}), 404
-
-        print("Loading vectorstore...")
-        vectorstore = FAISS.load_local(
-            folder_path=VECTORSTORE_DIRECTORY,
-            embeddings=embeddings,
-            allow_dangerous_deserialization=True
-        )
-        print("Vectorstore loaded successfully.")
-
-        print("Initializing QA chain...")
-        qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=vectorstore.as_retriever(search_kwargs={"k": 5}),
-            chain_type_kwargs={"prompt": prompt},
-            return_source_documents=False
-        )
-        print("QA chain initialized successfully.")
-
-        print(f"Processing query: {user_message}")
-        response = qa_chain.invoke({"query": user_message})
-        print(f"Query processed successfully. Response: {response}")
-
-        return jsonify({"response": response["result"]}), 200
-    except Exception as e:
-        print(f"Error during query processing: {str(e)}")
-        return jsonify({"error": f"Failed to process query: {str(e)}"}), 500
-
-@app.route('/api/save_query', methods=['POST'])
-def save_query():
-    data = request.json
-    queries = load_queries()
-    
-    queries.append({
-        "question": data.get("question"),
-        "answer": data.get("answer"),
-        "timestamp": datetime.now().isoformat(),
-        "document": data.get("document", "Current Document")
-    })
-    
-    save_queries(queries)
-    return jsonify({"status": "success"}), 200
-
-@app.route('/api/get_queries', methods=['GET'])
-def get_queries():
-    return jsonify(load_queries()), 200
-
-@app.route('/api/log_feedback', methods=['POST'])
-def log_feedback():
-    data = request.json
-    valid_ratings = ['thumbs_up', 'thumbs_down']
-    
-    try:
-        rating = data.get('rating', '').lower()
-        if rating not in valid_ratings:
-            return jsonify({"error": "Invalid rating type"}), 400
-
-        with open(FEEDBACK_DB, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                datetime.now().isoformat(),
-                data.get('query', '').strip(),
-                data.get('response', '').strip(),
-                rating,
-                data.get('comments', '').strip()
-            ])
-        return jsonify({"status": "feedback recorded"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/test')
-def test():
-    return jsonify({"message": "Test successful"}), 200
-
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host=HOST, port=PORT, debug=DEBUG)

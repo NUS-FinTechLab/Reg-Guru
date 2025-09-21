@@ -4,19 +4,14 @@ import os
 from urllib.parse import urlparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
-import psycopg2
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
-from common.helper import downloadPdf, getHtml, getPdfLinks, feed_exists_pg
+from common.helper import downloadPdf, getHtml, getPdfLinks
+from common.base_scraper import BaseScraper
 
 BASE_URL = "https://www.fincen.gov"
 ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"
@@ -24,37 +19,11 @@ ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/
 # Global variable for destination directory
 DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'us', 'fincen')
 
-class FincenScraper:
+class FincenScraper(BaseScraper):
     def __init__(self):
+        super().__init__()  # Initialize the base class (database connection)
         self.baseUrl = BASE_URL
         self.advisoryUrl = ADVISORY_URL
-        self.db_conn = None
-        self._setup_database_connection()
-    
-    def _setup_database_connection(self):
-        """Set up database connection using environment variables"""
-        try:
-            self.db_conn = psycopg2.connect(
-                host=os.getenv("DB_HOST"),
-                port=os.getenv("DB_PORT"),
-                user=os.getenv("DB_USER"),
-                password=os.getenv("DB_PASSWORD"),
-                dbname=os.getenv("DB_NAME")
-            )
-            print(f"Connected to PostgreSQL database for duplicate checking")
-        except Exception as e:
-            print(f"Warning: Could not connect to database: {str(e)}")
-            print("Proceeding without duplicate filtering...")
-    
-    def _is_document_processed(self, url, title):
-        """Check if document already exists in database"""
-        if not self.db_conn:
-            return False
-        try:
-            return feed_exists_pg(self.db_conn, url, title)
-        except Exception as e:
-            print(f"Warning: Error checking database: {str(e)}")
-            return False
     
     def datetime_to_timestamp(self, datetime_str):
         """Convert ISO datetime string to timestamp"""
@@ -143,29 +112,23 @@ class FincenScraper:
             print(f"Error downloading PDF {pdf_link}: {str(e)}")
             return None
     
-    def close_connection(self):
-        """Close database connection"""
-        if self.db_conn:
-            try:
-                self.db_conn.close()
-                print("Database connection closed")
-            except Exception as e:
-                print(f"Error closing database connection: {str(e)}")
-
     def scrape(self, max_workers=10):
         """
         Scrape FinCEN advisories with parallel processing
         max_workers: Number of concurrent threads to use
         """
+        print("🌐 Fetching FinCEN advisory page...")
         html = getHtml(self.advisoryUrl)
         soup = BeautifulSoup(html, 'html.parser')
         
         advisoryLinks = set()
         current_url = self.advisoryUrl
+        page_count = 0
 
         # Process all pages starting with the base URL
         while True:
-            print(f"Scraping URL: {current_url}")
+            page_count += 1
+            print(f"📄 Processing page {page_count}: {current_url}")
             
             # Get all links to responding advisory resources page
             links = soup.find_all('a', href=True)
@@ -174,6 +137,7 @@ class FincenScraper:
             links = [a['href'] for a in links if '/resources/advisories/' in a['href']]
             links = [self.baseUrl + link if link.startswith('/') else link for link in links]
             advisoryLinks.update(links)
+            print(f"  📎 Found {len(links)} advisory links on this page")
             
             # Look for the next page link
             next_link = soup.find("a", class_="usa-pagination__next-page")
@@ -191,7 +155,7 @@ class FincenScraper:
         os.makedirs(DESTINATION_DIR, exist_ok=True)
         
         files_information = []
-        all_pdf_links = set()
+        all_pdf_links = []
         filtered_count = 0
         
         # Process advisory links in parallel
@@ -213,8 +177,10 @@ class FincenScraper:
                             'timestamp': result['timestamp'],
                             'title': result['title']
                         })
-                        # Collect all PDF links for downloading
-                        all_pdf_links.update(result['pdf_links'])
+                        # Collect all PDF links for downloading (avoid duplicates)
+                        for pdf_link in result['pdf_links']:
+                            if pdf_link not in all_pdf_links:
+                                all_pdf_links.append(pdf_link)
                     else:
                         filtered_count += 1  # Count filtered duplicates
                 except Exception as e:
