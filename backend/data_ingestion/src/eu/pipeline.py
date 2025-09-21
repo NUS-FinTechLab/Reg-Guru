@@ -6,7 +6,7 @@ class EUFeedPipeline(IngestionPipeline):
 
     def __init__(self):
         super().__init__()
-        self.ingestor = EUFeedIngestor("https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48ppy80IwdPmk3HJVPsD4fM281XNaoMTLQ6ifL58%3D")
+        self.ingestor = EUFeedIngestor("https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48ppy80IwdPmk3XxQMlkGOfbi%2BE8KLQfclbDnbig%3D")
         
 
     def ingest(self):

@@ -88,7 +88,7 @@ class EUFeedIngestor:
                 url = entry['link']
                 response = requests.get(url)
                 celex = entry['title'].split(":")[1].strip()
-                file_obj_key = new_feed_folder + '/' + celex + ".html"  # sanitize filename
+                file_obj_key = new_feed_folder + '/' + celex + ".xml"  # sanitize filename
                 s3.put_object(
                     Bucket=bucket_name,
                     Key=file_obj_key,
@@ -109,6 +109,9 @@ class EUFeedIngestor:
         else:
             print("No new documents from this feed.")
         return
+    
+    def get_log_id(self):
+        return log_id
     
     def run(self):
         self.parse()
