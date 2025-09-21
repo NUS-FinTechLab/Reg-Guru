@@ -37,6 +37,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.venv-bgem3/
 
 # Jupyter Notebook
 .ipynb_checkpoints
