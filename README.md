@@ -18,21 +18,26 @@ RDS connection
 2. Install dependencies and start the server:
    ```
    pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
    python app.py
    ```
 
 ### Frontend
-1. In a separate terminal, install Node.js dependencies:
+1. In a separate terminal, navigate to the frontend directory:
+   ```
+   cd frontend
+   ```
+2. Install Node.js dependencies:
    ```
    npm install
    ```
 
-2. (Optional) If on mac, run:
+3. (Optional) If on mac, run:
    ```
    export NODE_OPTIONS=--openssl-legacy-provider
    ```
 
-3. Start the development server:
+4. Start the development server:
    ```
    npm run dev
    ```

@@ -111,7 +111,7 @@ class EUFeedIngestor:
         return
     
     def get_log_id(self):
-        return log_id
+        return self.log_id
     
     def run(self):
         self.parse()

@@ -8,27 +8,56 @@ load_dotenv(override=True)
 # It's recommended to separate statements into a list and execute them one by one.
 # Don't let cursor execute a single long query with multiple statements separated by semicolon - it may lead to errors.
 def db_execute(statement, params=None):
-    conn = psycopg2.connect(
+    with psycopg2.connect(
         host=os.getenv("DB_HOST"),
         port=os.getenv("DB_PORT"),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         dbname=os.getenv("DB_NAME")
-    )
+    ) as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            if params:
+                cur.execute(statement, params)
+            else:
+                cur.execute(statement)
+            if cur.description:
+                result = cur.fetchall()
+            else:
+                result = None
+    return result
 
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if params:
-        cur.execute(statement, params)
-    else:
-        cur.execute(statement)
-    if cur.description:
-        result = cur.fetchall()
-    else:
-        result = None
+def db_insert_batch(statement, params):
+    """Insert a batch of data"""
+    with psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        dbname=os.getenv("DB_NAME")
+    ) as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            for values in params:
+                cur.execute(statement, values)
+    return
 
-    conn.commit()
-    cur.close()
-    conn.close()
+def db_execute_multiple(statements):
+    """Execute a batch of non-select statements"""
+    with psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        dbname=os.getenv("DB_NAME")
+    ) as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            if params:
+                cur.execute(statement, params)
+            else:
+                cur.execute(statement)
+            if cur.description:
+                result = cur.fetchall()
+            else:
+                result = None
     return result
 
 query = [
@@ -63,7 +92,7 @@ query = [
     """CREATE TABLE IF NOT EXISTS logs.feeds (
         id SERIAL PRIMARY KEY,
         time TIMESTAMTZ NOT NULL DEFAULT NOW(),
-        source_id TEXT NOT NULL REFERENCES ref.data_sources(id) ON DELETE RESTRICT,
+        source_id INT NOT NULL REFERENCES ref.data_sources(id) ON DELETE RESTRICT,
         remark TEXT,
         stage SMALLINT NOT NULL DEFAULT 0 REFERENCES ref.feed_stages(id) ON DELETE RESTRICT
     );""",

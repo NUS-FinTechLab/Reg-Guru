@@ -1,7 +1,6 @@
 import os
 import re
 import boto3
-import hashlib
 import pandas as pd
 from common.database import db_execute
 from bs4 import BeautifulSoup
@@ -23,7 +22,8 @@ class EUFeedEmbedder:
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.feed_obj = "data_ingestion/raw/eu/eurlex-feed"
         # self.chroma_directory = "s3://regguru/data_ingestion/chroma/eu"
-        self.chroma_directory = "backend/data_ingestion/chroma/eu"
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.chroma_directory = os.path.join(current_dir, '..', '..', 'chroma', 'eu', 'chromadb_eu')
         self.temp_collection_name = "eu-feed"
         return
     
@@ -46,46 +46,60 @@ class EUFeedEmbedder:
                 text = re.sub(r"\n+", "\n", text)
                 text = text.strip()
                 paragraphs.append(text)
+        plain_text = '\n'.join(paragraphs)
+        return plain_text
     
-    def extract_meta(self, log_id): # Should process metadata in advance and store in Silver?
-        """Return ready-to-use metadata"""
-        query = f"SELECT * FROM bronze.feeds_test_eu WHERE log_id = {log_id} LIMIT 2" # test
-        new_entries = db_execute(query)
-        meta = pd.DataFrame(new_entries, columns=new_entries[0].keys() if new_entries else [])
-        meta['celex'] = meta["title"].apply(lambda t: t.split(':')[1])
-        return meta
-    
-    def make_id(key):
-        # key is an s3 key
-        # data_ingestion/raw/...
-        # normalise key: Remove data_ingestion/raw/
-        norm_key = '/'.join(key.split('/')[2:])
-        return hashlib.md5(norm_key.encode("utf-8")).hexdigest()[:16]
+    def extract_meta(self, log_id):
+        query = f"SELECT title, link, published, author, celex_number FROM silver.metadata WHERE log_id = {log_id}"
+        meta = db_execute(query)
+        # Create a meta_df from meta
+        return meta_df
 
     def process_documents(self, log_id):
         new_meta = self.extract_meta(log_id)
-        ch_client = PersistentClient(path="./chroma_data")
+        ch_client = PersistentClient(path=self.chroma_directory)
         collection = ch_client.get_or_create_collection(self.temp_collection_name)
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,  # Slightly larger chunks
             chunk_overlap=200
         )
-        model = SentenceTransformer("BAAI/bge-m3")
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        print("model loaded")
         paginator = self.s3.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=self.bucket_name, Prefix=self.feed_obj+'/'+str(log_id)):
             for obj in page.get("Contents", []):
-                celex = obj.split('/')[-1].split('.')[0]
+                key = obj['Key']
+                celex = key.split('/')[-1].split('.')[0]
                 if celex != "metadata":
-                    text = self.extract_text(obj)
-                    meta = new_meta[new_meta['celex'] == celex].to_dict()
+                    text = self.extract_text(key)
+                    meta = new_meta[new_meta['celex_number'] == celex].to_dict()
                     chunks = text_splitter.split(text)
                     texts = [chunk for chunk in chunks]
                     embeddings = model.encode(texts)
+                    print("Embedded")
                     collection.add(
                         documents=texts,
                         metadatas=[meta for _ in range(len(texts))],
                         embedding=embeddings.embed_documents(texts),
-                        ids=[f"{self.make_id(obj)}_{i}" for i in range(len(texts))]
-                    )
-                    # ch_client.persist()
+                        ids=[f"{'/'.join(key.split('/')[2:])}_{i}" for i in range(len(texts))]
+                    ) # an s3 key: data_ingestion/raw/... # normalise key: Remove data_ingestion/raw/
+                    break
+            break
+        print("Processing finished")
         return
+    
+    def test_collection(self):
+        ch_client = PersistentClient(path=self.chroma_directory)
+        collection = ch_client.get_or_create_collection(self.temp_collection_name)
+        results = collection.query(
+            query_texts=[
+                "How to combat VAT fraud?"],
+            n_results=3
+        )
+        print(results["documents"])
+        return
+
+if __name__ == '__main__':
+    embedder = EUFeedEmbedder()
+    embedder.process_documents(18)
+    embedder.test_collection()

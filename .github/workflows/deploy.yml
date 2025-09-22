@@ -17,11 +17,11 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: build image
-        run: docker build ./backend -t uylulu/reg-guru-backend:latest
+        run: docker build ./backend -t iriszhuhao/reg-guru-backend:latest
 
       - name: push image
         run: |
-          docker push uylulu/reg-guru-backend:latest
+          docker push iriszhuhao/reg-guru-backend:latest
 
       # - name: SSH to EC2 and deploy
       #   uses: appleboy/ssh-action@v1
