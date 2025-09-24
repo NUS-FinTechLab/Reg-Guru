@@ -11,7 +11,7 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 # Application configuration
 DEBUG = True
 HOST = "0.0.0.0"
-PORT = 5000
+PORT = 5001 # Mac system process is using 5000
 
 # CORS settings
 CORS_ORIGINS = [

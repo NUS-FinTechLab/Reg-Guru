@@ -16,10 +16,14 @@ def db_execute(statement, params=None):
         dbname=os.getenv("DB_NAME")
     ) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            if params:
-                cur.execute(statement, params)
-            else:
-                cur.execute(statement)
+            try:
+                if params:
+                    cur.execute(statement, params)
+                else:
+                    cur.execute(statement)
+            except Exception as e:
+                print(f"Error executing statement: {statement} with params: {params}\nError: {e}")
+                raise
             if cur.description:
                 result = cur.fetchall()
             else:
@@ -37,7 +41,11 @@ def db_insert_batch(statement, params):
     ) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             for values in params:
-                cur.execute(statement, values)
+                try:
+                    cur.execute(statement, values)
+                except Exception as e:
+                    print(f"Error executing statement: {statement} with values: {values}\nError: {e}")
+                    raise
     return
 
 def db_execute_multiple(statements):
@@ -50,15 +58,13 @@ def db_execute_multiple(statements):
         dbname=os.getenv("DB_NAME")
     ) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            if params:
-                cur.execute(statement, params)
-            else:
-                cur.execute(statement)
-            if cur.description:
-                result = cur.fetchall()
-            else:
-                result = None
-    return result
+            for statement in statements:
+                try:
+                    cur.execute(statement)
+                except Exception as e:
+                    print(f"Error executing statement: {statement}\nError: {e}")
+                    raise
+    return
 
 query = [
     # Create schema - ref
@@ -91,7 +97,7 @@ query = [
     """CREATE SCHEMA IF NOT EXISTS logs;""",
     """CREATE TABLE IF NOT EXISTS logs.feeds (
         id SERIAL PRIMARY KEY,
-        time TIMESTAMTZ NOT NULL DEFAULT NOW(),
+        time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         source_id INT NOT NULL REFERENCES ref.data_sources(id) ON DELETE RESTRICT,
         remark TEXT,
         stage SMALLINT NOT NULL DEFAULT 0 REFERENCES ref.feed_stages(id) ON DELETE RESTRICT
@@ -100,23 +106,39 @@ query = [
     """CREATE SCHEMA IF NOT EXISTS bronze;""",
     """CREATE SCHEMA IF NOT EXISTS silver;""",
     """CREATE SCHEMA IF NOT EXISTS gold;""",
-    """CREATE TABLE IF NOT EXISTS bronze.feeds_test_eu (
+    """CREATE TABLE IF NOT EXISTS bronze.feeds_eu (
         id SERIAL PRIMARY KEY,
         log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
         title TEXT,
         summary TEXT,
+        celex_number TEXT,
         link TEXT,
         uri_id TEXT,
         guidislink BOOLEAN,
-        published TIMESTAMPTZ,
+        published TIMESTAMP,
         author TEXT,
         inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         flag SMALLINT NOT NULL DEFAULT 0 REFERENCES ref.review_status(id),
         remark TEXT
+        );""",
+    """CREATE TABLE IF NOT EXISTS silver.metadata (
+        id INT NOT NULL,
+        source_id INT NOT NULL,
+        log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
+        title TEXT,
+        link TEXT,
+        published TIMESTAMP,
+        author TEXT,
+        unique_id TEXT,
+        inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        flag SMALLINT NOT NULL DEFAULT 0,
+        CONSTRAINT pk_silver_metadata PRIMARY KEY (id, source_id),
+        CONSTRAINT fk_log_id FOREIGN KEY (log_id) REFERENCES logs.feeds(id) ON DELETE RESTRICT,
+        CONSTRAINT fk_flag FOREIGN KEY (flag) REFERENCES ref.review_status(id)
         );"""
 ]
 # for statement in query:
 #     db_execute(query)
 
 if __name__ == "__main__":
-    print("Initialise database.")
+    print("db_execute module")

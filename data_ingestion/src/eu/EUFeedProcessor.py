@@ -9,7 +9,7 @@ load_dotenv(override=True)
 class EUFeedProcessor:
     def __init__(self):
         self.log_id = None
-        self.raw_meta_table = 'bronze.feeds_test_eu'
+        self.raw_meta_table = 'bronze.feeds_eu'
         self.clean_meta_table = 'silver.metadata'
 
     def clean_metadata(self, log_id): 
@@ -17,7 +17,7 @@ class EUFeedProcessor:
         query = f"SELECT source_id FROM logs.feeds WHERE id = {log_id}"
         source_id = db_execute(query)
         source_id = source_id[0][0]
-        query = f"SELECT * FROM {self.raw_meta_table} WHERE log_id = {log_id}" # test
+        query = f"SELECT * FROM {self.raw_meta_table} WHERE log_id = {log_id} LIMIT 2" # test
         new_entries = db_execute(query)
         meta = pd.DataFrame(new_entries, columns=new_entries[0].keys() if new_entries else [])
         meta['celex_number'] = meta["title"].apply(lambda t: t.split(':')[1] if t else None)
@@ -30,20 +30,7 @@ class EUFeedProcessor:
             db_execute(query, values)
         print("Metadata cleaned and saved to silver.metadata")
         return
-
-
-# CREATE TABLE IF NOT EXISTS silver.metadata (
-#     id INT NOT NULL,
-#     source_id INT NOT NULL,
-#     log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
-#     title TEXT,
-#     link TEXT,
-#     published TIMESTAMPTZ,
-#     author TEXT,
-#     celex_number TEXT,
-#     inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-#     flag SMALLINT NOT NULL DEFAULT 0,
-#     CONSTRAINT pk_silver_metadata PRIMARY KEY (id, source_id),
-#     CONSTRAINT fk_log_id FOREIGN KEY (log_id) REFERENCES logs.feeds(id) ON DELETE RESTRICT,
-#     CONSTRAINT fk_flag FOREIGN KEY (flag) REFERENCES ref.review_status(id)
-# );
+    
+# if __name__ == "__main__":
+#     processor = EUFeedProcessor()
+#     processor.clean_metadata(18)

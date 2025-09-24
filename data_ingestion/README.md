@@ -77,8 +77,12 @@ This pipeline uses a dedicated virtual environment named `.venv-bgem3` with spec
 
    print(results['documents'])
     ```
-
 ## Notes for Developers
 
 - The venv is used because of a compatibility issue in BgeM3 embedding model since it's not supporting NumPy >= 2.
 ```
+
+## Database Connection in Terminal
+   ```bash
+   psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master -d postgres
+   ```

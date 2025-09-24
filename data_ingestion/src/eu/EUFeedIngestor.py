@@ -29,7 +29,7 @@ class EUFeedIngestor:
         return
     
     def log_db(self):
-        query = """SELECT published, uri_id FROM bronze.feeds_test_eu ORDER BY published DESC LIMIT 1"""
+        query = """SELECT published, uri_id FROM bronze.feeds_eu ORDER BY published DESC LIMIT 1"""
         result = db_execute(query)
         if result:
             latest_date = result[0][0]
@@ -49,7 +49,7 @@ class EUFeedIngestor:
             if latest_date and parser.parse(entry.published).astimezone(timezone.utc) <= latest_date:
                 break
             query = """
-                INSERT INTO bronze.feeds_test_eu (log_id, title, summary, link, uri_id, guidislink, published, author, flag, remark)
+                INSERT INTO bronze.feeds_eu (log_id, title, summary, link, uri_id, guidislink, published, author, flag, remark)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             values = (
@@ -67,13 +67,13 @@ class EUFeedIngestor:
 
         query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
         db_execute(query, (self.ds_id, self.ds_description, 2))
-        query = f"SELECT COUNT(id) FROM bronze.feeds_test_eu WHERE log_id = {self.log_id[0][0]}"
+        query = f"SELECT COUNT(id) FROM bronze.feeds_eu WHERE log_id = {self.log_id[0][0]}"
         new_entries_num = db_execute(query)
         print(f"{new_entries_num[0][0]} entries logged into database.")
         return
     
     def store_documents(self):
-        query = f"SELECT link, title FROM bronze.feeds_test_eu WHERE log_id = {self.log_id[0][0]}"
+        query = f"SELECT link, title FROM bronze.feeds_eu WHERE log_id = {self.log_id[0][0]}"
         new_entries = db_execute(query)
         if len(new_entries) > 0:
             new_feed_folder = self.s3_obj + '/' + str(self.log_id[0][0])
@@ -111,7 +111,7 @@ class EUFeedIngestor:
         return
     
     def get_log_id(self):
-        return self.log_id
+        return self.log_id[0][0]
     
     def run(self):
         self.parse()

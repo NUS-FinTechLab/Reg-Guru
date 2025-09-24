@@ -10,25 +10,23 @@ class EUFeedPipeline(IngestionPipeline):
         super().__init__()
         self.ingestor = EUFeedIngestor("https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48ppy80IwdPmk3XxQMlkGOfbi%2BE8KLQfclbDnbig%3D")
         self.processor = EUFeedProcessor()
-        self.embedder = EUFeedEmbedder()
+        self.embedder = EUFeedEmbedder("eu_feeds")
         
 
     def ingest(self):
-        """Download or read raw data (return list of file paths or bytes)."""
         self.ingestor.run()
         return
 
     def process(self):
-        """Process raw data wherever necessary."""
         log_id = self.ingestor.get_log_id()
         self.processor(log_id)
         return
 
-    def embed(self, docs):
-        """Embed documents into Chroma or other vector DB."""
-        pass
+    def embed(self):
+        log_id = self.ingestor.get_log_id()
+        self.embedder.process_documents(log_id)
 
     def run(self):
         raw = self.ingest()
-        docs = self.process(raw)
-        self.embed(docs)
+        docs = self.process()
+        self.embed()

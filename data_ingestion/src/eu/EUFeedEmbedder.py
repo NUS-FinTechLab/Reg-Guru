@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 class EUFeedEmbedder:
-    def __init__(self):
+    def __init__(self, collection_name):
         self.s3 = boto3.client(
             's3',
             aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"),
@@ -24,7 +24,7 @@ class EUFeedEmbedder:
         # self.chroma_directory = "s3://regguru/data_ingestion/chroma/eu"
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.chroma_directory = os.path.join(current_dir, '..', '..', 'chroma', 'eu', 'chromadb_eu')
-        self.temp_collection_name = "eu-feed"
+        self.collection_name = collection_name
         return
     
     def extract_text(self, key):
@@ -52,54 +52,60 @@ class EUFeedEmbedder:
     def extract_meta(self, log_id):
         query = f"SELECT title, link, published, author, celex_number FROM silver.metadata WHERE log_id = {log_id}"
         meta = db_execute(query)
-        # Create a meta_df from meta
+        meta_df = pd.DataFrame([dict(row) for row in meta])
+        meta_df['published'] = pd.to_datetime(meta_df['published'], errors='raise').apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
         return meta_df
 
     def process_documents(self, log_id):
         new_meta = self.extract_meta(log_id)
         ch_client = PersistentClient(path=self.chroma_directory)
-        collection = ch_client.get_or_create_collection(self.temp_collection_name)
+        collection = ch_client.get_or_create_collection(self.collection_name)
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,  # Slightly larger chunks
             chunk_overlap=200
         )
         model = SentenceTransformer("all-MiniLM-L6-v2")
         print("model loaded")
-        paginator = self.s3.get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket=self.bucket_name, Prefix=self.feed_obj+'/'+str(log_id)):
-            for obj in page.get("Contents", []):
+        response = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=self.feed_obj+'/'+str(log_id))
+        if "Contents" in response:
+            for obj in response["Contents"]:
                 key = obj['Key']
                 celex = key.split('/')[-1].split('.')[0]
-                if celex != "metadata":
+                if celex in new_meta['celex_number'].values: #Test
+                    print(f"Processing {key} ...")
                     text = self.extract_text(key)
-                    meta = new_meta[new_meta['celex_number'] == celex].to_dict()
-                    chunks = text_splitter.split(text)
+                    meta = new_meta[new_meta['celex_number'] == celex].to_dict(orient='records')[0] # Ensure single record
+                    print(meta)
+                    chunks = text_splitter.split_text(text)
                     texts = [chunk for chunk in chunks]
-                    embeddings = model.encode(texts)
-                    print("Embedded")
                     collection.add(
                         documents=texts,
                         metadatas=[meta for _ in range(len(texts))],
-                        embedding=embeddings.embed_documents(texts),
+                        embeddings=model.encode(texts),
                         ids=[f"{'/'.join(key.split('/')[2:])}_{i}" for i in range(len(texts))]
                     ) # an s3 key: data_ingestion/raw/... # normalise key: Remove data_ingestion/raw/
                     break
-            break
-        print("Processing finished")
+                else:
+                    print(f"CELEX {celex} not in metadata, skipping {key}.")
+            print("Embedding finished")
+        else:
+            print("No objects found for the given log_id.")           
+        
         return
     
     def test_collection(self):
         ch_client = PersistentClient(path=self.chroma_directory)
-        collection = ch_client.get_or_create_collection(self.temp_collection_name)
+        collection = ch_client.get_or_create_collection(self.collection_name)
+        assert collection.count() > 0, f"Collection {self.collection_name} is empty!"
         results = collection.query(
             query_texts=[
                 "How to combat VAT fraud?"],
             n_results=3
         )
-        print(results["documents"])
+        print(results)
         return
 
-if __name__ == '__main__':
-    embedder = EUFeedEmbedder()
-    embedder.process_documents(18)
-    embedder.test_collection()
+# if __name__ == '__main__':
+#     embedder = EUFeedEmbedder("eu_test")
+#     embedder.process_documents(18)
+#     embedder.test_collection()
