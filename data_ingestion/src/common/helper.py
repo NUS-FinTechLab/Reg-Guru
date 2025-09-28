@@ -3,6 +3,9 @@ from bs4 import BeautifulSoup
 import os
 import sqlite3
 import psycopg2
+import boto3
+from botocore.exceptions import ClientError
+
 
 def getHtml(url):
     r"""Sends a GET request.
@@ -41,6 +44,39 @@ def downloadPdf(url, dest_path):
     with open(dest_path, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
+
+def downloadPdftoS3(url, dest_key):
+    r"""Puts a PDF from a given URL as an S3 object specified by the object key.
+    """
+    # AWS S3 config
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY"),
+        region_name=os.getenv("AWS_REGION")
+    )
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, stream=True, timeout=50)
+        response.raise_for_status()
+
+        s3_client.put_object(
+            Bucket=os.getenv("S3_BUCKET_NAME"),
+            Key=dest_key,
+            Body=response.content,
+            ContentType="application/pdf"
+        )
+
+    except requests.HTTPError as e:
+        print("Download failed:", e)
+    except ClientError as e:
+        print("S3 upload failed:", e)
+    return
+
 # PostgreSQL-compatible helper functions
 def feed_exists_pg(conn, url, title, region='us'):
     r"""Checks if a feed with the same URL and title already exists in the PostgreSQL database.

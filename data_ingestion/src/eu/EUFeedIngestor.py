@@ -29,7 +29,7 @@ class EUFeedIngestor:
         return
     
     def log_db(self):
-        query = """SELECT published, uri_id FROM bronze.feeds_eu ORDER BY published DESC LIMIT 1"""
+        query = """SELECT published, uri_id FROM bronze.feeds_eu ORDER BY published DESC"""
         result = db_execute(query)
         if result:
             latest_date = result[0][0]
@@ -92,7 +92,7 @@ class EUFeedIngestor:
                 s3.put_object(
                     Bucket=bucket_name,
                     Key=file_obj_key,
-                    Body=response.content,
+                    Body=response.content,a
                     ContentType="application/xml; charset=utf-8"
                 )
             print(f"{len(new_entries)} documents uploaded to S3 {new_feed_folder}.")

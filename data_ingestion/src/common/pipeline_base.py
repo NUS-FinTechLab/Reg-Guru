@@ -1,24 +1,24 @@
 from abc import ABC, abstractmethod
 
 class IngestionPipeline(ABC):
-    """Base class for all region-specific pipelines."""
+    """ Base class for all region-specific pipelines. """
 
     @abstractmethod
     def ingest(self):
-        """Download or read raw data (return list of file paths or bytes)."""
+        """ Extract raw data and update database. Returns nothing. """
         pass
 
     @abstractmethod
-    def process(self, raw_data):
-        """Convert raw data into structured docs (list of dicts)."""
+    def process(self):
+        """ Process raw data into cleaned texts and metadata. Generator of mini-batches. """
         pass
 
     @abstractmethod
-    def embed(self, docs):
-        """Embed documents into Chroma or other vector DB."""
+    def embed(self, minibatch):
+        """ Embed a mini-batch of documents into vector DB. """
         pass
 
     def run(self):
-        raw = self.ingest()
-        docs = self.process(raw)
-        self.embed(docs)
+        self.ingest()
+        for minibatch in self.process():
+            self.embed(minibatch)

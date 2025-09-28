@@ -7,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 from common.helper import feed_exists_pg, insert_feed_if_not_exists_pg
 

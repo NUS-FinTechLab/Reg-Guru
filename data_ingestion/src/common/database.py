@@ -76,7 +76,7 @@ query = [
         description TEXT                     -- optional extra info
     );""",
     """INSERT INTO ref.data_sources (name, code, description) VALUES
-        ('eurlex feed', 'EU', 'European Union official publications and legal');""",     
+        ('eurlex feed', 'eu', 'European Union official publications and legal');""",     
     """CREATE TABLE IF NOT EXISTS ref.review_status (
         id SMALLINT PRIMARY KEY,
         description TEXT
@@ -126,10 +126,12 @@ query = [
         source_id INT NOT NULL,
         log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
         title TEXT,
-        link TEXT,
-        published TIMESTAMP,
+        weblink TEXT,
+        download_url TEXT,
+        published_date TIMESTAMP,
+        valid_date TIMESTAMP,
         author TEXT,
-        unique_id TEXT,
+        unique_id TEXT NOT NULL,
         inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         flag SMALLINT NOT NULL DEFAULT 0,
         CONSTRAINT pk_silver_metadata PRIMARY KEY (id, source_id),

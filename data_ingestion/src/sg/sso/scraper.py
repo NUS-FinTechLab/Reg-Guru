@@ -1,9 +1,18 @@
 from ast import parse
+from hmac import new
 import os
+from re import S
 import sys
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
 import time
+import pandas as pd
+import boto3
+import json
+from tqdm import tqdm
+
+# from common.base_scraper import BaseScraper
+from common.helper import downloadPdf, downloadPdftoS3, getHtml, getPdfLinks
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -11,125 +20,88 @@ src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
 from common.helper import downloadPdf, getHtml, getPdfLinks
-from common.base_scraper import BaseScraper
+from data_ingestion.src.common.BaseScraper import BaseScraper
 
 BASE_URL = "https://sso.agc.gov.sg"
 CURRENT_BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
 
 # Global variable for destination directory
 DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'sg', 'sso')
+DESTINATION_KEY = "data_ingestion/raw/sg/sso"
+
+# Sleep time
+SLEEP_TIME = 0.5
 
 class SsoScraper(BaseScraper):
-    def __init__(self):
-        super().__init__()  # Initialize the base class (database connection)
+    def __init__(self, ds_name, ds_code, ds_description):
+        super().__init__(ds_name, ds_code, ds_description)  # Initialize the base class (database connection)
         self.base_url = BASE_URL
         self.browse_url = CURRENT_BROWSE_URL
         self.last_fetched_html = None
+        self.s3_obj = DESTINATION_KEY
+    
+    def extract_meta_from_webpage(self, weblink):
+        """ Extract metadata from the document's webpage """
+        time.sleep(SLEEP_TIME)
+        html = getHtml(weblink)
+        soup = BeautifulSoup(html, 'html.parser')
+        desktop_timeline = soup.find('div', class_='desktop-timeline hidden-xs hidden-sm')
+        latest_valid_date = desktop_timeline.find_all('div', class_='timestamp')[-1].find("a", class_=None).text.strip()  # class_=None avoids the file-download link
+        latest_published_date = desktop_timeline.find_all('a', class_='timeline-popover')[-1]['data-date']
 
+        return {'valid_date': latest_valid_date, 'published_date': latest_published_date}
+    
+    #### extract_documents_from_page should get doc_id (route), (pdf) url, weblink, title, published_date in documents.
     def extract_documents_from_page(self, page_url):
-        """Extract document information (title, PDF link) from a single page"""
+        """ Extract document information (title, PDF link) from a single page """
+        print(f"Processing page: {page_url}")
+        # Add delay to respect website policy (6 seconds between requests)
+        time.sleep(SLEEP_TIME)
         try:
-            print(f"Processing page: {page_url}")
-            # Add delay to respect website policy (6 seconds between requests)
-            time.sleep(6)
             html = getHtml(page_url)
             # Store HTML for reuse to avoid duplicate requests
             self.last_fetched_html = html
             soup = BeautifulSoup(html, 'html.parser')
             
-            documents = []
-            
-            # Look for table rows containing document information
-            # Target the structure: <tr> containing both title and PDF download link
-            empty_rows = soup.find_all('tr', class_='')
-            alternate_rows = soup.find_all('tr', class_='alternate')
-            rows = empty_rows + alternate_rows  # Combine both types of rows
-            
-            for row in rows:
-                try:
-                    # Extract title from the first <td> containing <a class="non-ajax">
-                    title_cell = row.find('td')
-                    if not title_cell:
-                        continue
-                    
-                    title_link = title_cell.find('a', class_='non-ajax')
-                    if not title_link:
-                        continue
-                    
-                    title = title_link.get_text(strip=True)
-                    
-                    # Find PDF download link in the same row
-                    # Look for links with 'ViewType=Pdf' in href and 'file-download' class
-                    pdf_link = row.find('a', {
-                        'class': lambda x: x and 'file-download' in x,
-                        'href': lambda x: x and 'ViewType=Pdf' in x
-                    })
-                    
-                    if pdf_link:
-                        pdf_href = pdf_link['href']
-                        
-                        document = {
-                            'title': title,
-                            'pdf_href': pdf_href,
-                        }
-                        documents.append(document)
-                        print(f"Found document: {title} | PDF: {pdf_href}")
-                
-                except Exception as e:
-                    print(f"Error processing row: {str(e)}")
-                    continue
-            
-            print(f"Found {len(documents)} documents on page: {page_url}")
-            return documents
-            
+            # Look for table rows containing document information            
+            table = soup.find('table', class_="table browse-list")
+            rows = table.find('tbody').find_all('tr')
         except Exception as e:
-            print(f"Error processing page {page_url}: {str(e)}")
-            return []
-
-    def download_pdf_file(self, pdf_link):
-        """Download a single PDF file - handles SSO URLs by appending base URL"""
-        try:
-            print(f"Downloading PDF: {pdf_link}")
-            # Add delay to respect website policy (6 seconds between requests)
-            time.sleep(6)
+            print(f"Error fetching or parsing page {page_url}: {str(e)}")
+            raise
+        
+        documents = []  
+        for row in tqdm(rows):
+            try:
+                data_cells = row.find_all('td')
+                # Extract title and route (as a unique identifier)
+                title_cell = data_cells[0].find('a', class_="non-ajax")
+                title = title_cell.get_text(strip=True)
+                route = title_cell['href']
+                # Extract PDF link
+                pdf_href = data_cells[1].find('a', class_="non-ajax file-download")['href']
+                if pdf_href:
+                    # Extract other metadata
+                    weblink = urljoin(self.base_url, route)
+                    metadata = self.extract_meta_from_webpage(weblink)
+                    document = {
+                        'title': title,
+                        'route': '_'.join(route.split('/')),
+                        'weblink': weblink,
+                        'pdf_href': urljoin(self.base_url, pdf_href) if pdf_href.startswith('/') else pdf_href,
+                    }
+                    document.update(metadata)
+                    documents.append(document)
             
-            parsed_url = urlparse(pdf_link)
-            path_parts = [part for part in parsed_url.path.split('/') if part]
-            
-            if path_parts and 'ViewType=Pdf' in pdf_link:
-                filename = f"{path_parts[-1]}.pdf"
-            else:
-                filename = os.path.basename(parsed_url.path)
-                if not filename.endswith('.pdf'):
-                    filename += '.pdf'
-            
-            # Handle cases where filename might be empty or just .pdf
-            if not filename or filename == '.pdf':
-                # Generate filename from URL path or timestamp
-                if path_parts:
-                    filename = f"{path_parts[-1]}.pdf"
-                else:
-                    filename = f"document_{int(time.time())}.pdf"
-            
-            # Create full destination path
-            dest_path = os.path.join(DESTINATION_DIR, filename)
-            
-            # Avoid duplicate downloads
-            if os.path.exists(dest_path):
-                print(f"File already exists, skipping: {filename}")
-                return dest_path
-            
-            # Download using the complete URL
-            downloadPdf(pdf_link, dest_path)
-            print(f"Downloaded: {filename}")
-            return dest_path
-            
-        except Exception as e:
-            print(f"Error downloading PDF {pdf_link}: {str(e)}")
-            return None
+            except Exception as e:
+                print(f"Error processing row: {str(e)}")
+                continue
+        
+        print(f"Found {len(documents)} documents on page: {page_url}")
+        return documents
 
     def get_next_page_url(self, soup):
-        """Extract the next page URL from the current page - specifically for SSO pagination"""
+        """ Extract the next page URL from the current page - specifically for SSO pagination """
         try:
             # Look for the specific SSO next page button pattern
             # Target: <a href="/Browse/Act/Current/All/1?PageSize=100&SortBy=Title&SortOrder=ASC" class="btn btn-default" aria-label="Next Page">
@@ -149,19 +121,16 @@ class SsoScraper(BaseScraper):
                 next_url = urljoin(self.base_url, next_link['href'])
                 print(f"Found next page link (fallback): {next_link['href']}")
                 return next_url
-            
-            print("No next page button found")
-            return None
+            else:
+                print("No next page button found")
+                return None
             
         except Exception as e:
             print(f"Error finding next page URL: {str(e)}")
             return None
-
+      
     def scrape(self):
-        """
-        Scrape SSO documents with parallel processing
-        max_workers: Number of concurrent threads to use
-        """
+        """ Scrape SSO documents """
         # Create destination directory if it doesn't exist
         os.makedirs(DESTINATION_DIR, exist_ok=True)
         
@@ -172,8 +141,8 @@ class SsoScraper(BaseScraper):
         print(f"Starting SSO scraping from: {current_url}")
         
         # Add initial delay to respect robots.txt crawl-delay
-        print("Initial delay before first request (6 seconds)...")
-        time.sleep(6)
+        print(f"Initial delay before first request ({SLEEP_TIME} seconds)...")
+        time.sleep(SLEEP_TIME)
 
         # Navigate through all pages to collect document information
         while current_url:
@@ -201,8 +170,8 @@ class SsoScraper(BaseScraper):
                     current_url = next_url
                     print(f"Moving to next page: {next_url}")
                     # Add delay to respect website policy (6 seconds between requests)
-                    print("Waiting 6 seconds before next page request...")
-                    time.sleep(6)
+                    print(f"Waiting {SLEEP_TIME} seconds before next page request...")
+                    time.sleep(SLEEP_TIME)
                 else:
                     print("No more pages found or next button is disabled")
                     break
@@ -210,58 +179,122 @@ class SsoScraper(BaseScraper):
             except Exception as e:
                 print(f"Error processing page {current_url}: {str(e)}")
                 break
-        
-        # Process documents to check for duplicates and collect information
-        files_information = []
-        filtered_count = 0
-        
-        print(f"\n=== Processing Documents ===")
-        for doc in all_documents:
-            try:
-                title = doc['title']
-                pdf_href = doc['pdf_href']
-                
-                # Convert relative URL to absolute URL
-                full_pdf_url = urljoin(self.base_url, pdf_href) if pdf_href.startswith('/') else pdf_href
+        return all_documents
+    
+    def log_into_database(self, documents):
+        """ Insert new documents into the database, update existing ones, and mark disappeared ones """
 
-                # Check if document already exists in database
-                if self._is_document_processed(full_pdf_url, title, region='sg'):
-                    print(f"Document already processed, skipping: {title}")
-                    filtered_count += 1
-                    continue
-                
-                # Add to files information and PDF links for download
-                files_information.append({
-                    'url': full_pdf_url,
-                    'timestamp': None,
-                    'title': title
-                })
-                print(f"Processing document: {title}")
-                
-            except Exception as e:
-                print(f"Error processing document {doc.get('title', 'Unknown')}: {str(e)}")
-                filtered_count += 1
+        print(f"\n=== Logging Documents ===")
+        self.db_client.connect()
+        query = f"""CREATE TABLE IF NOT EXISTS bronze.feeds_{self.ds_code} (
+            id SERIAL PRIMARY KEY,
+            log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
+            title TEXT,
+            pdf_url TEXT,
+            weblink TEXT,
+            doc_id TEXT NOT NULL,
+            published_date TIMESTAMP,
+            valid_date TIMESTAMP,
+            inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            flag SMALLINT NOT NULL DEFAULT 0 REFERENCES ref.review_status(id),
+            remark TEXT
+        );"""
+        self.db_client.execute(query)
+
+        # Retrieve existing documents to avoid duplicates
+        query = f"""SELECT DISTINCT ON (doc_id) doc_id, valid_date FROM bronze.feeds_{self.ds_code} WHERE flag = 0 ORDER BY doc_id, valid_date DESC"""
+        result = self.db_client.execute(query)
+        hist_df = pd.DataFrame([dict(row) for row in result])
+        if not hist_df.empty:
+            hist_df['valid_date'] = pd.to_datetime(hist_df['valid_date'], errors='raise').apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
+            docs = pd.DataFrame(documents).merge(hist_df, how='all', on='doc_id', suffixes=('', '_lastest'))
+            
+            # Documents need to be updated
+            updated_docs = docs[docs['valid_date'] > docs['valid_date_latest']] # Need a module to handle updated docs, likely mark prev doc as obsolete and insert new doc as a record
+            query = f"""UPDATE bronze.feeds_{self.ds_code} SET flag = 3, remark = 'Superseded by newer version' WHERE doc_id = %s AND flag = 0"""
+            for _, doc in updated_docs.iterrows():
+                try:
+                    self.db_client.execute(query, (doc['doc_id'],))
+                except Exception as e:
+                    print(f"Error marking document {doc['doc_id']} as superseded: {str(e)}")
+
+            # Documents that no longer exist
+            disappeared_docs = docs[docs['valid_date'].isna()]
+            query = f"""UPDATE bronze.feeds_{self.ds_code} SET flag = 2, remark = 'No longer available' WHERE doc_id = %s AND flag = 0"""
+            for _, doc in disappeared_docs.iterrows():
+                try:
+                    self.db_client.execute(query, (doc['doc_id'],))
+                except Exception as e:
+                    print(f"Error marking document {doc['doc_id']} as disappeared: {str(e)}")
+            
+            # Insert new or updated documents
+            docs_to_insert = docs[docs['valid_date'].notna() & (docs['valid_date'] > docs['valid_date_latest'].fillna(0))]
+        else:
+            print("No existing documents found, inserting all scraped documents.")
+            docs_to_insert = pd.DataFrame(documents)
         
-        # Download PDFs sequentially with delays (no parallel processing due to website policy)
-        downloaded_files = []
-        print(f"\n=== Starting Sequential PDF Downloads (with 6-second delays) ===")
-        for i, info in enumerate(files_information, 1):
-            pdf_link = info['url']  # already absolute
-            print(f"Progress: {i}/{len(files_information)}")
-            try:
-                path = self.download_pdf_file(pdf_link)
-                if path:
-                    downloaded_files.append(path)
-                else:
-                    downloaded_files.append(None)  # preserve index alignment
-            except Exception as e:
-                print(f"Error downloading {pdf_link}: {str(e)}")
-                downloaded_files.append(None)
+        if docs_to_insert.empty:
+            print("No new or updated documents to insert.")
+            self.db_client.close()
+            return 0
+        else:
+            query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s) RETURNING id;"""
+            self.log_id = self.db_client.execute(query, (self.ds_id, self.ds_description, 1))[0][0]
+
+            query = f"""
+                INSERT INTO bronze.feeds_{self.ds_code} (log_id, title, pdf_url, weblink, doc_id, published_date, valid_date)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            values = [(self.log_id, doc['title'], doc['pdf_href'], doc['weblink'], doc['route'], doc['published_date'], doc['valid_date']) for _, doc in docs_to_insert.iterrows()]
+            for value in values:
+                try:
+                    self.db_client.execute(query, value)
+                except Exception as e:
+                    print(f"[{self.log_id}] Error inserting {value[1]}: {e}")
+                    query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
+                    self.db_client.execute(query, (self.ds_id, self.ds_description, 3))
+                    raise
+
+            query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
+            self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
+            query = f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = {self.log_id}"
+            new_entries_num = self.db_client.execute(query)
+            print(f"{new_entries_num[0][0]} entries logged into database.")
+            self.db_client.close()
+            return new_entries_num[0][0]
+
+    def store_documents(self, log_id):
+        """ Download and store documents to S3 """
+        print("\n=== Storing Documents to S3 ===")
+        self.db_client.connect()
+        query = f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}"
+        new_entries = self.db_client.execute(query)
+        self.db_client.close()
+
+        if len(new_entries) > 0:
+            new_feed_folder = self.s3_obj + '/' + str(log_id)
+            for entry in new_entries:
+                file_obj_key = new_feed_folder + '/' + entry['doc_id'] + ".pdf"  # sanitize filename
+                try:
+                    downloadPdftoS3(entry['pdf_url'], file_obj_key)
+                except Exception as e:
+                    print(f"Error downloading PDF {entry['pdf_url']}: {str(e)}")
                 
-        # Close database connection
-        self.close_connection()
-        
-        return {
-            'downloaded_files': downloaded_files,
-            'files_information': files_information
-        }
+            print(f"{len(new_entries)} documents uploaded to S3 {new_feed_folder}.")
+        else:
+            print("No new documents from this feed.")
+        return
+
+    def run(self):
+        all_documents = self.scrape()
+        new_entries_num = self.log_into_database(all_documents)
+        self.store_documents(self.log_id)
+        return new_entries_num
+
+# if __name__ == "__main__":
+#     scraper = SsoScraper(
+#         ds_name="sso acts",
+#         ds_code="sg",
+#         ds_description="Singapore Statutes Online official acts"
+#     )
+#     scraper.run()

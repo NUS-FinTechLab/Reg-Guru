@@ -1,6 +1,3 @@
-import os
-import re
-import boto3
 import pandas as pd
 from common.database import db_execute
 from bs4 import BeautifulSoup

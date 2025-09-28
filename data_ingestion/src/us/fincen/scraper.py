@@ -11,7 +11,7 @@ src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
 from common.helper import downloadPdf, getHtml, getPdfLinks
-from common.base_scraper import BaseScraper
+from data_ingestion.src.common.BaseScraper import BaseScraper
 
 BASE_URL = "https://www.fincen.gov"
 ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"

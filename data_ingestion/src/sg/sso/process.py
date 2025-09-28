@@ -1,156 +1,147 @@
-import pdfplumber
-import mimetypes
-import subprocess
-from bs4 import BeautifulSoup
 import os
+import io
 import sys
-import psycopg2
-from datetime import datetime
+import pdfplumber
+import pandas as pd
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
-from common.helper import insert_feed_if_not_exists_pg
+from common.BaseProcessor import BaseProcessor
 
-def process_sso_data(raw_data):
-    """
-    Process SSO file paths and return a list of dictionaries with structured information.
-    Note: Duplicate filtering is now handled in the scraper phase to avoid unnecessary downloads.
+BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
+class SsoProcessor(BaseProcessor):
+    def __init__(self, batch_size=12):
+        super().__init__(batch_size)
+        self.raw_meta_table = 'bronze.feeds_sg'
+        self.clean_meta_table = 'silver.metadata'
+        self.s3_key_prefix = 'data_ingestion/raw/sg/sso'
+
+    def clean_metadata(self, log_id): 
+        """ Prepare ready-to-use metadata in schema Silver """
+        self.db_client.connect()
+        # Check whether metadata has been cleaned
+        query = f"SELECT COUNT(id) FROM {self.clean_meta_table} WHERE log_id = {log_id} LIMIT 1"
+        result = self.db_client.execute(query)[0][0]
+        if result > 0: # If clean metadata exists, skip
+            print(f"{result} clean metadata already exist")
+            return
+        # Retrieve data source id
+        query = f"SELECT source_id FROM logs.feeds WHERE id = {log_id}"
+        source_id = self.db_client.execute(query)[0][0]
+        # Fetch new entries from raw metadata table
+        query = f"SELECT * FROM {self.raw_meta_table} WHERE log_id = {log_id}" # test
+        new_entries = self.db_client.execute(query)
+        meta = pd.DataFrame(new_entries, columns=new_entries[0].keys() if new_entries else [])
+        for _, row in meta.iterrows():
+            query = """
+                INSERT INTO silver.metadata (id, source_id, log_id, title, download_url, published_date, valid_date, unique_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            values = (row['id'], source_id, log_id, row['title'], row['pdf_url'], row['published_date'], row['valid_date'], row['doc_id'])
+            self.db_client.execute(query, values)
+        self.db_client.close()
+        print(f"{meta.shape[0]} metadata cleaned and saved to silver.metadata")
+        return
     
-    Args:
-        raw_data: Dictionary containing downloaded files and their information
-        db_path: Deprecated parameter (kept for compatibility)
-        
-    Returns:
-        list: List of processed data dictionaries, one for each file
-    """
-    file_paths = raw_data.get('downloaded_files', [])
-    files_information = raw_data.get('files_information', [])
-    processed_docs = []
-    
-    # Set up database connection for recording processed documents
-    conn = None
-    try:
-        conn = psycopg2.connect(
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            dbname=os.getenv("DB_NAME")
-        )
-        print(f"Connected to PostgreSQL database for recording processed documents")
-    except Exception as e:
-        print(f"Warning: Could not connect to database: {str(e)}")
-    processed_count = 0
-
-    for file_path, file_info in zip(file_paths, files_information):
-        if not os.path.exists(file_path):
-            continue
-            
-        # Extract metadata
-        url = file_info.get('url', 'N/A')
-        title = file_info.get('title', 'N/A')
-            
-        chunks = []
-        metadata = {
-            "title": title,
-            "link": url
-        }
-
+    def extract_metadata(self, log_id):
+        """ Retrieve clean metadata for this feed """
+        self.db_client.connect()
+        query = f"SELECT title, download_url, published_date, valid_date, unique_id FROM silver.metadata WHERE log_id = {log_id}"
         try:
-            # Check actual file type using the 'file' command
-            result = subprocess.run(['file', '--mime-type', file_path], 
-                                  capture_output=True, text=True)
-            mime_type = result.stdout.split(':')[1].strip()
-            
-            if 'pdf' in mime_type:
-                # Process as PDF
-                chunks = process_pdf_file(file_path)
-            elif 'html' in mime_type or 'text' in mime_type:
-                # Process as HTML/text file
-                chunks = process_html_file(file_path)
-            else:
-                continue
-                
+            meta = self.db_client.execute(query)
+            self.db_client.close()
         except Exception as e:
-            print(f"Error processing file {file_path}: {str(e)}")
-            continue
-
-        doc = {
-            "content": "\n".join(chunks),
-            "metadata": metadata,
-            "type": "sso_act", 
-        }
-        
-        print(doc)
-        
-        processed_docs.append(doc)
-        processed_count += 1
-        
-        # Record that we've processed this document (if database connection available)
-        if conn:
-            try:
-                # Create feed record: (id, url, timestamp, title, inserted_at)
-                current_time = datetime.now().isoformat()
-                # Generate a simple ID based on URL hash for consistency
-                doc_id = abs(hash(url)) % (10**8)  # Simple ID generation
-                feed_data = (doc_id, url, None, title, current_time)  # timestamp is None for SSO
+            print(f"Error retrieving clean metadata for {log_id}: {e}")
+        meta_df = pd.DataFrame([dict(row) for row in meta])
+        meta_df['published_date'] = pd.to_datetime(meta_df['published_date'], errors='raise').apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
+        meta_df['valid_date'] = pd.to_datetime(meta_df['valid_date'], errors='raise').apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
+        print("Clean metadata retrieved")
+        return meta_df
+    
+    def extract_texts(self, key):
+        """ Download and extract texts from a document on S3 """
+        chunks = []
+        response = self.s3_client.client.head_object(Bucket=BUCKET_NAME, Key=key)
+        content_type = response.get('ContentType')
+        main_type = content_type.split(";")[0].strip()
+        try:
+            if main_type == 'application/pdf':
+                pdf_obj = self.s3_client.client.get_object(Bucket=BUCKET_NAME, Key=key)
+                pdf_bytes = pdf_obj["Body"].read()
+                pdf_file = io.BytesIO(pdf_bytes)
                 
-                was_inserted, row_id = insert_feed_if_not_exists_pg(conn, feed_data, "sg")
-                if was_inserted:
-                    print(f"Recorded document in database: {title}")
-                
-            except Exception as e:
-                print(f"Warning: Could not record document in database: {str(e)}")
-    
-    # Close database connection
-    if conn:
-        conn.close()
-    
-    # Print processing summary
-    total_docs = len(file_paths)
-    print(f"\n=== Processing Summary ===")
-    print(f"Total documents to process: {total_docs}")
-    print(f"Documents successfully processed: {processed_count}")
-    print(f"Documents failed to process: {total_docs - processed_count}")
-    
-    return processed_docs
+                # Open with pdfplumber
+                with pdfplumber.open(pdf_file) as pdf:
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if text:
+                            chunks.append(text)
+        
+            elif main_type == 'text/html':
+                charset = content_type.split("charset=")[-1].strip() if "charset=" in content_type else 'utf-8'
+                obj = self.s3_client.client.get_object(Bucket=self.bucket_name, Key=key)
+                html_bytes = obj["Body"].read()
+                html_str = html_bytes.decode(charset)
+                soup = BeautifulSoup(html_str, "html.parser")
+                for tag in soup(["script", "style"]):
+                    tag.decompose()
 
-def process_pdf_file(file_path):
-    """Process a PDF file and extract text content."""
-    chunks = []
-    try:
-        with pdfplumber.open(file_path) as pdf:
-            for _, page in enumerate(pdf.pages, start=1):
-                text = page.extract_text()
-                if text:
-                    chunks.append(text)
+                text = soup.get_text()
+                if text.strip():
+                    chunks.append(text.strip())
+            
+            else:
+                print(f"Unsupported content type {main_type} for key {key}")
+        except Exception as e:
+            print(f"Error processing {key}: {str(e)}")
+            raise
+        return chunks
+    
+    def _process_a_document(self, log_id, row):
+        doc = {}
+        key = f"{self.s3_key_prefix}/{log_id}/{row['unique_id']}.pdf"
+        # print(f"Processing {key} ...")
+        raw_texts = self.extract_texts(key)
+        if len(raw_texts) == 0:
+            print(f"No texts to process [{key}]")
+        else:
+            texts = self.clean_texts(raw_texts)
+            if len(texts) == 0:
+                print(f"No texts to process [{key}] after cleaning")
+            else:
+                doc = { 
+                    "content": texts,
+                    "metadata": row.to_dict(),
+                }
+        return doc
+    
+    def run(self, log_id):
+        # Clean metadata
+        self.clean_metadata(log_id)
+        # Extract metadata (feed records)
+        new_metadata = self.extract_metadata(log_id) 
+        # Process and yield document in records batch by batch
+        processed_docs = []
+        for _, row in new_metadata.iterrows(): # If debugging, wrap it as a function `process_a_document`
+            doc = self._process_a_document(log_id, row)
+            processed_docs.append(doc)
+            if len(processed_docs) == self.batch_size:
+                yield processed_docs
+                processed_docs = []
+        if processed_docs:  # leftover docs
+            yield processed_docs
+        print(f"All documents are processed")
 
-            print(f"CHUNK: {chunks}")
-    except Exception as e:
-        print(f"Error processing PDF {file_path}: {str(e)}")
-    return chunks
 
-def process_html_file(file_path):
-    """Process an HTML file and extract text content."""
-    chunks = []
-    try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
-            content = file.read()
-            soup = BeautifulSoup(content, 'html.parser')
-            # Remove script and style elements
-            for script in soup(["script", "style"]):
-                script.decompose()
-            # Extract text
-            text = soup.get_text()
-            if text.strip():
-                chunks.append(text.strip())
-    except Exception as e:
-        print(f"Error processing HTML {file_path}: {str(e)}")
-    return chunks
+if __name__ == '__main__':
+    processor = SsoProcessor(batch_size=2)
+    for batch in processor.run(43):
+        print(batch[0])
+        break
