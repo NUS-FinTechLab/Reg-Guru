@@ -17,7 +17,7 @@ PORT = 5001 # Mac system process is using 5000
 CORS_ORIGINS = [
     "https://cheerful-cocada-8192f4.netlify.app",
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
 ]
 CORS_METHODS = ["GET", "POST", "OPTIONS"]
 CORS_HEADERS = ["Content-Type"]
@@ -27,6 +27,8 @@ VECTORSTORE_DIRECTORY = "database"
 TEMP_DIR = "temp"
 FEEDBACK_DB = "feedback_logs.csv"
 BACKUP_DIR = "feedback_backups"
+
+EMBEDDING_SERVICE_URL = os.getenv("EMBEDDING_SERVICE_URL", "http://localhost:6000")
 
 # LLM Configuration
 MODEL_NAME = "gpt-4o"
