@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Icon  from "@/components/ui/icon";
+import Icon from "@/components/ui/icon";
 import { icons } from "lucide-react";
 
 interface FeaturesProps {
@@ -10,40 +10,40 @@ interface FeaturesProps {
 
 const featureList: FeaturesProps[] = [
   {
-    icon: "FileText",
-    title: "All Document Format",
+    icon: "Library",
+    title: "Regulatory Knowledge",
     description:
-      "Upload any kind of document format -- PDF, PPT, JPG, XLS etc.",
+      "Ground every answer in curated regulatory sources, guidance, and interpretations.",
   },
   {
-    icon: "Sparkle",
-    title: "Smart & Accurate",
+    icon: "MessageSquare",
+    title: "Contextual RAG Chat",
     description:
-      "Reg-Guru AI Chatbot provides accurate answers for questions about your document.",
+      "Ask follow-up questions and get citations from an assistant tuned for compliance questions.",
   },
   {
-    icon: "Bookmark",
-    title: "Save Chat & Document History",
+    icon: "ListChecks",
+    title: "Checklist Builder",
     description:
-      "YEasily review all of the documents and chats you had with Reg-Guru.",
+      "Generate actionable task lists mapped to the requirements that matter to your processes.",
   },
   {
-    icon: "PictureInPicture",
-    title: "Multi Device Support",
+    icon: "Workflow",
+    title: "Process Blueprinting",
     description:
-      "Access Reg-Guru on the go, regardless of whether you're on desktop, tablet, or smartphone.",
+      "Outline compliance workflows and dependencies so your team knows what comes next.",
   },
   {
-    icon: "MousePointerClick",
-    title: "One click analysis",
+    icon: "BellRing",
+    title: "Change Alerts",
     description:
-      "Analyse any document in a single click.",
+      "Highlight regulatory updates and revisit checklists when rules evolve.",
   },
   {
-    icon: "Newspaper",
-    title: "Understand any document",
+    icon: "ShieldCheck",
+    title: "Team Alignment",
     description:
-      "Use Reg-guru chatbot AI to understand any kind of foreign document.",
+      "Share the same source of truth for obligations, owners, and status across the organization.",
   },
 ];
 
@@ -55,13 +55,11 @@ export const FeaturesSection = () => {
       </h2>
 
       <h2 className="text-3xl md:text-4xl text-center font-semibold mb-4">
-        What Reg-Guru does for you
+        How Reg-Guru keeps you compliant
       </h2>
 
       <h3 className="md:w-1/2 mx-auto text-lg text-center text-muted-foreground mb-8">
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptatem
-        fugiat, odit similique quasi sint reiciendis quidem iure veritatis optio
-        facere tenetur.
+        Give your team an assistant that turns dense regulatory text into guidance, action plans, and shared accountability.
       </h3>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -78,7 +76,7 @@ export const FeaturesSection = () => {
                   />
                 </div>
               </CardHeader>
-                <CardTitle className={"text-center uppercase font-mono"}>{title}</CardTitle>
+              <CardTitle className={"text-center uppercase font-mono"}>{title}</CardTitle>
               <CardContent className="text-muted-foreground text-center">
                 {description}
               </CardContent>
