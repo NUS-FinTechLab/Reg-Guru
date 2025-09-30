@@ -1,4 +1,4 @@
-import ChatDashboard from "@/app/chat/components/Chat";
+import ChatDashboard from "@/app/chat/components/ChatDashboard";
 import { Metadata } from "next";
 
 export default function Home() {

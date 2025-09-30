@@ -42,12 +42,12 @@ export default function ChatHeader({ isTyping, region, onRegionChange }: ChatHea
           </div>
         </div>
       </div>
-      
+
       <div className={"flex items-center space-x-4"}>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-white">Region:</span>
+          <span className="text-sm text-gray-800 dark:text-white">Region:</span>
           <Select value={region} onValueChange={onRegionChange}>
-            <SelectTrigger className="w-20 text-white">
+            <SelectTrigger className="w-20 text-gray-800 dark:text-white">
               <SelectValue placeholder="Select region" />
             </SelectTrigger>
             <SelectContent>
@@ -58,36 +58,6 @@ export default function ChatHeader({ isTyping, region, onRegionChange }: ChatHea
           </Select>
         </div>
         <ToggleTheme />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="w-10 h-10 rounded-full cursor-pointer">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="mx-4">
-            <DropdownMenuLabel>Chat Options</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Button variant={"ghost"} className={"cursor-pointer"}>
-                <Pencil className="" />
-                Edit
-              </Button>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Button variant={"ghost"} className={"cursor-pointer"}>
-                <Share className="" />
-                Share
-              </Button>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem>
-              <Button variant={"ghost"} className={"cursor-pointer text-red-400 hover:text-red-400"}>
-                <Trash2 className=" text-red-400 hover:text-red-400" />
-                Delete Chat
-              </Button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   );
