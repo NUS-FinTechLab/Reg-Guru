@@ -8,7 +8,11 @@ class EUFeedPipeline(IngestionPipeline):
 
     def __init__(self):
         super().__init__()
-        self.ingestor = EUFeedIngestor("https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48ppy80IwdPmk3XxQMlkGOfbi%2BE8KLQfclbDnbig%3D")
+        self.ingestor = EUFeedIngestor(
+            ds_name="eurlex feed",
+            ds_code="eu",
+            ds_description="European Union official publications and legal"
+        )
         self.processor = EUFeedProcessor()
         self.embedder = EUFeedEmbedder("eu_feeds")
         

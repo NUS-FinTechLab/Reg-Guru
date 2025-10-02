@@ -13,7 +13,7 @@ from common.database import db_execute, db_insert_batch
 
 class EUHistoricalDataProcessor:
     def __init__(self):
-        self.ds_id = 2
+        self.ds_id = 3
         self.ds_description = 'eurlex - historical doc'
         self.log_id = None
         self.s3_obj = "data_ingestion/raw/eu/eurlex-feed"

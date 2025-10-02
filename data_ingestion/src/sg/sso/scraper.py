@@ -1,25 +1,19 @@
-from ast import parse
-from hmac import new
 import os
-from re import S
 import sys
-from bs4 import BeautifulSoup
-from urllib.parse import urlparse, urljoin
 import time
 import pandas as pd
-import boto3
-import json
 from tqdm import tqdm
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 # from common.base_scraper import BaseScraper
-from common.helper import downloadPdf, downloadPdftoS3, getHtml, getPdfLinks
+from common.helper import downloadPdftoS3, getHtml
 
 # Add the parent directories to the Python path to resolve imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, '..', '..')
 sys.path.insert(0, src_dir)
 
-from common.helper import downloadPdf, getHtml, getPdfLinks
 from data_ingestion.src.common.BaseScraper import BaseScraper
 
 BASE_URL = "https://sso.agc.gov.sg"
@@ -38,6 +32,7 @@ class SsoScraper(BaseScraper):
         self.base_url = BASE_URL
         self.browse_url = CURRENT_BROWSE_URL
         self.last_fetched_html = None
+        self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.s3_obj = DESTINATION_KEY
     
     def extract_meta_from_webpage(self, weblink):
@@ -183,8 +178,6 @@ class SsoScraper(BaseScraper):
     
     def log_into_database(self, documents):
         """ Insert new documents into the database, update existing ones, and mark disappeared ones """
-
-        print(f"\n=== Logging Documents ===")
         self.db_client.connect()
         query = f"""CREATE TABLE IF NOT EXISTS bronze.feeds_{self.ds_code} (
             id SERIAL PRIMARY KEY,
@@ -265,20 +258,18 @@ class SsoScraper(BaseScraper):
 
     def store_documents(self, log_id):
         """ Download and store documents to S3 """
-        print("\n=== Storing Documents to S3 ===")
         self.db_client.connect()
         query = f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}"
         new_entries = self.db_client.execute(query)
         self.db_client.close()
-
         if len(new_entries) > 0:
             new_feed_folder = self.s3_obj + '/' + str(log_id)
             for entry in new_entries:
                 file_obj_key = new_feed_folder + '/' + entry['doc_id'] + ".pdf"  # sanitize filename
                 try:
-                    downloadPdftoS3(entry['pdf_url'], file_obj_key)
+                    self.s3_client.store_pdf(entry['pdf_url'], self.bucket_name, file_obj_key)
                 except Exception as e:
-                    print(f"Error downloading PDF {entry['pdf_url']}: {str(e)}")
+                    print(f"Error storing PDF {entry['pdf_url']}: {str(e)}")
                 
             print(f"{len(new_entries)} documents uploaded to S3 {new_feed_folder}.")
         else:
@@ -291,10 +282,10 @@ class SsoScraper(BaseScraper):
         self.store_documents(self.log_id)
         return new_entries_num
 
-# if __name__ == "__main__":
-#     scraper = SsoScraper(
-#         ds_name="sso acts",
-#         ds_code="sg",
-#         ds_description="Singapore Statutes Online official acts"
-#     )
-#     scraper.run()
+if __name__ == "__main__":
+    scraper = SsoScraper(
+        ds_name="sso acts",
+        ds_code="sg",
+        ds_description="Singapore Statutes Online official acts"
+    )
+    scraper.run()

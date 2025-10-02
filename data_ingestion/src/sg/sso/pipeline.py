@@ -15,7 +15,11 @@ class SsoPipeline(IngestionPipeline):
     
     def __init__(self, process_batch_size=12):
         self.process_batch_size=process_batch_size
-        self.scraper = SsoScraper()
+        self.scraper = SsoScraper(
+            ds_name="sso acts",
+            ds_code="sg",
+            ds_description="Singapore Statutes Online official acts"
+        )
         self.processor = SsoProcessor(self.process_batch_size)
 
     def ingest(self):
