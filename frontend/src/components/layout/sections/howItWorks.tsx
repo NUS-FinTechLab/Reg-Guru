@@ -12,28 +12,28 @@ interface HowItWorksProps {
 
 const howItWorksList: HowItWorksProps[] = [
   {
-    icon: "Paperclip",
-    title: "Upload any document",
+    icon: "Target",
+    title: "State your objective",
     description:
-        "PDF, Word, Excel, PowerPoint, or plain text",
+        "Tell Reg-Guru which regulation, industry, or control you need to tackle.",
   },
   {
     icon: "MessageCircle",
-    title: "Ask anything",
+    title: "Chat with RAG",
     description:
-        "Type your question in natural language",
+        "Ask follow-up questions and receive cited answers sourced from trusted guidance.",
   },
   {
-    icon: "Text",
-    title: "Get precise answers",
+    icon: "ListChecks",
+    title: "Generate the checklist",
     description:
-        "AI extracts exactly what you need in seconds",
+        "Turn insights into structured tasks, owners, and due dates in seconds.",
   },
   {
-    icon: "Pin",
-    title: "Save Chats",
+    icon: "BarChart3",
+    title: "Track and refine",
     description:
-        "Your chats will be saved as history, You can always look back.",
+        "Update progress, capture notes, and iterate as requirements evolve.",
   },
 ];
 
@@ -72,7 +72,7 @@ export const HowItWorksSection = () => {
               How Reg-Guru Works
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Reg-Guru uses AI to study your documents and answer your questions
+              Reg-Guru combines retrieval-augmented intelligence with curated legal insight to guide every step of your compliance program.
             </p>
           </div>
 

@@ -4,14 +4,24 @@ import csv
 from datetime import datetime
 from hashlib import md5
 import json
+from typing import List
+
+import requests
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from apscheduler.schedulers.background import BackgroundScheduler
+
 from .config import (
-    VECTORSTORE_DIRECTORY, TEMP_DIR, FEEDBACK_DB, BACKUP_DIR,
-    MODEL_NAME, MODEL_TEMPERATURE, RETRIEVAL_K, PROMPT_TEMPLATE
+    VECTORSTORE_DIRECTORY,
+    TEMP_DIR,
+    FEEDBACK_DB,
+    BACKUP_DIR,
+    MODEL_NAME,
+    MODEL_TEMPERATURE,
+    RETRIEVAL_K,
+    PROMPT_TEMPLATE,
+    EMBEDDING_SERVICE_URL,
 )
-from .helper import get_chroma_collection
 
 # Initialize LLM components
 llm = ChatOpenAI(model=MODEL_NAME, temperature=MODEL_TEMPERATURE)
@@ -45,19 +55,13 @@ def process_chat_query(user_message, region="us"):
     """Process chat query using ChromaDB for a specific region."""
     if not user_message.strip():
         raise ValueError("Empty message")
-    
+
     try:
-        # Retrieve respective ChromaDB collection based on region
-        collection = get_chroma_collection(region)
-        
-        if collection.count() == 0:
+        if _get_collection_count(region) == 0:
             raise FileNotFoundError(f"No documents found in {region} region collection")
-        
+
         # Query the collection for relevant documents
-        results = collection.query(
-            query_texts=[user_message],
-            n_results=RETRIEVAL_K
-        )
+        results = _query_embedding_service([user_message], region, RETRIEVAL_K)
         
         # Extract documents and metadata from results
         documents = results.get('documents', [[]])[0]
@@ -140,16 +144,11 @@ def query_chroma_collection(user_message, region="us", n_results=5):
         list: List of relevant documents from ChromaDB
     """
     try:
-        collection = get_chroma_collection(region)
-        
-        if collection.count() == 0:
+        if _get_collection_count(region) == 0:
             print(f"No documents found in {region} region collection")
             return []
         
-        results = collection.query(
-            query_texts=[user_message],
-            n_results=n_results
-        )
+        results = _query_embedding_service([user_message], region, n_results)
         
         # Extract documents from results
         documents = results.get('documents', [[]])[0]
@@ -241,3 +240,51 @@ def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
         raise FileNotFoundError("No documents available in any source")
     
     return "I found some relevant information but couldn't process it properly. Please try again."
+
+
+def _embedding_service_base_url() -> str:
+    url = (EMBEDDING_SERVICE_URL or "").strip()
+    if not url:
+        raise RuntimeError("EMBEDDING_SERVICE_URL is not configured")
+    return url.rstrip('/')
+
+
+def _query_embedding_service(query_texts: List[str], region: str, n_results: int):
+    url = f"{_embedding_service_base_url()}/query"
+    payload = {
+        "query_texts": query_texts,
+        "region": region,
+        "n_results": n_results,
+    }
+
+    try:
+        response = requests.post(url, json=payload, timeout=45)
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise RuntimeError(f"Failed to query embedding service: {exc}") from exc
+
+    return {
+        "documents": data.get("documents", [[]]),
+        "metadatas": data.get("metadatas", [[]]),
+        "distances": data.get("distances", [[]]),
+    }
+
+
+def _get_collection_count(region: str) -> int:
+    url = f"{_embedding_service_base_url()}/collections/{region}/count"
+
+    try:
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise RuntimeError(f"Failed to fetch collection count: {exc}") from exc
+
+    count = data.get("count")
+    if isinstance(count, int):
+        return count
+    try:
+        return int(count)
+    except (TypeError, ValueError):
+        return 0
