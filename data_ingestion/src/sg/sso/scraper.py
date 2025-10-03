@@ -235,7 +235,7 @@ class SsoScraper(BaseScraper):
             self.db_client.execute(query, (self.ds_id, self.ds_description, 1))
             query = f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = {self.log_id}"
             new_entries_num = self.db_client.execute(query)
-            print(f"{new_entries_num[0][0]} entries logged into database.")
+            print(f"{new_entries_num[0][0]} entries logged into bronze.feeds_{self.ds_code}.")
             self.db_client.close()
             return new_entries_num[0][0]
 

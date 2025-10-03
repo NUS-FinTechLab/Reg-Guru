@@ -6,7 +6,7 @@ from embedder import EUFeedEmbedder
 class EUFeedPipeline(BasePipeline):
     """EU pipeline implementation."""
 
-    def __init__(self, process_batch_size):
+    def __init__(self, process_batch_size=12):
         super().__init__()
         self.ds_code="eu"
         self.process_batch_size=process_batch_size
