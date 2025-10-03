@@ -8,8 +8,7 @@ import boto3
 import requests
 import pandas as pd
 from tqdm import tqdm
-from common.database import db_execute, db_insert_batch
-
+from data_ingestion.src.pipelines.init_database import db_execute, db_insert_batch
 
 class EUHistoricalDataProcessor:
     def __init__(self):
@@ -36,10 +35,10 @@ class EUHistoricalDataProcessor:
         
         # Log entries
         query = """
-                INSERT INTO bronze.feeds_eu (log_id, title, celex_number, link, published, author, flag)
+                INSERT INTO bronze.feeds_eu (log_id, title, celex_number, link, published, published_tz, author)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-        values = [(self.log_id[0][0], e['Title'], e['CELEX number'], self.make_link(e['CELEX number']), self.keep_earliest_date(e['Date of publication']), e['Author'], 0) for _, e in entries.iterrows()]
+        values = [(self.log_id[0][0], e['Title'], e['CELEX number'], self.make_link(e['CELEX number']), self.keep_earliest_date(e['Date of publication']),self.keep_earliest_date(e['Date of publication']), e['Author']) for _, e in entries.iterrows()]
         db_insert_batch(query, values)
         
         # Log logs - success

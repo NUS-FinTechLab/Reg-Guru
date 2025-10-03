@@ -1,39 +1,24 @@
 import os
-import sys
 import time
 import pandas as pd
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from common.helper import getHtml
+from common.BaseScraper import BaseScraper
 
-# from common.base_scraper import BaseScraper
-from common.helper import downloadPdftoS3, getHtml
-
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
-
-from data_ingestion.src.common.BaseScraper import BaseScraper
-
-BASE_URL = "https://sso.agc.gov.sg"
-CURRENT_BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
-
-# Global variable for destination directory
-DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'sg', 'sso')
-DESTINATION_KEY = "data_ingestion/raw/sg/sso"
-
-# Sleep time
 SLEEP_TIME = 0.5
+BASE_URL = "https://sso.agc.gov.sg"
+BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
 
 class SsoScraper(BaseScraper):
     def __init__(self, ds_name, ds_code, ds_description):
         super().__init__(ds_name, ds_code, ds_description)  # Initialize the base class (database connection)
         self.base_url = BASE_URL
-        self.browse_url = CURRENT_BROWSE_URL
+        self.browse_url = BROWSE_URL
         self.last_fetched_html = None
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
-        self.s3_obj = DESTINATION_KEY
+        self.s3_obj = "data_ingestion/raw/sg/sso"
     
     def extract_meta_from_webpage(self, weblink):
         """ Extract metadata from the document's webpage """
@@ -126,8 +111,6 @@ class SsoScraper(BaseScraper):
       
     def scrape(self):
         """ Scrape SSO documents """
-        # Create destination directory if it doesn't exist
-        os.makedirs(DESTINATION_DIR, exist_ok=True)
         
         all_documents = []
         current_url = self.browse_url
@@ -232,7 +215,7 @@ class SsoScraper(BaseScraper):
             return 0
         else:
             query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s) RETURNING id;"""
-            self.log_id = self.db_client.execute(query, (self.ds_id, self.ds_description, 1))[0][0]
+            self.log_id = self.db_client.execute(query, (self.ds_id, self.ds_description, 0))[0][0]
 
             query = f"""
                 INSERT INTO bronze.feeds_{self.ds_code} (log_id, title, pdf_url, weblink, doc_id, published_date, valid_date)
@@ -245,11 +228,11 @@ class SsoScraper(BaseScraper):
                 except Exception as e:
                     print(f"[{self.log_id}] Error inserting {value[1]}: {e}")
                     query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
-                    self.db_client.execute(query, (self.ds_id, self.ds_description, 3))
+                    self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
                     raise
 
             query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
-            self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
+            self.db_client.execute(query, (self.ds_id, self.ds_description, 1))
             query = f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = {self.log_id}"
             new_entries_num = self.db_client.execute(query)
             print(f"{new_entries_num[0][0]} entries logged into database.")
@@ -284,8 +267,8 @@ class SsoScraper(BaseScraper):
 
 if __name__ == "__main__":
     scraper = SsoScraper(
-        ds_name="sso acts",
-        ds_code="sg",
-        ds_description="Singapore Statutes Online official acts"
+        ds_name="sso acts (test)",
+        ds_code="te",
+        ds_description="Singapore Statutes Online official acts (test)"
     )
     scraper.run()

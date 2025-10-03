@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class IngestionPipeline(ABC):
+class BasePipeline(ABC):
     """ Base class for all region-specific pipelines. """
 
     @abstractmethod

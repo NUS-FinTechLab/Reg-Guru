@@ -7,16 +7,17 @@ import json
 import feedparser
 import requests
 from dateutil import parser
-from datetime import timezone
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from common import BaseScraper
+from common.BaseScraper import BaseScraper
+
+RSS_URL = "https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48ppy80IwdPmk3XxQMlkGOfbi%2BE8KLQfclbDnbig%3D"
 
 class EUFeedIngestor(BaseScraper):
     def __init__(self, ds_name, ds_code, ds_description):
         super().__init__(ds_name, ds_code, ds_description)
-        self.rss_url = "https://eur-lex.europa.eu/EN/display-feed.rss?myRssId=zqe48ppy80IwdPmk3XxQMlkGOfbi%2BE8KLQfclbDnbig%3D"
+        self.rss_url = RSS_URL
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.s3_obj = "data_ingestion/raw/eu/eurlex-feed"
         self.s3_obj_mtd = "data_ingestion/raw/eu/eurlex-feed-metadata"
@@ -25,12 +26,15 @@ class EUFeedIngestor(BaseScraper):
 
     def parse(self):
         documents = feedparser.parse(self.rss_url)
-        print(f"Feed parsed with {len(documents.entries)} entries.")
-        return documents
+        if documents.status != 200:
+            raise Exception(f"Abnormal parsing: {documents.status}")
+        entries = sorted(documents.entries, key=lambda x: parser.parse(x['published']), reverse=True)[10:12]
+        print(f"Feed parsed with {len(entries)} entries.")
+        return entries
     
-    def log_into_database(self, documents):
+    def log_into_database(self, entries):
         # Skip if no documents from feed to insert
-        if len(documents) == 0:
+        if len(entries) == 0:
             print("No data from feed to insert.")
             return 0
         
@@ -46,6 +50,7 @@ class EUFeedIngestor(BaseScraper):
             uri_id TEXT,
             guidislink BOOLEAN,
             published TIMESTAMP,
+            published_tz TIMESTAMPTZ,
             author TEXT,
             inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             flag SMALLINT NOT NULL DEFAULT 0 REFERENCES ref.review_status(id),
@@ -54,16 +59,16 @@ class EUFeedIngestor(BaseScraper):
         self.db_client.execute(query)
 
         # Retrieve existing documents to avoid duplicates
-        query = f"""SELECT published FROM bronze.feeds_{self.ds_code} ORDER BY published DESC LIMIT 1"""
+        query = f"""SELECT published_tz FROM bronze.feeds_{self.ds_code} ORDER BY published_tz DESC LIMIT 1"""
         result = self.db_client.execute(query)
         if len(result) > 0:
             latest_date = result[0][0]
-            self.docs_to_insert = [entry for entry in documents if parser.parse(entry.published).replace(tzinfo=None) > latest_date]
+            self.docs_to_insert = [entry for entry in entries if parser.parse(entry.published) > latest_date]
         else:
             print("No existing documents found, inserting all scraped documents.")
-            self.docs_to_insert = documents
+            self.docs_to_insert = entries
 
-
+        print(len(self.docs_to_insert))
         if len(self.docs_to_insert) == 0:
             print("No new or updated documents to insert.")
             self.db_client.close()
@@ -71,27 +76,30 @@ class EUFeedIngestor(BaseScraper):
         else:
             # Logging starts
             query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s) RETURNING id;"""
-            self.log_id = self.db_client.execute(query, (self.ds_id, self.ds_description, 1))[0][0]
+            self.log_id = self.db_client.execute(query, (self.ds_id, self.ds_description, 0))[0][0]
             print(f"Log ID: {self.log_id}")
 
             # Insert entries
+            query = f"""
+                INSERT INTO bronze.feeds_{self.ds_code} (log_id, title, summary, link, uri_id, guidislink, published, published_tz, author)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
             for entry in self.docs_to_insert: # feed entries are desc ordered by time
                 values = (
                     self.log_id, entry.title, entry.summary, entry.link, entry.id, entry.guidislink,
-                    parser.parse(entry.published).astimezone(timezone.utc),
-                    entry.author, 0, None
+                    parser.parse(entry.published).date(), parser.parse(entry.published), entry.author
                 )
                 try:
                     self.db_client.execute(query, values)
                 except Exception as e:
                     print(f"[{self.log_id}] Error inserting entry {entry.id}: {e}")
                     query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
-                    self.db_client.execute(query, (self.ds_id, self.ds_description, 3))
+                    self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
                     raise
             
             # Logging succeeds
             query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
-            self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
+            self.db_client.execute(query, (self.ds_id, self.ds_description, 1))
             
             # Print summary
             query = f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = {self.log_id}"
@@ -103,7 +111,7 @@ class EUFeedIngestor(BaseScraper):
     
     def store_documents(self, log_id):
         self.db_client.connect()
-        query = f"SELECT link, title FROM bronze.feeds_eu WHERE log_id = {log_id}"
+        query = f"SELECT link, title FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}"
         new_entries = self.db_client.execute(query)
         self.db_client.close()
         # If there are new documents to store
@@ -137,7 +145,7 @@ class EUFeedIngestor(BaseScraper):
                             Body=json.dumps(entries_list).encode('utf-8'),
                             ContentType="application/json; charset=utf-8"
                         )
-                    print(f"Metadata {log_id}.json uploaded to S3 {new_feed_folder}.")
+                    print(f"Metadata {log_id}.json uploaded to S3 {self.s3_obj_mtd}.")
                 except TypeError as e:
                     print(f"docs_to_insert is None or not iterable: {e}")
                     raise
@@ -151,21 +159,15 @@ class EUFeedIngestor(BaseScraper):
         return self.log_id
     
     def run(self):
-        self.parse()
-        print(self.feed.entries[0:2])
-        # self.log_db()
-        # self.store_documents()
-        return
+        entries = self.parse()
+        new_entries_num = self.log_into_database(entries)
+        self.store_documents(self.log_id)
+        return new_entries_num
     
 if __name__ == "__main__":
-   ingestor = EUFeedIngestor(
-        ds_name="eurlex feed",
-        ds_code="eu",
-        ds_description="European Union official publications and legal"
+    ingestor = EUFeedIngestor(
+        ds_name="eurlex feed (test)",
+        ds_code="te",
+        ds_description="European Union official publications and legal (test)"
     )
-   ingestor.db_client.connect()
-   result = ingestor.db_client.execute("""SELECT published FROM bronze.feeds_eu WHERE published > '2025-12-31' ORDER BY published DESC LIMIT 1""")
-   ingestor.db_client.close()
-   print(type(result[0]))
-
-#    ingestor.run()
+    ingestor.run()
