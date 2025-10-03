@@ -1,14 +1,6 @@
-import os
-import sys
-
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
-
-from common import IngestionPipeline
-from sg.sso.scraper import SsoScraper
-from sg.sso.process import SsoProcessor
+from ...common import IngestionPipeline
+from .scraper import SsoScraper
+from .process import SsoProcessor
 
 class SsoPipeline(IngestionPipeline):
     """SSO-specific pipeline implementation with FlagEmbedding support."""

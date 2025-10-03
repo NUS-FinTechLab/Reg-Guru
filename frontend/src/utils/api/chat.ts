@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/utils/constants";
-import { ChatRequest, ChatResponse } from "./types";
+import { ChatHistoryResponse, ChatRequest, ChatResponse } from "./types";
 
 /**
  * Send a chat message to the backend
@@ -11,7 +11,8 @@ export const sendChatMessage = async (request: ChatRequest): Promise<ChatRespons
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            message: { text: request.message.text },
+            chatId: request.chatId,
+            message: { text: request.text },
             region: request.region?.toLowerCase() || "us"
         }),
     });
@@ -23,10 +24,16 @@ export const sendChatMessage = async (request: ChatRequest): Promise<ChatRespons
     return response.json();
 };
 
-/**
- * @deprecated Save query functionality has been removed per user request
- */
-export const saveQuery = async (queryData: any): Promise<void> => {
-    console.warn("saveQuery: Save query functionality has been removed");
-    // No-op function for backward compatibility
+export const fetchChatHistory = async (chatId: string): Promise<ChatHistoryResponse> => {
+    const response = await fetch(`${SERVER_URL}/api/chat/${chatId}`);
+
+    if (response.status === 404) {
+        throw new Error("not_found");
+    }
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
 };

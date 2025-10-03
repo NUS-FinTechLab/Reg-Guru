@@ -4,17 +4,10 @@ This script orchestrates the execution of FinCEN (US) and SSO (Singapore) pipeli
 """
 
 import sys
-import os
 from datetime import datetime
 
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..')
-sys.path.insert(0, src_dir)
-
-# Import pipeline classes
-from us.fincen.pipeline import FincenPipeline
-from sg.sso.pipeline import SsoPipeline
+from ..us.fincen.pipeline import FincenPipeline
+from ..sg.sso.pipeline import SsoPipeline
 
 def run_pipeline(pipeline_class, name):
     """Run a single pipeline with error handling."""

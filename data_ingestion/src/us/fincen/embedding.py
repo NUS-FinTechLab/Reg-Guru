@@ -1,4 +1,8 @@
-from common.embedding_helper import get_testing_chromadb_client, get_text_splitter, embed_batch
+from ...common.embedding_helper import (
+    embed_batch,
+    get_testing_chromadb_client,
+    get_text_splitter,
+)
 
 # FinCEN-specific configuration
 CHUNK_SIZE = 1000

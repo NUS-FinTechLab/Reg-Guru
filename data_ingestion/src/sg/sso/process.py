@@ -1,18 +1,12 @@
 import os
 import io
-import sys
 import pdfplumber
 import pandas as pd
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
-
-from common.BaseProcessor import BaseProcessor
+from ...common.BaseProcessor import BaseProcessor
 
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 

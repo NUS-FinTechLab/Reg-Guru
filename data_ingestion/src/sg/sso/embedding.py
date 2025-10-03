@@ -1,12 +1,9 @@
-import os
-import sys
-
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
-
-from common.embedding_helper import get_testing_chromadb_client, get_text_splitter, embed_batch, embed_texts
+from ...common.embedding_helper import (
+    embed_batch,
+    embed_texts,
+    get_testing_chromadb_client,
+    get_text_splitter,
+)
 
 # SSO-specific configuration
 CHUNK_SIZE = 1000

@@ -1,23 +1,19 @@
 from bs4 import BeautifulSoup
-import sys
 import os
 from urllib.parse import urlparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
+from ...common import BaseScraper
+from ...common.helper import downloadPdf, getHtml
 
-from common.helper import downloadPdf, getHtml, getPdfLinks
-from data_ingestion.src.common.BaseScraper import BaseScraper
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 BASE_URL = "https://www.fincen.gov"
 ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"
 
 # Global variable for destination directory
-DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'us', 'fincen')
+DESTINATION_DIR = os.path.join(CURRENT_DIR, '..', '..', '..', '..', 'data_ingestion', 'raw', 'us', 'fincen')
 
 class FincenScraper(BaseScraper):
     def __init__(self):

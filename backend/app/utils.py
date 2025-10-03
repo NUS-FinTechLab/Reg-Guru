@@ -1,7 +1,5 @@
 import os
 import shutil
-import csv
-from datetime import datetime
 from hashlib import md5
 import json
 from typing import List
@@ -14,13 +12,16 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from .config import (
     VECTORSTORE_DIRECTORY,
     TEMP_DIR,
-    FEEDBACK_DB,
     BACKUP_DIR,
     MODEL_NAME,
     MODEL_TEMPERATURE,
     RETRIEVAL_K,
     PROMPT_TEMPLATE,
     EMBEDDING_SERVICE_URL,
+)
+from .storage import (
+    get_session_by_external_id,
+    insert_feedback,
 )
 
 # Initialize LLM components
@@ -39,10 +40,6 @@ def get_file_hash(file_path):
 def initialize_directories():
     """Create necessary directories and files."""
     os.makedirs(BACKUP_DIR, exist_ok=True)
-    if not os.path.exists(FEEDBACK_DB):
-        with open(FEEDBACK_DB, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(["timestamp", "query", "response", "rating", "comments"])
 
 def cleanup_temp():
     """Clean up temporary files and shutdown scheduler."""
@@ -114,22 +111,25 @@ def process_chat_query(user_message, region="us"):
         print(f"Error processing query for region {region}: {str(e)}")
         raise Exception(f"Failed to process query for {region} region: {str(e)}")
 
-def log_feedback(query, response, rating, comments=""):
-    """Log user feedback to CSV file."""
-    valid_ratings = ['thumbs_up', 'thumbs_down']
-    
-    if rating.lower() not in valid_ratings:
+def log_feedback(chat_external_id: str, rating: str, comments: str = "", message_id: int | None = None):
+    """Write feedback records to PostgreSQL."""
+
+    valid_ratings = {'thumbs_up', 'thumbs_down'}
+    rating_normalized = rating.lower().strip()
+
+    if rating_normalized not in valid_ratings:
         raise ValueError("Invalid rating type")
 
-    with open(FEEDBACK_DB, 'a', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            datetime.now().isoformat(),
-            query.strip(),
-            response.strip(),
-            rating.lower(),
-            comments.strip()
-        ])
+    session = get_session_by_external_id(chat_external_id)
+    if session is None:
+        raise ValueError("Unknown chat session")
+
+    insert_feedback(
+        session_id=session['id'],
+        rating=rating_normalized,
+        comments=comments.strip(),
+        message_id=message_id,
+    )
 
 def query_chroma_collection(user_message, region="us", n_results=5):
     """

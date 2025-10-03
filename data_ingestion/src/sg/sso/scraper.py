@@ -2,7 +2,6 @@ from ast import parse
 from hmac import new
 import os
 from re import S
-import sys
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
 import time
@@ -11,22 +10,16 @@ import boto3
 import json
 from tqdm import tqdm
 
-# from common.base_scraper import BaseScraper
-from common.helper import downloadPdf, downloadPdftoS3, getHtml, getPdfLinks
+from ...common import BaseScraper
+from ...common.helper import downloadPdf, downloadPdftoS3, getHtml, getPdfLinks
 
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..')
-sys.path.insert(0, src_dir)
-
-from common.helper import downloadPdf, getHtml, getPdfLinks
-from data_ingestion.src.common.BaseScraper import BaseScraper
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 BASE_URL = "https://sso.agc.gov.sg"
 CURRENT_BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
 
 # Global variable for destination directory
-DESTINATION_DIR = os.path.join(current_dir, '..', '..', '..', '..', 'data_ingestion', 'raw', 'sg', 'sso')
+DESTINATION_DIR = os.path.join(CURRENT_DIR, '..', '..', '..', '..', 'data_ingestion', 'raw', 'sg', 'sso')
 DESTINATION_KEY = "data_ingestion/raw/sg/sso"
 
 # Sleep time
