@@ -9,18 +9,24 @@ class SsoPipeline(IngestionPipeline):
         self.process_batch_size=process_batch_size
         self.scraper = SsoScraper()
         self.processor = SsoProcessor(self.process_batch_size)
+        self.latest_log_id = None
 
     def ingest(self):
         """Download or read raw data using the scraper."""
         print("📥 Starting SSO data ingestion...")
         new_entries_num = self.scraper.run()
+        self.latest_log_id = self.scraper.get_log_id()
         print(f"✅ SSO ingestion completed. Retrieved {new_entries_num} items.")
         return
     
     def process(self):
         """Convert raw data into structured docs (list of dicts)."""
+        if not self.latest_log_id:
+            print("⚠️ No ingestion log id available; skipping processing phase.")
+            return iter([])
+
         print("🔄 Processing SSO raw data...")
-        return self.processor.run()
+        return self.processor.run(self.latest_log_id)
     
     def embed(self, minibatch):
         """Embed documents into Chroma or other vector DB."""

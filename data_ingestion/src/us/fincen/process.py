@@ -1,9 +1,11 @@
-import pdfplumber
-import subprocess
-from bs4 import BeautifulSoup
+import io
 import os
-import psycopg2
 from datetime import datetime
+
+import boto3
+import pdfplumber
+import psycopg2
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -13,21 +15,23 @@ from ...common.helper import insert_feed_if_not_exists_pg
 
 def process_fincen_data(raw_data, db_path=None):
     """
-    Process FinCEN file paths and return a list of dictionaries with structured information.
-    Note: Duplicate filtering is now handled in the scraper phase to avoid unnecessary downloads.
-    
+    Process FinCEN documents that were stored in S3 or on disk during ingestion.
+
     Args:
-        raw_data: Dictionary containing downloaded files and their information
-        db_path: Deprecated parameter (kept for compatibility)
-        
+        raw_data: Dictionary containing document metadata and storage info.
+        db_path: Deprecated parameter kept for compatibility.
+
     Returns:
-        list: List of processed data dictionaries, one for each file
+        list: List of processed data dictionaries, one for each advisory document.
     """
-    file_paths = raw_data.get('downloaded_files', [])
-    files_information = raw_data.get('files_information', [])
+
+    documents_info = raw_data.get("documents", [])
     processed_docs = []
-    
-    # Set up database connection for recording processed documents
+
+    s3_client = None
+    processed_count = 0
+
+    # Optional database connection for feed bookkeeping
     conn = None
     try:
         conn = psycopg2.connect(
@@ -35,115 +39,129 @@ def process_fincen_data(raw_data, db_path=None):
             port=os.getenv("DB_PORT"),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
-            dbname=os.getenv("DB_NAME")
+            dbname=os.getenv("DB_NAME"),
         )
-        print(f"Connected to PostgreSQL database for recording processed documents")
+        print("Connected to PostgreSQL database for recording processed documents")
     except Exception as e:
         print(f"Warning: Could not connect to database: {str(e)}")
-    processed_count = 0
 
-    for file_path, file_info in zip(file_paths, files_information):
-        if not os.path.exists(file_path):
+    for info in documents_info:
+        storage = info.get("storage", {})
+        url = info.get("url", "N/A")
+        title = info.get("title", "N/A")
+        timestamp = info.get("timestamp", "N/A")
+        doc_id = info.get("doc_id")
+
+        file_bytes = None
+
+        storage_type = storage.get("type")
+        try:
+            if storage_type == "s3":
+                if not s3_client:
+                    s3_client = boto3.client(
+                        "s3",
+                        aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"),
+                        aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY"),
+                        region_name=os.getenv("AWS_REGION"),
+                    )
+                obj = s3_client.get_object(Bucket=storage["bucket"], Key=storage["key"])
+                file_bytes = obj["Body"].read()
+            elif storage_type == "local":
+                local_path = storage.get("path")
+                if not local_path or not os.path.exists(local_path):
+                    print(f"Missing local file for {url}; skipping")
+                    continue
+                with open(local_path, "rb") as fh:
+                    file_bytes = fh.read()
+            else:
+                print(f"Unknown storage type for {url}; skipping")
+                continue
+        except Exception as e:
+            print(f"Error retrieving document for {url}: {str(e)}")
             continue
-            
-        # Extract metadata
-        url = file_info.get('url', 'N/A')
-        title = file_info.get('title', 'N/A')
-        timestamp = file_info.get('timestamp', 'N/A')
-            
-        chunks = []
+
+        if not file_bytes:
+            continue
+
+        chunks = process_pdf_file(file_bytes)
+        if not chunks:
+            continue
+
         metadata = {
             "timestamp": timestamp,
             "title": title,
-            "link": url
+            "link": url,
+            "doc_id": doc_id,
         }
-
-        try:
-            # Check actual file type using the 'file' command
-            result = subprocess.run(['file', '--mime-type', file_path], 
-                                  capture_output=True, text=True)
-            mime_type = result.stdout.split(':')[1].strip()
-            
-            if 'pdf' in mime_type:
-                # Process as PDF
-                chunks = process_pdf_file(file_path)
-            elif 'html' in mime_type or 'text' in mime_type:
-                # Process as HTML/text file
-                chunks = process_html_file(file_path)
-            else:
-                continue
-                
-        except Exception as e:
-            print(f"Error processing file {file_path}: {str(e)}")
-            continue
 
         doc = {
             "content": "\n".join(chunks),
             "metadata": metadata,
             "type": "fincen_advisory",
         }
-        
-        print(doc)
-        
+
         processed_docs.append(doc)
         processed_count += 1
-        
-        # Record that we've processed this document (if database connection available)
+
         if conn:
             try:
-                # Create feed record: (id, url, timestamp, title, inserted_at)
                 current_time = datetime.now().isoformat()
-                # Generate a simple ID based on URL hash for consistency
-                doc_id = abs(hash(url)) % (10**8)  # Simple ID generation
-                feed_data = (doc_id, url, timestamp, title, current_time)
-                
-                was_inserted, row_id = insert_feed_if_not_exists_pg(conn, feed_data)
+                record_id = abs(hash(url)) % (10**8)
+                feed_data = (record_id, url, timestamp, title, current_time)
+                was_inserted, _ = insert_feed_if_not_exists_pg(conn, feed_data)
                 if was_inserted:
                     print(f"Recorded document in database: {title}")
-                
             except Exception as e:
                 print(f"Warning: Could not record document in database: {str(e)}")
-    
-    # Close database connection
+
     if conn:
         conn.close()
-    
-    # Print processing summary
-    total_docs = len(file_paths)
-    print(f"\n=== Processing Summary ===")
+
+    total_docs = len(documents_info)
+    print("\n=== Processing Summary ===")
     print(f"Total documents to process: {total_docs}")
     print(f"Documents successfully processed: {processed_count}")
     print(f"Documents failed to process: {total_docs - processed_count}")
-    
+
     return processed_docs
 
-def process_pdf_file(file_path):
-    """Process a PDF file and extract text content."""
+def process_pdf_file(source):
+    """Process PDF content (bytes or path) and extract text."""
     chunks = []
     try:
-        with pdfplumber.open(file_path) as pdf:
+        if isinstance(source, bytes):
+            pdf_stream = io.BytesIO(source)
+            context = pdfplumber.open(pdf_stream)
+        else:
+            context = pdfplumber.open(source)
+
+        with context as pdf:
             for _, page in enumerate(pdf.pages, start=1):
                 text = page.extract_text()
                 if text:
                     chunks.append(text)
     except Exception as e:
-        print(f"Error processing PDF {file_path}: {str(e)}")
+        print(f"Error processing PDF {source}: {str(e)}")
     return chunks
 
-def process_html_file(file_path):
+def process_html_file(source):
     """Process an HTML file and extract text content."""
     chunks = []
     try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
-            content = file.read()
-            soup = BeautifulSoup(content, 'html.parser')
-            # Remove script and style elements
-            for script in soup(["script", "style"]):
-                script.decompose()
-            # Extract text
-            text = soup.get_text()
-            if text.strip():
-                chunks.append(text.strip())
+        if isinstance(source, bytes):
+            content = source.decode('utf-8', errors='ignore')
+        else:
+            with open(source, 'r', encoding='utf-8', errors='ignore') as file:
+                content = file.read()
+
+        soup = BeautifulSoup(content, 'html.parser')
+        # Remove script and style elements
+        for script in soup(["script", "style"]):
+            script.decompose()
+        # Extract text
+        text = soup.get_text()
+        if text.strip():
+            chunks.append(text.strip())
     except Exception as e:
-        print(f"Error processing HTML {file_path}: {str(e)}")
+        print(f"Error processing HTML {source}: {str(e)}")
     return chunks

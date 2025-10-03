@@ -7,17 +7,19 @@ load_dotenv(override=True)
 from .DBClient import DBClient
 
 class BaseScraper(ABC):
-    """Base class for all scrapers with database connection functionality."""
-    """Input para"""
-    
-    def __init__(self, ds_name, ds_code, ds_description):
-        """Initialize the scraper with data source insertion and database connection setup."""
+    """Base class for all scrapers with optional database integration."""
+
+    def __init__(self, ds_name=None, ds_code=None, ds_description=None):
+        """Initialize the scraper; data source metadata is optional for simple scrapers."""
         self.ds_code = ds_code
         self.ds_description = ds_description
         self.s3_obj = None
         self.db_client = DBClient()
         self.log_id = None
-        self.ds_id = self._create_data_source(ds_name, ds_code, ds_description)
+        self.ds_id = None
+
+        if all([ds_name, ds_code, ds_description]):
+            self.ds_id = self._create_data_source(ds_name, ds_code, ds_description)
 
     def _create_data_source(self, name, code, description):
         self.db_client.connect()
@@ -29,7 +31,7 @@ class BaseScraper(ABC):
             query = """INSERT INTO ref.data_sources (name, code, description) VALUES (%s, %s, %s) RETURNING id;"""
             values = (name, code, description)
             try:
-                ds_id = self.execute(query, values)
+                ds_id = self.db_client.execute(query, values)
             except Exception as e:
                 print(f"Error creating data source entry: {str(e)}")
                 raise
@@ -38,9 +40,13 @@ class BaseScraper(ABC):
         self.db_client.close()
         print("data_source", ds_id)
         return ds_id[0][0]
-    
+
     def get_log_id(self):
         return self.log_id
+
+    def close_connection(self):
+        """Helper to close the associated DB connection if one is open."""
+        self.db_client.close()
     
     @abstractmethod
     def log_into_database(self, **kwargs) -> int:

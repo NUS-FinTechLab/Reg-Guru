@@ -36,7 +36,30 @@ RDS connection
   - `GET /api/chat/<chatId>` returns the persisted conversation history.
   - `POST /api/log_feedback` stores per-message feedback tied to the chat session.
   - `GET|POST /api/saved_queries` expose lightweight query bookmarking.
-- Apply any new SQL files in `backend/migrations/` using your preferred database tooling; they are designed to run sequentially.
+- Use the migration helper whenever SQL files change in `backend/migrations/` (see the workflow below).
+
+### Database Migration Workflow
+1. Ensure PostgreSQL connection variables are exported (or stored in `backend/.env`):
+   ```bash
+   export DB_HOST=...
+   export DB_PORT=...
+   export DB_USER=...
+   export DB_PASSWORD=...
+   export DB_NAME=...
+   # optional
+   export DB_SSLMODE=require
+   ```
+2. From the repository root apply all pending migrations using the tooling of your choice. Every `*.sql` file in `backend/migrations` is ordered lexically, so you can run them in that sequence, e.g.:
+   ```bash
+   for file in backend/migrations/*.sql; do
+       psql "$DB_NAME" < "$file"
+   done
+   ```
+   (Replace `psql` with another client if preferred.)
+3. To add schema changes, drop a new, incrementally numbered SQL file (for example `backend/migrations/002_add_indexes.sql`) and rerun your migration command.
+   ```bash
+   python scripts/apply_migrations.py
+   ```
 
 ### Frontend
 1. In a separate terminal, navigate to the frontend directory:

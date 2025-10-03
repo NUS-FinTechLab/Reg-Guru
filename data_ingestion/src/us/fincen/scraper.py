@@ -1,122 +1,128 @@
-from bs4 import BeautifulSoup
 import os
-from urllib.parse import urlparse
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from hashlib import sha256
+from urllib.parse import urlparse
+
+from bs4 import BeautifulSoup
 
 from ...common import BaseScraper
-from ...common.helper import downloadPdf, getHtml
+from ...common.helper import downloadPdf, downloadPdftoS3, getHtml
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 BASE_URL = "https://www.fincen.gov"
-ADVISORY_URL = "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"
+ADVISORY_URL = (
+    "https://www.fincen.gov/resources/advisoriesbulletinsfact-sheets/advisories"
+)
 
-# Global variable for destination directory
-DESTINATION_DIR = os.path.join(CURRENT_DIR, '..', '..', '..', '..', 'data_ingestion', 'raw', 'us', 'fincen')
+# Storage targets
+DESTINATION_DIR = os.path.join(
+    CURRENT_DIR, "..", "..", "..", "..", "data_ingestion", "raw", "us", "fincen"
+)
+DESTINATION_KEY = "data_ingestion/raw/us/fincen"
+
 
 class FincenScraper(BaseScraper):
-    def __init__(self):
-        super().__init__()  # Initialize the base class (database connection)
+    DEFAULT_DS_NAME = "fincen"
+    DEFAULT_DS_CODE = "us"
+    DEFAULT_DS_DESCRIPTION = "FinCEN Advisories and Bulletins"
+
+    def __init__(
+        self,
+        ds_name=DEFAULT_DS_NAME,
+        ds_code=DEFAULT_DS_CODE,
+        ds_description=DEFAULT_DS_DESCRIPTION,
+    ):
+        super().__init__(ds_name, ds_code, ds_description)
         self.baseUrl = BASE_URL
         self.advisoryUrl = ADVISORY_URL
-    
+        self._processed_documents = set()
+        self.s3_obj = DESTINATION_KEY
+
     def datetime_to_timestamp(self, datetime_str):
         """Convert ISO datetime string to timestamp"""
         if not datetime_str:
             return None
         try:
             # Handle the 'Z' timezone indicator
-            if datetime_str.endswith('Z'):
-                datetime_str = datetime_str.replace('Z', '+00:00')
+            if datetime_str.endswith("Z"):
+                datetime_str = datetime_str.replace("Z", "+00:00")
             dt = datetime.fromisoformat(datetime_str)
             return dt.timestamp()
         except (ValueError, AttributeError):
             return None
-    
+
     def process_advisory_link(self, link):
         """Process a single advisory link to extract metadata and PDF links"""
         try:
             print(f"Processing advisory: {link}")
             html = getHtml(link)
-            soup = BeautifulSoup(html, 'html.parser')
-            
+            soup = BeautifulSoup(html, "html.parser")
+
             # Get the metadata (year, title) first for duplicate checking
             timeTag = soup.find("time")
-            
+
             subjectField = soup.find("div", class_="field--name-field-advisory-subject")
-            title = 'N/A'
+            title = "N/A"
             if subjectField:
                 items = subjectField.find_all("div", class_="field__item")
                 if items:
                     title = items[0].get_text(strip=True)
-            
+
             # Extract datetime attribute from time tag
-            datetime_value = timeTag.get('datetime') if timeTag else None
+            datetime_value = timeTag.get("datetime") if timeTag else None
             timestamp = self.datetime_to_timestamp(datetime_value)
-            
+
             # Check if document already exists in database before processing PDF links
             if self._is_document_processed(link, title):
                 print(f"Document already processed, skipping: {title}")
                 return None
-            
+
             # Get only the first PDF link on the page
             first_pdf_link = None
-            for a in soup.find_all('a', href=True):
-                href = a['href']
-                if href.lower().endswith('.pdf'):
+            for a in soup.find_all("a", href=True):
+                href = a["href"]
+                if href.lower().endswith(".pdf"):
                     first_pdf_link = href
                     break  # Only take the first PDF link found
-            
+
             print(f"Processed: {datetime_value}, {title}, Timestamp: {timestamp}")
-            
+
             # Convert relative PDF link to absolute URL (only if PDF link exists)
             absolute_pdf_links = []
             if first_pdf_link:
-                absolute_pdf_link = self.baseUrl + first_pdf_link if first_pdf_link.startswith('/') else first_pdf_link
+                absolute_pdf_link = (
+                    self.baseUrl + first_pdf_link
+                    if first_pdf_link.startswith("/")
+                    else first_pdf_link
+                )
                 absolute_pdf_links = [absolute_pdf_link]
-            
+
             return {
-                'url': link,
-                'timestamp': timestamp,
-                'title': title,
-                'pdf_links': absolute_pdf_links,
-                'datetime_value': datetime_value
+                "url": link,
+                "timestamp": timestamp,
+                "title": title,
+                "pdf_links": absolute_pdf_links,
+                "datetime_value": datetime_value,
             }
-            
+
         except Exception as e:
             print(f"Error processing advisory {link}: {str(e)}")
             return None
-    
-    def download_pdf_file(self, pdf_link):
-        """Download a single PDF file"""
-        try:
-            print(f"Downloading PDF: {pdf_link}")
-            # Extract filename from URL
-            parsed_url = urlparse(pdf_link)
-            filename = os.path.basename(parsed_url.path)
-            if not filename.endswith('.pdf'):
-                filename += '.pdf'
-            
-            # Create full destination path
-            dest_path = os.path.join(DESTINATION_DIR, filename)
-            downloadPdf(pdf_link, dest_path)
-            print(f"Downloaded: {filename}")
-            return dest_path
-            
-        except Exception as e:
-            print(f"Error downloading PDF {pdf_link}: {str(e)}")
-            return None
-    
-    def scrape(self, max_workers=10):
+
+    def scrape(self, run_id=None, max_workers=10):
         """
         Scrape FinCEN advisories with parallel processing
         max_workers: Number of concurrent threads to use
         """
         print("🌐 Fetching FinCEN advisory page...")
+        self._processed_documents.clear()
+        if run_id is None:
+            run_id = datetime.utcnow().strftime("%Y%m%d%H%M%S")
         html = getHtml(self.advisoryUrl)
-        soup = BeautifulSoup(html, 'html.parser')
-        
+        soup = BeautifulSoup(html, "html.parser")
+
         advisoryLinks = set()
         current_url = self.advisoryUrl
         page_count = 0
@@ -125,97 +131,134 @@ class FincenScraper(BaseScraper):
         while True:
             page_count += 1
             print(f"📄 Processing page {page_count}: {current_url}")
-            
+
             # Get all links to responding advisory resources page
-            links = soup.find_all('a', href=True)
-            
+            links = soup.find_all("a", href=True)
+
             # Filter links that point to advisory resources
-            links = [a['href'] for a in links if '/resources/advisories/' in a['href']]
-            links = [self.baseUrl + link if link.startswith('/') else link for link in links]
+            links = [a["href"] for a in links if "/resources/advisories/" in a["href"]]
+            links = [
+                self.baseUrl + link if link.startswith("/") else link for link in links
+            ]
             advisoryLinks.update(links)
             print(f"  📎 Found {len(links)} advisory links on this page")
-            
+
             # Look for the next page link
             next_link = soup.find("a", class_="usa-pagination__next-page")
             if not next_link:
                 break
-                
+
             # Get the next page
-            current_url = self.advisoryUrl + next_link['href']
+            current_url = self.advisoryUrl + next_link["href"]
             html = getHtml(current_url)
-            soup = BeautifulSoup(html, 'html.parser')
-        
+            soup = BeautifulSoup(html, "html.parser")
+
         print(f"Found {len(advisoryLinks)} advisory links to process")
-        
-        # Create destination directory if it doesn't exist
-        os.makedirs(DESTINATION_DIR, exist_ok=True)
-        
-        files_information = []
-        all_pdf_links = []
+
+        documents = []
         filtered_count = 0
-        
+
         # Process advisory links in parallel
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all advisory processing tasks
             future_to_link = {
-                executor.submit(self.process_advisory_link, link): link 
+                executor.submit(self.process_advisory_link, link): link
                 for link in advisoryLinks
             }
-            
+
             # Collect results as they complete
             for future in as_completed(future_to_link):
                 link = future_to_link[future]
                 try:
                     result = future.result()
-                    if result:  # Only process non-None results (not filtered duplicates)
-                        files_information.append({
-                            'url': result['url'],
-                            'timestamp': result['timestamp'],
-                            'title': result['title']
-                        })
-                        # Collect all PDF links for downloading (avoid duplicates)
-                        for pdf_link in result['pdf_links']:
-                            if pdf_link not in all_pdf_links:
-                                all_pdf_links.append(pdf_link)
-                    else:
+                    if not result:
                         filtered_count += 1  # Count filtered duplicates
+                        continue
+
+                    for pdf_link in result["pdf_links"]:
+                        doc_id = self._generate_doc_id(result["url"], pdf_link)
+                        storage = self._store_document(pdf_link, run_id, doc_id)
+                        if not storage:
+                            continue
+
+                        documents.append(
+                            {
+                                "url": result["url"],
+                                "timestamp": result["timestamp"],
+                                "title": result["title"],
+                                "doc_id": doc_id,
+                                "pdf_url": pdf_link,
+                                "storage": storage,
+                                "datetime_value": result["datetime_value"],
+                            }
+                        )
                 except Exception as e:
                     print(f"Error processing {link}: {str(e)}")
-        
-        
-        # Download PDFs in parallel
-        downloaded_files = []
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all PDF download tasks
-            future_to_pdf = {
-                executor.submit(self.download_pdf_file, pdf_link): pdf_link 
-                for pdf_link in all_pdf_links
-            }
-            
-            # Collect download results as they complete
-            for future in as_completed(future_to_pdf):
-                pdf_link = future_to_pdf[future]
-                try:
-                    result = future.result()
-                    if result:
-                        downloaded_files.append(result)
-                except Exception as e:
-                    print(f"Error downloading {pdf_link}: {str(e)}")
-        
-        print(f"Successfully downloaded {len(downloaded_files)} PDF files")
-        
-        # Close database connection
-        self.close_connection()
-        
+
+        print(f"Successfully captured {len(documents)} advisory documents")
+
         # Print final summary
         print(f"\n=== Scraping Summary ===")
         print(f"Total advisories found: {len(advisoryLinks)}")
         print(f"Duplicate documents filtered: {filtered_count}")
-        print(f"New documents to process: {len(files_information)}")
-        print(f"PDF files downloaded: {len(downloaded_files)}")
-        
+        print(f"New documents to process: {len(documents)}")
+
         # Combine downloaded files and files information into a single dictionary
         return {
-            'downloaded_files': downloaded_files,
-            'files_information': files_information
+            "documents": documents,
+            "run_id": run_id,
         }
+
+    def _is_document_processed(self, link, title):
+        """Simple in-memory duplicate checker for a single run."""
+        identifier = (link, title)
+        if identifier in self._processed_documents:
+            return True
+        self._processed_documents.add(identifier)
+        return False
+
+    def _generate_doc_id(self, link, pdf_link):
+        parsed_link = urlparse(link)
+        path_slug = "_".join(filter(None, parsed_link.path.split("/")))
+        if not path_slug:
+            path_slug = "advisory"
+
+        parsed_pdf = urlparse(pdf_link)
+        filename = os.path.basename(parsed_pdf.path) or "document.pdf"
+        name_part = os.path.splitext(filename)[0]
+        slug = f"{path_slug}_{name_part}".replace("-", "_").replace(" ", "_")
+
+        digest = sha256(pdf_link.encode("utf-8")).hexdigest()[:10]
+        return f"{slug}_{digest}".lower()
+
+    def _store_document(self, pdf_url, run_id, doc_id):
+        bucket_name = os.getenv("S3_BUCKET_NAME")
+        if bucket_name:
+            object_key = f"{DESTINATION_KEY}/{run_id}/{doc_id}.pdf"
+            try:
+                downloadPdftoS3(pdf_url, object_key)
+                return {"type": "s3", "bucket": bucket_name, "key": object_key}
+            except Exception as e:
+                print(f"Error uploading PDF {pdf_url} to S3: {str(e)}")
+                return None
+
+        local_dir = os.path.join(DESTINATION_DIR, run_id)
+        os.makedirs(local_dir, exist_ok=True)
+        dest_path = os.path.join(local_dir, f"{doc_id}.pdf")
+        try:
+            downloadPdf(pdf_url, dest_path)
+            return {"type": "local", "path": dest_path}
+        except Exception as e:
+            print(f"Error saving PDF {pdf_url} locally: {str(e)}")
+            return None
+
+    def log_into_database(self, **kwargs):
+        """FinCEN scraper currently skips database logging."""
+        return 0
+
+    def store_documents(self, log_id, **kwargs):
+        """FinCEN scraper leaves downstream storage to the processor stage."""
+        return None
+
+    def run(self, **kwargs):
+        return self.scrape(**kwargs)
