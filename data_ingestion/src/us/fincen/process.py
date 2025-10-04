@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv(override=True)
 
-from ...common.helper import insert_feed_if_not_exists_pg
+from ...common.helper import feed_exists_pg, insert_feed_if_not_exists_pg
 
 def process_fincen_data(raw_data, db_path=None):
     """
@@ -53,6 +53,19 @@ def process_fincen_data(raw_data, db_path=None):
         doc_id = info.get("doc_id")
 
         file_bytes = None
+
+        already_recorded = False
+        if conn:
+            try:
+                already_recorded = feed_exists_pg(conn, url, title or "N/A", region="us")
+            except Exception as db_err:
+                print(
+                    f"Warning: Could not verify existing FinCEN feed for {url}: {str(db_err)}"
+                )
+
+        if already_recorded:
+            print(f"Skipping already processed document found in database: {title}")
+            continue
 
         storage_type = storage.get("type")
         try:

@@ -35,7 +35,6 @@ CORS_HEADERS = ["Content-Type"]
 # Directory and file paths
 VECTORSTORE_DIRECTORY = "database"
 TEMP_DIR = "temp"
-BACKUP_DIR = "feedback_backups"
 
 EMBEDDING_SERVICE_URL = os.getenv("EMBEDDING_SERVICE_URL", "http://localhost:6000")
 

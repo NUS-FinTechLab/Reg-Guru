@@ -37,7 +37,6 @@ class FincenScraper(BaseScraper):
         super().__init__(ds_name, ds_code, ds_description)
         self.baseUrl = BASE_URL
         self.advisoryUrl = ADVISORY_URL
-        self._processed_documents = set()
         self.s3_obj = DESTINATION_KEY
 
     def datetime_to_timestamp(self, datetime_str):
@@ -74,9 +73,8 @@ class FincenScraper(BaseScraper):
             datetime_value = timeTag.get("datetime") if timeTag else None
             timestamp = self.datetime_to_timestamp(datetime_value)
 
-            # Check if document already exists in database before processing PDF links
-            if self._is_document_processed(link, title):
-                print(f"Document already processed, skipping: {title}")
+            if self._is_recorded_in_database(link, title):
+                print(f"Document already recorded in database, skipping: {title}")
                 return None
 
             # Get only the first PDF link on the page
@@ -113,109 +111,119 @@ class FincenScraper(BaseScraper):
 
     def scrape(self, run_id=None, max_workers=10):
         """
-        Scrape FinCEN advisories with parallel processing
-        max_workers: Number of concurrent threads to use
+        Scrape FinCEN advisories with parallel processing.
+        max_workers: Number of concurrent threads to use.
         """
         print("🌐 Fetching FinCEN advisory page...")
-        self._processed_documents.clear()
-        if run_id is None:
-            run_id = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        html = getHtml(self.advisoryUrl)
-        soup = BeautifulSoup(html, "html.parser")
+        try:
+            if run_id is None:
+                run_id = datetime.utcnow().strftime("%Y%m%d%H%M%S")
 
-        advisoryLinks = set()
-        current_url = self.advisoryUrl
-        page_count = 0
-
-        # Process all pages starting with the base URL
-        while True:
-            page_count += 1
-            print(f"📄 Processing page {page_count}: {current_url}")
-
-            # Get all links to responding advisory resources page
-            links = soup.find_all("a", href=True)
-
-            # Filter links that point to advisory resources
-            links = [a["href"] for a in links if "/resources/advisories/" in a["href"]]
-            links = [
-                self.baseUrl + link if link.startswith("/") else link for link in links
-            ]
-            advisoryLinks.update(links)
-            print(f"  📎 Found {len(links)} advisory links on this page")
-
-            # Look for the next page link
-            next_link = soup.find("a", class_="usa-pagination__next-page")
-            if not next_link:
-                break
-
-            # Get the next page
-            current_url = self.advisoryUrl + next_link["href"]
-            html = getHtml(current_url)
+            html = getHtml(self.advisoryUrl)
             soup = BeautifulSoup(html, "html.parser")
 
-        print(f"Found {len(advisoryLinks)} advisory links to process")
+            advisoryLinks = set()
+            current_url = self.advisoryUrl
+            page_count = 0
 
-        documents = []
-        filtered_count = 0
+            # Process all pages starting with the base URL
+            while True:
+                page_count += 1
+                print(f"📄 Processing page {page_count}: {current_url}")
 
-        # Process advisory links in parallel
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all advisory processing tasks
-            future_to_link = {
-                executor.submit(self.process_advisory_link, link): link
-                for link in advisoryLinks
-            }
+                # Get all links to responding advisory resources page
+                links = soup.find_all("a", href=True)
 
-            # Collect results as they complete
-            for future in as_completed(future_to_link):
-                link = future_to_link[future]
-                try:
-                    result = future.result()
-                    if not result:
-                        filtered_count += 1  # Count filtered duplicates
-                        continue
+                # Filter links that point to advisory resources
+                links = [a["href"] for a in links if "/resources/advisories/" in a["href"]]
+                links = [
+                    self.baseUrl + link if link.startswith("/") else link for link in links
+                ]
+                advisoryLinks.update(links)
+                print(f"  📎 Found {len(links)} advisory links on this page")
 
-                    for pdf_link in result["pdf_links"]:
-                        doc_id = self._generate_doc_id(result["url"], pdf_link)
-                        storage = self._store_document(pdf_link, run_id, doc_id)
-                        if not storage:
+                # Look for the next page link
+                next_link = soup.find("a", class_="usa-pagination__next-page")
+                if not next_link:
+                    break
+
+                # Get the next page
+                current_url = self.advisoryUrl + next_link["href"]
+                html = getHtml(current_url)
+                soup = BeautifulSoup(html, "html.parser")
+
+            print(f"Found {len(advisoryLinks)} advisory links to process")
+
+            documents = []
+            filtered_count = 0
+
+            # Process advisory links in parallel
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                # Submit all advisory processing tasks
+                future_to_link = {
+                    executor.submit(self.process_advisory_link, link): link
+                    for link in advisoryLinks
+                }
+
+                # Collect results as they complete
+                for future in as_completed(future_to_link):
+                    link = future_to_link[future]
+                    try:
+                        result = future.result()
+                        if not result:
+                            filtered_count += 1  # Count filtered duplicates
                             continue
 
-                        documents.append(
-                            {
-                                "url": result["url"],
-                                "timestamp": result["timestamp"],
-                                "title": result["title"],
-                                "doc_id": doc_id,
-                                "pdf_url": pdf_link,
-                                "storage": storage,
-                                "datetime_value": result["datetime_value"],
-                            }
-                        )
-                except Exception as e:
-                    print(f"Error processing {link}: {str(e)}")
+                        for pdf_link in result["pdf_links"]:
+                            doc_id = self._generate_doc_id(result["url"], pdf_link)
+                            storage = self._store_document(pdf_link, run_id, doc_id)
+                            if not storage:
+                                continue
 
-        print(f"Successfully captured {len(documents)} advisory documents")
+                            documents.append(
+                                {
+                                    "url": result["url"],
+                                    "timestamp": result["timestamp"],
+                                    "title": result["title"],
+                                    "doc_id": doc_id,
+                                    "pdf_url": pdf_link,
+                                    "storage": storage,
+                                    "datetime_value": result["datetime_value"],
+                                }
+                            )
+                    except Exception as e:
+                        print(f"Error processing {link}: {str(e)}")
 
-        # Print final summary
-        print(f"\n=== Scraping Summary ===")
-        print(f"Total advisories found: {len(advisoryLinks)}")
-        print(f"Duplicate documents filtered: {filtered_count}")
-        print(f"New documents to process: {len(documents)}")
+            print(f"Successfully captured {len(documents)} advisory documents")
 
-        # Combine downloaded files and files information into a single dictionary
-        return {
-            "documents": documents,
-            "run_id": run_id,
-        }
+            # Print final summary
+            print(f"\n=== Scraping Summary ===")
+            print(f"Total advisories found: {len(advisoryLinks)}")
+            print(f"Duplicate documents filtered: {filtered_count}")
+            print(f"New documents to process: {len(documents)}")
 
-    def _is_document_processed(self, link, title):
-        """Simple in-memory duplicate checker for a single run."""
-        identifier = (link, title)
-        if identifier in self._processed_documents:
-            return True
-        self._processed_documents.add(identifier)
-        return False
+            # Combine downloaded files and files information into a single dictionary
+            return {
+                "documents": documents,
+                "run_id": run_id,
+            }
+        finally:
+            self.close_connection()
+
+    def _is_recorded_in_database(self, link, title):
+        try:
+            self.db_client.connect()
+            query = (
+                "SELECT 1 FROM bronze.feeds_us "
+                "WHERE url = %s AND title = %s LIMIT 1"
+            )
+            result = self.db_client.execute(query, (link, title or "N/A"))
+            return bool(result)
+        except Exception as e:
+            print(
+                f"Warning: Unable to verify existing FinCEN record for {link}: {str(e)}"
+            )
+            return False
 
     def _generate_doc_id(self, link, pdf_link):
         parsed_link = urlparse(link)
