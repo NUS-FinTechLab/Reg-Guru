@@ -26,11 +26,10 @@ class BaseScraper(ABC):
     def _create_data_source(self, name, code, description):
         """Insert a data source if it doesn't exist"""
         self.db_client.connect()
-        query = f"""SELECT id FROM ref.data_sources WHERE name = '{name}';"""
-        result = self.db_client.execute(query)
+        query = "SELECT id FROM ref.data_sources WHERE name = %s;"
+        result = self.db_client.execute(query, (name,))
         if result and result[0] and result[0][0] > 0:
             self.db_client.close()
-            print(f"Existing data source:", result[0][0])
             return result[0][0]
         else:
             query = """INSERT INTO ref.data_sources (name, code, description) VALUES (%s, %s, %s) RETURNING id;"""
@@ -43,7 +42,6 @@ class BaseScraper(ABC):
             if not ds_id or not ds_id[0] or not ds_id[0][0]:
                 raise Exception("Failed to create or retrieve data source ID")
         self.db_client.close()
-        print("Insert data source: ", ds_id[0][0])
         return ds_id[0][0]
 
     def get_log_id(self):
