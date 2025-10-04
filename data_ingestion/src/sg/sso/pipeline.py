@@ -1,12 +1,15 @@
-from ...common import IngestionPipeline
-from .scraper import SsoScraper
-from .process import SsoProcessor
+from common.BasePipeline import BasePipeline
+from scraper import SsoScraper
+from processor import SsoProcessor
 
-class SsoPipeline(IngestionPipeline):
+
+class SsoPipeline(BasePipeline):
     """SSO-specific pipeline implementation with FlagEmbedding support."""
-    
+
     def __init__(self, process_batch_size=12):
-        self.process_batch_size=process_batch_size
+        super().__init__()
+        self.ds_code = "sg"
+        self.process_batch_size = process_batch_size
         self.scraper = SsoScraper()
         self.processor = SsoProcessor(self.process_batch_size)
         self.latest_log_id = None
@@ -18,7 +21,7 @@ class SsoPipeline(IngestionPipeline):
         self.latest_log_id = self.scraper.get_log_id()
         print(f"✅ SSO ingestion completed. Retrieved {new_entries_num} items.")
         return
-    
+
     def process(self):
         """Convert raw data into structured docs (list of dicts)."""
         if not self.latest_log_id:
@@ -27,13 +30,14 @@ class SsoPipeline(IngestionPipeline):
 
         print("🔄 Processing SSO raw data...")
         return self.processor.run(self.latest_log_id)
-    
+
     def embed(self, minibatch):
         """Embed documents into Chroma or other vector DB."""
         print(f"🔗 Embedding SSO documents...")
         # Connect to embedding service to embed.
-        
+
         pass
+
 
 if __name__ == "__main__":
     pipeline = SsoPipeline()

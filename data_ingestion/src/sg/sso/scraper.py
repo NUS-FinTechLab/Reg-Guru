@@ -1,13 +1,9 @@
-from ast import parse
-from hmac import new
 import os
 from re import S
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
 import time
 import pandas as pd
-import boto3
-import json
 from tqdm import tqdm
 
 from ...common import BaseScraper
@@ -15,6 +11,7 @@ from ...common.helper import downloadPdf, downloadPdftoS3, getHtml, getPdfLinks
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+SLEEP_TIME = 0.5
 BASE_URL = "https://sso.agc.gov.sg"
 CURRENT_BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
 
@@ -41,7 +38,7 @@ class SsoScraper(BaseScraper):
     ):
         super().__init__(ds_name, ds_code, ds_description)
         self.base_url = BASE_URL
-        self.browse_url = CURRENT_BROWSE_URL
+        self.browse_url = BROWSE_URL
         self.last_fetched_html = None
         self.s3_obj = DESTINATION_KEY
 
@@ -305,14 +302,16 @@ class SsoScraper(BaseScraper):
                 except Exception as e:
                     print(f"[{self.log_id}] Error inserting {value[1]}: {e}")
                     query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
-                    self.db_client.execute(query, (self.ds_id, self.ds_description, 3))
+                    self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
                     raise
 
             query = """INSERT INTO logs.feeds (source_id, remark, stage) VALUES (%s, %s, %s);"""
-            self.db_client.execute(query, (self.ds_id, self.ds_description, 2))
+            self.db_client.execute(query, (self.ds_id, self.ds_description, 1))
             query = f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = {self.log_id}"
             new_entries_num = self.db_client.execute(query)
-            print(f"{new_entries_num[0][0]} entries logged into database.")
+            print(
+                f"{new_entries_num[0][0]} entries logged into bronze.feeds_{self.ds_code}."
+            )
             self.db_client.close()
             return new_entries_num[0][0]
 
@@ -323,7 +322,6 @@ class SsoScraper(BaseScraper):
         query = f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}"
         new_entries = self.db_client.execute(query)
         self.db_client.close()
-
         if len(new_entries) > 0:
             bucket_name = os.getenv("S3_BUCKET_NAME")
             new_feed_folder = f"{self.s3_obj}/{log_id}"

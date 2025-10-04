@@ -5,16 +5,47 @@ from .DBClient import DBClient
 from .S3Client import S3Client
 
 class BaseProcessor(ABC):
-    def __init__(self, batch_size):
-        self.raw_meta_table = None
-        self.clean_meta_table = None
-        self.s3_key_prefix = None
+    def __init__(self, ds_code, batch_size):
+        self.ds_code = ds_code
+        self.batch_size = batch_size
         self.db_client = DBClient()
         self.s3_client = S3Client()
-        self.batch_size = batch_size
-
-    def clean_texts(self, texts: List[str]) -> List[str]:
-        """ A common method to clean and normalize texts """
+        self.s3_obj = None
+        self._initialise_clean_metadata_table()
+    
+    def _initialise_clean_metadata_table(self):
+        self.db_client.connect()
+        query = """CREATE TABLE IF NOT EXISTS silver.metadata (
+            id INT NOT NULL,
+            source_id INT NOT NULL,
+            log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
+            title TEXT,
+            weblink TEXT,
+            download_url TEXT,
+            published_date TIMESTAMP,
+            valid_date TIMESTAMP,
+            author TEXT,
+            unique_id TEXT NOT NULL,
+            inserted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            flag SMALLINT NOT NULL DEFAULT 0,
+            CONSTRAINT pk_silver_metadata PRIMARY KEY (id, source_id),
+            CONSTRAINT fk_log_id FOREIGN KEY (log_id) REFERENCES logs.feeds(id) ON DELETE RESTRICT,
+            CONSTRAINT fk_flag FOREIGN KEY (flag) REFERENCES ref.review_status(id)
+            );"""
+        self.db_client.execute(query)
+        self.db_client.close()
+        
+        return
+    
+    def check_if_metadata_cleaned(self, log_id):
+        self.db_client.connect()
+        query = f"SELECT COUNT(id) FROM silver.metadata WHERE log_id = {log_id} LIMIT 1"
+        result = self.db_client.execute(query)[0][0]
+        self.db_client.close()
+        return result > 0
+    
+    def clean_texts(self, texts: List[str]) -> str:
+        """ A common method to clean and normalize text """
         cleaned_texts = []
         for text in texts:
             text = text.replace("\xa0", " ")
@@ -23,7 +54,7 @@ class BaseProcessor(ABC):
             text = text.strip()
             if text:
                 cleaned_texts.append(text)
-        return '\n'.join(cleaned_texts)
+        return cleaned_texts
     
     @abstractmethod
     def clean_metadata(self, log_id):

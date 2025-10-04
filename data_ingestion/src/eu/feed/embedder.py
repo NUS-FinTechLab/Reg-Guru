@@ -2,7 +2,7 @@ import os
 import re
 import boto3
 import pandas as pd
-from common.database import db_execute
+from data_ingestion.src.pipelines.init_database import db_execute
 from bs4 import BeautifulSoup
 from chromadb import PersistentClient
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -27,27 +27,7 @@ class EUFeedEmbedder:
         self.collection_name = collection_name
         return
     
-    def extract_text(self, key):
-        obj = self.s3.get_object(Bucket=self.bucket_name, Key=key)
-        xml_content = obj['Body'].read()
-        soup = BeautifulSoup(xml_content, "lxml")
-        # Find the main content of regulation
-        document = soup.find("div", id="PP4Contents")
-        # Remove script and style
-        for tag in document(["script", "style"]):
-            tag.decompose()
-        # Extract texts in p
-        paragraphs = []
-        for p in document.find_all("p"):
-            text = p.get_text(" ", strip=True)
-            if text:
-                text = text.replace("\xa0", " ")
-                text = re.sub(r"[ \t]+", " ", text)
-                text = re.sub(r"\n+", "\n", text)
-                text = text.strip()
-                paragraphs.append(text)
-        plain_text = '\n'.join(paragraphs)
-        return plain_text
+    
     
     def extract_meta(self, log_id):
         query = f"SELECT title, link, published, author, celex_number FROM silver.metadata WHERE log_id = {log_id}"
