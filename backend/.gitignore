@@ -1,14 +1,124 @@
-# Python venvs
-.venv/
-.venv-bgem3/
-venv/
-env/
-ENV/
+# pdf
+*.pdf
 
-# Python build/cache junk
+# -------------------------------
+# Python
+# -------------------------------
 __pycache__/
 *.py[cod]
-*.egg-info/
+*$py.class
+*.pyc
 
-# pdf files
-*.pdf
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv-bgem3/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Pytest / Coverage
+.cache
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------------
+# OS-specific junk files
+# -------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+# -------------------------------
+# Project-specific ignores
+# -------------------------------
+
+# Node.js (frontend)
+frontend/node_modules/
+frontend/.next/
+
+# Environment files (ignore actual .env files but allow templates)
+*.env
+*.env.local
+*.env.development
+*.env.test
+*.env.production
+backend/.env
+frontend/.env*
+data_ingestion/.env
+
+# Allow environment template files to be committed
+!*.env.template
+!backend/.env.template
+!frontend/.env.template
+!data_ingestion/.env.template
+
+# ChromaDB data
+backend/data_ingestion/chroma/eu/*
+backend/data_ingestion/chroma/sg/*
+backend/data_ingestion/chroma/us/*
+!backend/data_ingestion/chroma/eu/.gitkeep
+!backend/data_ingestion/chroma/sg/.gitkeep
+!backend/data_ingestion/chroma/us/.gitkeep
+
+# Large raw zip file
+backend/data_ingestion/raw/eu/eurlex-download/LEG_EN_HTML_20250721_04_08.zip
+backend/data_ingestion/raw/eu/eurlex-download/LEG_MTD_20250709_22_36.zip
+
+# MAS
+/backend/MAS/downloads
+/backend/MAS/2e9b6224-eb46-4bf3-8374-97bf89333861
+/backend/MAS/venv
+/backend/MAS/chroma.sqlite3
+/backend/MAS/.idea

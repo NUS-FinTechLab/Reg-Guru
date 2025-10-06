@@ -37,6 +37,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.venv-bgem3/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -80,13 +81,25 @@ $RECYCLE.BIN/
 # Project-specific ignores
 # -------------------------------
 
-# Node.js
-node_modules/
-.next/
+# Node.js (frontend)
+frontend/node_modules/
+frontend/.next/
 
-# Environment files
+# Environment files (ignore actual .env files but allow templates)
 *.env
+*.env.local
+*.env.development
+*.env.test
+*.env.production
 backend/.env
+frontend/.env*
+data_ingestion/.env
+
+# Allow environment template files to be committed
+!*.env.template
+!backend/.env.template
+!frontend/.env.template
+!data_ingestion/.env.template
 
 # ChromaDB data
 backend/data_ingestion/chroma/eu/*
