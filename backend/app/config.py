@@ -2,16 +2,26 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from backend directory
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 
 # Environment variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
+# Database configuration
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_SSLMODE = os.getenv("DB_SSLMODE", "prefer")
+DB_MIN_CONN = int(os.getenv("DB_MIN_CONN", 1))
+DB_MAX_CONN = int(os.getenv("DB_MAX_CONN", 5))
+
 # Application configuration
 DEBUG = True
 HOST = "0.0.0.0"
-PORT = 5001 # Mac system process is using 5000
+PORT = 5001  # Mac system process is using 5000
 
 # CORS settings
 CORS_ORIGINS = [
@@ -25,8 +35,6 @@ CORS_HEADERS = ["Content-Type"]
 # Directory and file paths
 VECTORSTORE_DIRECTORY = "database"
 TEMP_DIR = "temp"
-FEEDBACK_DB = "feedback_logs.csv"
-BACKUP_DIR = "feedback_backups"
 
 EMBEDDING_SERVICE_URL = os.getenv("EMBEDDING_SERVICE_URL", "http://localhost:6000")
 

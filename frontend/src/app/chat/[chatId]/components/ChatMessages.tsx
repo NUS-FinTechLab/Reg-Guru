@@ -51,7 +51,7 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                         message.role === "user"
                           ? "rounded-tr-none bg-[#f1f1f1] dark:bg-[#171717]"
                           : "bg-[#F0F5FC] text-black dark:text-white dark:bg-gray-800 rounded-tl-none"
-                      }`}
+                      } ${message.pending ? "opacity-70" : ""}`}
                     >
                       <div dangerouslySetInnerHTML={{ __html: message.text }} />
                       <span className="text-sm opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>

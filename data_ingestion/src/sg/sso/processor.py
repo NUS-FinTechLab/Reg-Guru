@@ -1,139 +1,177 @@
-import os
 import io
-import sys
-import pdfplumber
+import os
+from pathlib import Path
+from typing import Dict, Iterable, List
+
 import pandas as pd
-from bs4 import BeautifulSoup
+import pdfplumber
 from dotenv import load_dotenv
+
+from ...common.BaseProcessor import BaseProcessor
+
 load_dotenv(override=True)
 
-from common.BaseProcessor import BaseProcessor
 
 class SsoProcessor(BaseProcessor):
-    def __init__(self, ds_code, batch_size=12):
+    """Transform raw SSO PDFs into cleaned text chunks ready for embedding."""
+
+    DATASET_KEY = "data_ingestion/raw/sg/sso"
+
+    def __init__(self, ds_code: str, batch_size: int = 12) -> None:
         super().__init__(ds_code, batch_size)
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
-        self.s3_obj = 'data_ingestion/raw/sg/sso'
+        self.s3_obj = self.DATASET_KEY
+        self.local_root = Path(__file__).resolve().parents[4] / self.DATASET_KEY
 
-    def clean_metadata(self, log_id): 
-        """ Prepare ready-to-use metadata in schema Silver """
+    # ---- Metadata preparation ----------------------------------------
+    def clean_metadata(self, log_id: int) -> None:
+        """Move raw bronze metadata to silver.metadata if not already done."""
         if self.check_if_metadata_cleaned(log_id):
-            # If clean metadata exists, skip
-            print(f"Clean metadata already exist")
+            print(f"Metadata for log {log_id} already cleaned; skipping.")
             return
-        
+
         self.db_client.connect()
-        # Retrieve data source id
-        query = f"SELECT source_id FROM logs.feeds WHERE id = {log_id}"
-        source_id = self.db_client.execute(query)[0][0]
-        # Fetch new entries from raw metadata table
-        query = f"SELECT * FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}" # test
-        new_entries = self.db_client.execute(query)
-        meta = pd.DataFrame(new_entries, columns=new_entries[0].keys() if new_entries else [])
-        for _, row in meta.iterrows():
-            query = """
-                INSERT INTO silver.metadata (id, source_id, log_id, title, weblink, download_url, published_date, valid_date, unique_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (row['id'], source_id, log_id, row['title'], row['weblink'], row['pdf_url'], row['published_date'], row['valid_date'], row['doc_id'])
-            self.db_client.execute(query, values)
-        self.db_client.close()
-        print(f"{meta.shape[0]} metadata cleaned and saved to silver.metadata")
-        return
-    
-    def extract_metadata(self, log_id):
-        """ Retrieve clean metadata for this feed """
-        self.db_client.connect()
-        query = f"SELECT title, download_url, published_date, valid_date, unique_id FROM silver.metadata WHERE log_id = {log_id}"
-        try:
-            meta = self.db_client.execute(query)
+
+        source_id = self.db_client.execute(
+            "SELECT source_id FROM logs.feeds WHERE id = %s",
+            (log_id,),
+        )[0][0]
+
+        rows = self.db_client.execute(
+            f"SELECT * FROM bronze.feeds_{self.ds_code} WHERE log_id = %s",
+            (log_id,),
+        )
+        records = [dict(row) for row in rows]
+        if not records:
             self.db_client.close()
-        except Exception as e:
-            print(f"Error retrieving clean metadata for {log_id}: {e}")
-            raise
-        meta_df = pd.DataFrame([dict(row) for row in meta])
-        meta_df['published_date'] = pd.to_datetime(meta_df['published_date'], errors='raise').apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
-        meta_df['valid_date'] = pd.to_datetime(meta_df['valid_date'], errors='raise').apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
-        print("Clean metadata retrieved")
-        return meta_df
-    
-    def extract_texts(self, key):
-        """ Download and extract texts from a document on S3 """
-        chunks = []
-        response = self.s3_client.client.head_object(Bucket=self.bucket_name, Key=key)
-        content_type = response.get('ContentType')
-        main_type = content_type.split(";")[0].strip()
-        try:
-            if main_type == 'application/pdf':
-                pdf_obj = self.s3_client.client.get_object(Bucket=self.bucket_name, Key=key)
-                pdf_bytes = pdf_obj["Body"].read()
-                pdf_file = io.BytesIO(pdf_bytes)
-                
-                # Open with pdfplumber
-                with pdfplumber.open(pdf_file) as pdf:
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            chunks.append(text.strip())
-        
-            # elif main_type == 'text/html':
-            #     charset = content_type.split("charset=")[-1].strip() if "charset=" in content_type else 'utf-8'
-            #     obj = self.s3_client.client.get_object(Bucket=self.bucket_name, Key=key)
-            #     html_bytes = obj["Body"].read()
-            #     html_str = html_bytes.decode(charset)
-            #     soup = BeautifulSoup(html_str, "html.parser")
-            #     for tag in soup(["script", "style"]):
-            #         tag.decompose()
+            print(f"No bronze records found for log {log_id}; nothing to clean.")
+            return
 
-            #     text = soup.get_text()
-            #     if text.strip():
-            #         chunks.append(text.strip())
-            
-            else:
-                print(f"Unsupported content type {main_type} for key {key}")
-        except Exception as e:
-            print(f"Error processing {key}: {str(e)}")
-            raise
-        return chunks
-    
-    def _process_a_document(self, log_id, row):
-        doc = {}
-        key = f"{self.s3_obj}/{log_id}/{row['unique_id']}.pdf"
-        # print(f"Processing {key} ...")
-        raw_texts = self.extract_texts(key)
-        if len(raw_texts) == 0:
-            print(f"No texts to process [{key}]")
+        for record in records:
+            self.db_client.execute(
+                """
+                    INSERT INTO silver.metadata (
+                        id,
+                        source_id,
+                        log_id,
+                        title,
+                        weblink,
+                        download_url,
+                        published_date,
+                        valid_date,
+                        unique_id
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    record["id"],
+                    source_id,
+                    log_id,
+                    record["title"],
+                    record["weblink"],
+                    record["pdf_url"],
+                    record["published_date"],
+                    record["valid_date"],
+                    record["doc_id"],
+                ),
+            )
+
+        self.db_client.close()
+        print(f"Copied {len(records)} rows into silver.metadata for log {log_id}.")
+
+    def extract_metadata(self, log_id: int) -> pd.DataFrame:
+        """Load cleaned metadata so each PDF can be retrieved and processed."""
+        self.db_client.connect()
+        rows = self.db_client.execute(
+            """
+                SELECT title, download_url, published_date, valid_date, unique_id
+                FROM silver.metadata
+                WHERE log_id = %s
+            """,
+            (log_id,),
+        )
+        self.db_client.close()
+
+        metadata = pd.DataFrame([dict(row) for row in rows])
+        if metadata.empty:
+            return metadata
+
+        metadata["published_date"] = pd.to_datetime(
+            metadata["published_date"], errors="coerce"
+        ).apply(lambda ts: int(ts.timestamp()) if pd.notnull(ts) else None)
+        metadata["valid_date"] = pd.to_datetime(
+            metadata["valid_date"], errors="coerce"
+        ).apply(lambda ts: int(ts.timestamp()) if pd.notnull(ts) else None)
+        return metadata
+
+    # ---- Text extraction ---------------------------------------------
+    def _read_pdf_from_s3(self, key: str) -> bytes:
+        """Download a PDF byte stream from S3."""
+        response = self.s3_client.client.get_object(
+            Bucket=self.bucket_name,
+            Key=key,
+        )
+        return response["Body"].read()
+
+    def _read_pdf_from_disk(self, path: Path) -> bytes:
+        """Read a PDF that was stored locally during scraping."""
+        return path.read_bytes()
+
+    def extract_texts(self, key: str) -> List[str]:
+        """Open a PDF (from S3 or disk) and return one entry per page."""
+        if self.bucket_name:
+            pdf_bytes = self._read_pdf_from_s3(key)
         else:
-            text = '\n'.join(self.clean_texts(raw_texts))
-            if len(text) == 0:
-                print(f"No texts to process [{key}] after cleaning")
-            else:
-                doc = { 
-                    "content": text,
-                    "metadata": row.to_dict(),
-                }
-        return doc
-    
-    def run(self, log_id):
-        # Clean metadata
+            relative_path = Path(key).relative_to(self.s3_obj)
+            pdf_path = self.local_root / relative_path
+            if not pdf_path.exists():
+                print(f"Missing local PDF for key {key}; skipping.")
+                return []
+            pdf_bytes = self._read_pdf_from_disk(pdf_path)
+
+        chunks: List[str] = []
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text()
+                if text:
+                    chunks.append(text.strip())
+        return chunks
+
+    def _process_document(self, log_id: int, row: pd.Series) -> Dict[str, object]:
+        key = f"{self.s3_obj}/{log_id}/{row['unique_id']}.pdf"
+        # Pull the PDF, clean up its text page-by-page, and attach metadata.
+        raw_pages = self.extract_texts(key)
+        cleaned = self.clean_texts(raw_pages)
+        if not cleaned:
+            return {}
+
+        return {
+            "content": "\n".join(cleaned),
+            "metadata": row.to_dict(),
+        }
+
+    # ---- Pipeline entrypoint ----------------------------------------
+    def run(self, log_id: int) -> Iterable[List[Dict[str, object]]]:
+        """Yield batches of processed documents ready for embedding."""
+        # Step 1: ensure bronze rows are copied to the unified silver table.
         self.clean_metadata(log_id)
-        # Extract metadata (feed records)
-        new_metadata = self.extract_metadata(log_id) 
-        # Process and yield document in records batch by batch
-        processed_docs = []
-        for _, row in new_metadata.iterrows(): 
-            doc = self._process_a_document(log_id, row)
-            processed_docs.append(doc)
-            if len(processed_docs) == self.batch_size:
-                yield processed_docs
-                processed_docs = []
-        if processed_docs:  # leftover docs
-            yield processed_docs
-        print(f"All documents are processed")
+        # Step 2: fetch the metadata needed to locate every PDF.
+        metadata = self.extract_metadata(log_id)
+        if metadata.empty:
+            print(f"No metadata available for log {log_id}; nothing to process.")
+            return
 
+        batch: List[Dict[str, object]] = []
+        for _, row in metadata.iterrows():
+            # Step 3: extract + clean the PDF text for this item.
+            document = self._process_document(log_id, row)
+            if not document:
+                continue
+            batch.append(document)
+            if len(batch) == self.batch_size:
+                yield batch
+                batch = []
 
-if __name__ == '__main__':
-    processor = SsoProcessor(ds_code='te', batch_size=2)
-    for batch in processor.run(45):
-        print(batch[0])
-        break
+        if batch:
+            yield batch
+        print(f"Finished processing documents for log {log_id}.")

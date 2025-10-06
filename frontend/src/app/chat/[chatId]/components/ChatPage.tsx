@@ -1,89 +1,117 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { sendChatMessage } from "@/utils/api";
-import { Message } from "@/utils/api/types";
+import { createSavedQuery, fetchChatHistory, sendChatMessage } from "@/utils/api";
+import { ChatMessageDTO, ChatSession, Message } from "@/utils/api/types";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
 
+const mapDtoToMessage = (dto: ChatMessageDTO): Message => ({
+    id: dto.id,
+    text: dto.text,
+    role: dto.role,
+    timestamp: new Date(dto.timestamp),
+    sources: dto.sources ?? [],
+});
+
 export default function ChatPage() {
-    const { chatId } = useParams();
+    const params = useParams();
+    const chatParam = Array.isArray(params?.chatId) ? params.chatId[0] : params?.chatId;
+    const chatId = chatParam?.toString() ?? "";
+    const searchParams = useSearchParams();
+
+    const [, setSession] = useState<ChatSession | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
-    const [region, setRegion] = useState("US"); // Default to US
+    const [region, setRegion] = useState("US");
     const [isTyping, setIsTyping] = useState(false);
     const [autoScroll, setAutoScroll] = useState(true);
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const bootstrapInitialQuestion = useRef(false);
 
-
-    // Load previous messages from localStorage on mount sidebar
-    useEffect(() => {
-        const savedMessages = localStorage.getItem(`chat-${chatId}-messages`);
-        if (savedMessages) {
-            try {
-                const parsedMessages = JSON.parse(savedMessages);
-                // Convert string timestamps back to Date objects
-                const messagesWithDates = parsedMessages.map((msg: any) => ({
-                    ...msg,
-                    timestamp: new Date(msg.timestamp)
-                }));
-                setMessages(messagesWithDates);
-            } catch (e) {
-                console.error("Failed to parse saved messages", e);
-            }
-        }
-    }, [chatId]);
-
-    // Save messages to localStorage whenever they change
-    useEffect(() => {
-        if (messages.length > 0) {
-            localStorage.setItem(`chat-${chatId}-messages`, JSON.stringify(messages));
-        }
-    }, [messages, chatId]);
-
-    // Scroll to bottom when new messages arrive if autoScroll is true
-    useEffect(() => {
-        if (autoScroll && messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [messages, autoScroll]);
-
-    // Handle scroll events to detect when user has scrolled up
-    useEffect(() => {
-        const scrollArea = scrollAreaRef.current;
-
-        const handleScroll = () => {
-            if (scrollArea) {
-                const { scrollTop, scrollHeight, clientHeight } = scrollArea;
-                const isAtBottom = scrollHeight - scrollTop - clientHeight < 20;
-
-                setAutoScroll(isAtBottom);
-                setShowScrollButton(!isAtBottom && messages.length > 0);
-            }
-        };
-
-        if (scrollArea) {
-            scrollArea.addEventListener("scroll", handleScroll);
-            return () => scrollArea.removeEventListener("scroll", handleScroll);
-        }
-    }, [messages.length]);
-
-    // Focus input on load
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
     }, []);
 
+    useEffect(() => {
+        if (!chatId) {
+            setIsLoadingHistory(false);
+            return;
+        }
+
+        let isMounted = true;
+        setIsLoadingHistory(true);
+
+        fetchChatHistory(chatId)
+            .then((data) => {
+                if (!isMounted) {
+                    return;
+                }
+                setSession(data.session);
+                setRegion(data.session.region.toUpperCase());
+                setMessages(data.messages.map(mapDtoToMessage));
+            })
+            .catch((error: unknown) => {
+                if (!isMounted) {
+                    return;
+                }
+                const err = error as Error;
+                if (err.message !== "not_found") {
+                    console.error("Failed to load chat history:", err);
+                } else {
+                    setSession(null);
+                    setMessages([]);
+                }
+            })
+            .finally(() => {
+                if (isMounted) {
+                    setIsLoadingHistory(false);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [chatId]);
+
+    useEffect(() => {
+        if (autoScroll && messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages, autoScroll]);
+
+    useEffect(() => {
+        const scrollArea = scrollAreaRef.current;
+        const handleScroll = () => {
+            if (!scrollArea) {
+                return;
+            }
+            const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 20;
+            setAutoScroll(isAtBottom);
+            setShowScrollButton(!isAtBottom && messages.length > 0);
+        };
+
+        if (!scrollArea) {
+            return;
+        }
+
+        scrollArea.addEventListener("scroll", handleScroll);
+        return () => scrollArea.removeEventListener("scroll", handleScroll);
+    }, [messages.length]);
 
     const scrollToBottom = () => {
         setAutoScroll(true);
@@ -93,7 +121,7 @@ export default function ChatPage() {
     };
 
     const formatTime = (date: Date) => {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     };
 
     const formatDate = (date: Date) => {
@@ -106,15 +134,114 @@ export default function ChatPage() {
 
         if (isToday) return "Today";
         if (isYesterday) return "Yesterday";
-        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     };
 
-    // Group messages by date
-    const groupMessagesByDate = () => {
-        const groups: { [key: string]: Message[] } = {};
+    const handleSend = useCallback(async (text: string) => {
+        if (!text.trim() || !chatId) {
+            return;
+        }
 
-        messages.forEach((message: Message) => {
-            const dateKey = new Date(message.timestamp).toDateString();
+        const placeholderId = `pending-${Date.now()}`;
+        const userMessage: Message = {
+            id: placeholderId,
+            text,
+            role: "user",
+            timestamp: new Date(),
+            pending: true,
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
+        setAutoScroll(true);
+        setIsTyping(true);
+
+        try {
+            const data = await sendChatMessage({
+                chatId,
+                text,
+                region,
+            });
+
+            setSession(data.session);
+            setRegion(data.session.region.toUpperCase());
+
+            const savedUser = mapDtoToMessage(data.messages.user);
+            const botMessage = mapDtoToMessage(data.messages.bot);
+
+            setMessages((prev) => {
+                const withoutPlaceholder = prev.filter((msg) => msg.id !== placeholderId);
+                return [...withoutPlaceholder, savedUser, botMessage];
+            });
+
+            const summaryText = botMessage.text.length > 600
+                ? `${botMessage.text.slice(0, 600)}…`
+                : botMessage.text;
+
+            void createSavedQuery({
+                chatId,
+                query: text,
+                responseSummary: summaryText,
+            })
+                .then((result) => {
+                    if (result?.savedQuery) {
+                        window.dispatchEvent(
+                            new CustomEvent("saved-query-created", { detail: result.savedQuery })
+                        );
+                    }
+                })
+                .catch((err: unknown) => {
+                    console.error("Failed to cache saved query:", err);
+                });
+        } catch (error) {
+            console.error("Error sending message:", error);
+            setMessages((prev) => {
+                const updated = prev.map((msg) =>
+                    msg.id === placeholderId ? { ...msg, pending: false } : msg
+                );
+                return [
+                    ...updated,
+                    {
+                        id: `error-${Date.now()}`,
+                        text: "Sorry, something went wrong. Please try again.",
+                        role: "bot",
+                        timestamp: new Date(),
+                    },
+                ];
+            });
+        } finally {
+            setIsTyping(false);
+        }
+    }, [chatId, region]);
+
+    useEffect(() => {
+        if (!chatId || isLoadingHistory) {
+            return;
+        }
+        if (bootstrapInitialQuestion.current) {
+            return;
+        }
+
+        if (messages.length > 0) {
+            bootstrapInitialQuestion.current = true;
+            return;
+        }
+
+        const initialQuestionText = searchParams.get("initialQuestion") ?? "";
+        if (initialQuestionText.trim()) {
+            bootstrapInitialQuestion.current = true;
+            setInput(initialQuestionText);
+            handleSend(initialQuestionText);
+        } else {
+            bootstrapInitialQuestion.current = true;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chatId, isLoadingHistory, messages.length, searchParams]);
+
+    const messageGroups = useMemo(() => {
+        const groups: { [key: string]: Message[] } = {};
+        messages.forEach((message) => {
+            const dateKey = message.timestamp.toDateString();
             if (!groups[dateKey]) {
                 groups[dateKey] = [];
             }
@@ -123,83 +250,14 @@ export default function ChatPage() {
 
         return Object.entries(groups).map(([date, msgs]) => ({
             date: new Date(date),
-            messages: msgs
+            messages: msgs,
         }));
-    };
-
-    const handleSend = async (input: string) => {
-        if (!input.trim()) return;
-
-        // Add user message
-        const userMessage: Message = {
-            id: Date.now(),
-            text: input,
-            role: "user",
-            timestamp: new Date(),
-        };
-        setMessages((prev: Message[]) => [...prev, userMessage]);
-        setInput("");
-        setAutoScroll(true);
-
-        // Show typing indicator
-        setIsTyping(true);
-
-        try {
-            // Send chat message using the new API function
-            const data = await sendChatMessage({ message: userMessage, region });
-
-            // Add bot response to messages with sources
-            const botMessage: Message = {
-                id: Date.now(),
-                text: data.response,
-                role: "bot",
-                timestamp: new Date(),
-                sources: data.sources || [], // Include sources from API response
-            };
-            setMessages((prev: Message[]) => [...prev, botMessage]);
-
-        } catch (error) {
-            console.error("Error:", error);
-            // Add error message from bot
-            const errorMessage: Message = {
-                id: Date.now(),
-                text: "Sorry, something went wrong. Please try again.",
-                role: "bot",
-                timestamp: new Date(),
-            };
-            setMessages((prev: Message[]) => [...prev, errorMessage]);
-        } finally {
-            setIsTyping(false);
-        }
-    };
-
-    // Initiate first question
-    const searchParams = useSearchParams();
-    let some = false;
-    useEffect(() => {
-        if (some) return;
-        some = true;
-        if (localStorage.getItem(`chat-${chatId}-messages`)) return;
-
-        const initialQuestionText = searchParams.get("initialQuestion") ?? "";
-        if (initialQuestionText.trim()) {
-            setInput(initialQuestionText);
-            handleSend(initialQuestionText);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const messageGroups = groupMessagesByDate();
+    }, [messages]);
 
     return (
         <div className="flex flex-col rounded-2xl container px-2 w-full h-screen">
-            {/* Header */}
             <ChatHeader isTyping={isTyping} region={region} onRegionChange={setRegion} />
-            {/* Messages area */}
-            <ScrollArea
-                className="flex-1 px-0 py-2 overflow-y-auto"
-                ref={scrollAreaRef}
-            >
+            <ScrollArea className="flex-1 px-0 py-2 overflow-y-auto" ref={scrollAreaRef}>
                 <ChatMessages
                     messageGroups={messageGroups}
                     isTyping={isTyping}
@@ -209,7 +267,6 @@ export default function ChatPage() {
                 />
             </ScrollArea>
 
-            {/* Scroll to bottom button */}
             {showScrollButton && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -227,13 +284,7 @@ export default function ChatPage() {
                 </motion.div>
             )}
 
-            {/* Input area */}
-            <ChatInput 
-                value={input} 
-                onChange={setInput} 
-                onSend={handleSend} 
-                inputRef={inputRef}
-            />
+            <ChatInput value={input} onChange={setInput} onSend={handleSend} inputRef={inputRef} />
         </div>
     );
 }
