@@ -32,7 +32,9 @@ class SsoScraper(BaseScraper):
         ds_code: str = DEFAULT_DS_CODE,
         ds_description: str = DEFAULT_DS_DESC,
     ) -> None:
-        super().__init__(ds_name, ds_code, ds_description)
+        # Store a two-character code in ref.data_sources while keeping the richer table suffix.
+        super().__init__(ds_name, ds_code[:2], ds_description)
+        self.ds_code = ds_code
         self.s3_obj = self.DATASET_KEY
 
     # ---- HTML helpers -------------------------------------------------

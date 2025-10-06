@@ -1,13 +1,18 @@
-"""
-Run all ingestion pipelines for different regions.
-This script orchestrates the execution of FinCEN (US) and SSO (Singapore) pipelines.
-"""
+"""Run the available ingestion pipelines sequentially."""
 
 import sys
 from datetime import datetime
+from pathlib import Path
 
-from us.fincen.pipeline import FincenPipeline
-from sg.sso.pipeline import SsoPipeline
+# Ensure the repository root and src package are importable when run as a script.
+SRC_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = SRC_ROOT.parent
+for path in (REPO_ROOT, SRC_ROOT):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
+
+from src.us.fincen.pipeline import FincenPipeline
+from src.sg.sso.pipeline import SsoPipeline
 
 
 def run_pipeline(pipeline_class, name):

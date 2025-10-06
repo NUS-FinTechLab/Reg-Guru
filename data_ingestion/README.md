@@ -1,6 +1,6 @@
 # Ingestion Pipelines
 
-This directory houses the ingestion stacks that scrape regulatory sources, process them into structured documents, and embed text chunks into vector stores for Retrieval-Augmented Generation (RAG) workloads. The shared base classes in `src/common/` keep core logic reusable so new jurisdictions can plug into the same scrape → process → embed flow.
+This directory houses the ingestion stacks that scrape regulatory sources, normalize documents, and embed text chunks into vector stores for Retrieval-Augmented Generation (RAG) workloads. Shared base classes in `src/common/` keep core logic reusable so new jurisdictions can plug into the same scrape → process → embed flow.
 
 Currently implemented pipelines:
 
@@ -36,25 +36,78 @@ source .venv-bgem3/bin/activate
 
 ---
 
-## FinCEN (US) Pipeline
+## Pipeline Architecture
 
-The FinCEN stack lives under `src/us/fincen/` and follows the standard stages:
+### Stage 1 – Scrape (`*_Scraper`)
 
-1. **Scraper** – Downloads FinCEN regulatory documents.
-2. **Processor** – Cleans and normalises text/metadata.
-3. **Embedder** – Generates BGE-M3 embeddings and writes to Chroma.
-4. **Pipeline** – Orchestrates ingest → process → embed.
+- `BaseScraper` provides throttled HTML requests, pagination helpers, and logging utilities in `src/common/`.
+- Dataset scrapers (`FincenScraper`, `SsoScraper`) fetch listing/browse pages via `_request_html`, follow `_next_page_url`, and deduplicate records using `doc_id`.
+- Detail pages supply authoritative metadata (titles, published/valid dates, PDF links).
+- `log_into_database` ensures the bronze table exists for the dataset and inserts/updates rows under a unique ingestion `log_id`.
+- `store_documents` downloads canonical PDFs into `data_ingestion/raw/<region>/<dataset>/<log_id>/` or into S3 when `S3_BUCKET_NAME` is set.
 
-### Running the Pipeline
+### Stage 2 – Process (`*_Processor`)
+
+- `BaseProcessor` promotes bronze rows into `silver.metadata` once per run through `clean_metadata`.
+- `extract_metadata` normalizes timestamp fields (epoch integers) and returns the lookup information needed to locate PDFs.
+- `extract_texts` streams one string per PDF page via pdfplumber from either disk or S3.
+- `_process_document` applies the shared text cleaner, merges pages, and attaches metadata before yielding batches through `run(batch_size)`.
+
+### Stage 3 – Embed (`embed_into_chromadb`)
+
+- `_split_documents` chunks cleaned text with `CHUNK_SIZE=1000` and `CHUNK_OVERLAP=200`.
+- `embed_batch` uses the FlagEmbedding BGE-M3 model in batches of 16 to generate dense vectors.
+- `embed_into_chromadb` persists chunk text, embeddings, and metadata into the dataset’s Chroma collection under `chroma/<region>/chromadb_<region>`.
+
+### Stage 4 – Orchestrate (`*_Pipeline`)
+
+- Pipelines inherit from `BasePipeline`, exposing `ingest()`, `process(log_id)`, `embed(minibatch)`, and `run()`.
+- `ingest()` runs the scraper and returns both `log_id` and the number of inserted/updated rows.
+- `process(log_id)` streams normalized document batches from the matching processor.
+- `embed(minibatch)` forwards batches to the embedding helper and logs completion.
+- `run()` chains the stages, enabling standalone execution or multi-region orchestration via `src/pipelines/run_all.py`.
+
+### Shared Services & Utilities
+
+- `src/common/embedding_service.py` exposes a FastAPI wrapper around embedding and Chroma queries.
+- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_testing_chromadb_client`, and collection accessors shared across datasets.
+- `src/pipelines/init_database.py` provisions bronze/silver tables for local development.
+
+---
+
+## Dataset Quick Reference
+
+| Dataset | Module | Source | Bronze table | Local storage | Chroma collection | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| FinCEN (US) | `src/us/fincen/` | Advisory listings on fincen.gov | `bronze.feeds_us_fincen` | `data_ingestion/raw/us/fincen/<log_id>/` | `us_embeddings` (`chroma/us/chromadb_us`) | Detail-page crawl captures the first advisory PDF; duplicates skipped by `doc_id`. |
+| SSO (Singapore) | `src/sg/sso/` | Singapore Statutes Online browse pages | `bronze.feeds_sg_sso` | `data_ingestion/raw/sg/sso/<log_id>/` | `sg_embeddings` (`chroma/sg/chromadb_sg`) | Flags superseded/missing statutes and records effective/valid dates from act detail pages. |
+
+---
+
+## Running Pipelines
 
 ```bash
 source .venv-bgem3/bin/activate
+
+# FinCEN (US)
 python3 src/us/fincen/pipeline.py
+
+# Singapore Statutes Online
+python3 src/sg/sso/pipeline.py
+
+# Run both sequentially
+python3 src/pipelines/run_all.py
 ```
 
-### Real-Time Embedding & Query Service
+- Each run prints ingestion counts and the Chroma destination for embedded chunks.
+- Provide `S3_BUCKET_NAME` to push PDFs to object storage; otherwise they are written under `data_ingestion/raw/…`.
+- Override `CHROMADB_ROOT_DIR` if you need Chroma persistence outside the repository tree.
 
-A FastAPI app wraps embedding and ChromaDB queries so the backend does not have to manage the ingestion environment.
+---
+
+## Real-Time Embedding & Query Service
+
+A FastAPI app wraps the embedder and ChromaDB queries so other services do not need to manage the ingestion environment.
 
 ```bash
 source .venv-bgem3/bin/activate
@@ -66,7 +119,7 @@ Environment variables:
 
 - `EMBEDDER_MODEL` – Override the default `BAAI/bge-m3`.
 - `CHROMADB_ROOT_DIR` – Custom location for Chroma persistence.
-- `EMBEDDING_SERVICE_URL` – Backend URL override (defaults to `http://localhost:6000`).
+- `EMBEDDING_SERVICE_URL` – Backend override (defaults to `http://localhost:6000`).
 
 API endpoints:
 
@@ -74,14 +127,18 @@ API endpoints:
 - `POST /query` – Queries region-specific Chroma collections.
 - `GET /collections/{region}/count` – Retrieves document counts.
 
-### Testing Example
+---
+
+## Local Testing & Validation
 
 ```python
 from common.embedding_helper import embed_batch, get_testing_chromadb_client
 
-FINCEN_COLLECTION_NAME = "fincen_embeddings"
-client = get_testing_chromadb_client("us", "chromadb_fincen")
-collection = client.get_collection(name=FINCEN_COLLECTION_NAME)
+REGION = "us"  # swap to "sg" for SSO
+COLLECTION = "us_embeddings" if REGION == "us" else "sg_embeddings"
+
+client = get_testing_chromadb_client(REGION, f"chromadb_{REGION}")
+collection = client.get_collection(name=COLLECTION)
 
 query_texts = [
     "Which chemical was classified as a substance of very high concern under EU Decision 2019/1194?",
@@ -92,7 +149,12 @@ results = collection.query(query_embeddings=embeddings, n_results=1)
 print(results["documents"])
 ```
 
-### Database Connection (psql)
+- Update `query_texts` to align with the dataset you are validating.
+- Use the returned `documents` to confirm that recently ingested material is retrievable.
+
+---
+
+## Database Connection (psql)
 
 ```bash
 psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master -d postgres
@@ -100,54 +162,11 @@ psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master
 
 ---
 
-## SSO (Singapore) Pipeline
+## Adding Another Pipeline
 
-The Singapore Statutes Online pipeline (`src/sg/sso/`) mirrors the FinCEN structure, targeting the SSO browse pages. It demonstrates how to adopt the shared base classes for a new region.
+- Define dataset-specific constants in a scraper subclass and expose `self.s3_obj` so downstream stages resolve PDF storage correctly.
+- Derive a processor that points `BaseProcessor.DATASET_KEY` to the same storage root used by the scraper and promotes bronze rows to `silver.metadata`.
+- Implement an embedder function that accepts `{content, metadata}` batches and persists to a dedicated Chroma collection (or your vector store of choice).
+- Register the new pipeline in `src/pipelines/run_all.py` to participate in the multi-region orchestrator.
+- Keep shared utilities in `src/common/` to minimise duplication across jurisdictions.
 
-### 1. Scrape – `SsoScraper`
-
-1. **List pages** – `_request_html` fetches browse pages sequentially, respecting `PAGE_DELAY`.
-2. **Row parsing** – `_extract_documents_from_page` reads the results table and captures title, statute route, and PDF URL for each act.
-3. **Document metadata** – `_extract_document_metadata` visits the act detail page to capture published/valid dates.
-4. **Pagination** – `_next_page_url` follows the "Next Page" button until the listing ends.
-5. **Bronze logging** – `log_into_database` ensures `bronze.feeds_sg_sso` exists, flags superseded or missing statutes, and inserts new or updated rows under a fresh log id.
-6. **File storage** – `store_documents` downloads every PDF either to `data_ingestion/raw/sg/sso/<log_id>/` or to an S3 bucket if `S3_BUCKET_NAME` is set.
-
-Outputs: bronze table rows keyed by `doc_id` and PDF files grouped by ingestion `log_id`.
-
-### 2. Process – `SsoProcessor`
-
-1. **Silver metadata** – `clean_metadata` copies bronze rows for the run into `silver.metadata` once.
-2. **Metadata retrieval** – `extract_metadata` normalises timestamps and returns the fields required to locate each PDF.
-3. **PDF loading** – `extract_texts` reads the PDF from S3 or disk and returns one string per page via pdfplumber.
-4. **Cleaning** – `_process_document` runs the shared `clean_texts`, merges page text, and attaches metadata.
-5. **Batch yield** – `run` emits lists of `{ "content": text, "metadata": {...} }` capped at `batch_size`.
-
-Outputs: generator of ready-to-embed document batches.
-
-### 3. Embed – `embed_into_chromadb`
-
-1. **Chunking** – `_split_documents` breaks each document into overlapping windows using LangChain (`CHUNK_SIZE=1000`, `CHUNK_OVERLAP=200`).
-2. **Embedding** – `embed_batch` (FlagEmbedding BGE-M3) encodes chunks in groups of 16.
-3. **Persistence** – Chunks, vectors, and metadata are stored in the `sg_embeddings` Chroma collection under `chroma/sg/chromadb_sg`.
-
-Outputs: persistent Chroma collection populated with SSO chunk embeddings.
-
-### 4. Pipeline Orchestration – `SsoPipeline`
-
-1. `ingest()` runs the scraper and records the latest `log_id`.
-2. `process()` streams batches from `SsoProcessor.run(log_id)`.
-3. `embed(minibatch)` sends each batch to `embed_into_chromadb` and logs completion.
-4. `run()` (from `BasePipeline`) ties the stages together by calling `ingest()`, looping over `process()`, and embedding each batch.
-
-### Reuse Checklist
-
-- Define dataset-specific constants in your scraper subclass and set `self.s3_obj` so downstream stages know where PDFs live.
-- Use `BaseProcessor.DATASET_KEY` to point at the same storage path the scraper writes to.
-- Promote bronze rows to `silver.metadata` in `clean_metadata` so other systems consume a consistent view.
-- Expose a single embedder function that accepts an iterable of `{content, metadata}` items and writes to your vector store of choice.
-- Register the new pipeline in `src/pipelines/run_all.py` to run it alongside existing regions.
-
----
-
-With these conventions, adding another scraping pipeline is as simple as implementing region-specific subclasses and wiring them through the shared orchestration interface.

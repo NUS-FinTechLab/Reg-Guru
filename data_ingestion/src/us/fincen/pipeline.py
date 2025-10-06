@@ -1,59 +1,46 @@
-from datetime import datetime
-
-from ...common import IngestionPipeline
+from ...common.BasePipeline import BasePipeline
 from .embedding import embed_into_chromadb
+from .processor import FincenProcessor
 from .scraper import FincenScraper
-from .process import process_fincen_data
 
-class FincenPipeline(IngestionPipeline):
-    """FinCEN-specific pipeline implementation with FlagEmbedding support."""
 
-    def __init__(self, process_batch_size=12):
+class FincenPipeline(BasePipeline):
+    """FinCEN-specific pipeline mirroring the shared scrape → process → embed flow."""
+
+    def __init__(self, process_batch_size: int = 12) -> None:
+        super().__init__()
         self.process_batch_size = process_batch_size
         self.scraper = FincenScraper()
-        self._raw_data = None
-        self._run_id = None
+        self.processor = FincenProcessor(
+            ds_code=self.scraper.DEFAULT_DS_CODE,
+            batch_size=self.process_batch_size,
+        )
+        self.latest_log_id = None
 
-    def ingest(self):
-        """Download or read raw data using the scraper."""
+    def ingest(self) -> None:
+        """Download raw advisories and persist their metadata."""
         print("📥 Starting FinCEN data ingestion...")
-        self._raw_data = None
-        self._run_id = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        self._raw_data = self.scraper.scrape(run_id=self._run_id)
-        item_count = len(self._raw_data.get("documents", [])) if self._raw_data else 0
-        print(f"✅ FinCEN ingestion completed. Retrieved {item_count} items.")
-        return
+        new_entries = self.scraper.run()
+        self.latest_log_id = self.scraper.get_log_id()
+        print(f"✅ FinCEN ingestion completed. Logged {new_entries} new items.")
 
     def process(self):
-        """Convert raw data into structured docs (list of dicts)."""
-        if not self._raw_data:
-            raise RuntimeError("No raw data available. Call ingest() before process().")
-
-        print("🔄 Processing FinCEN raw data...")
-        processed_data = process_fincen_data(self._raw_data)
-        doc_count = len(processed_data) if processed_data else 0
-        print(f"✅ FinCEN processing completed. Generated {doc_count} documents.")
-
-        if not processed_data:
+        """Convert raw advisories into cleaned document batches."""
+        if not self.latest_log_id:
+            print("⚠️ No ingestion log id available; skipping processing phase.")
             return iter([])
 
-        def batch_iterator():
-            batch = []
-            for doc in processed_data:
-                batch.append(doc)
-                if len(batch) == self.process_batch_size:
-                    yield batch
-                    batch = []
-            if batch:
-                yield batch
+        print("🔄 Processing FinCEN raw data...")
+        return self.processor.run(self.latest_log_id)
 
-        return batch_iterator()
-    
-    def embed(self, docs):
-        """Embed documents into Chroma or other vector DB."""
-        print(f"🔗 Embedding {len(docs) if docs else 0} FinCEN documents...")
-        embed_into_chromadb(docs)
+    def embed(self, minibatch):
+        """Embed processed batches into the FinCEN Chroma collection."""
+        if not minibatch:
+            return
+        print(f"🔗 Embedding {len(minibatch)} FinCEN documents...")
+        embed_into_chromadb(minibatch)
         print("✅ FinCEN embedding completed.")
+
 
 if __name__ == "__main__":
     pipeline = FincenPipeline()
