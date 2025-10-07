@@ -14,13 +14,14 @@ blinker==1.9.0
 build==1.2.2.post1
 cachetools==5.5.2
 certifi==2025.1.31
-cffi==1.17.1
+cffi==2.0.0
 charset-normalizer==3.4.1
 chroma-hnswlib==0.7.6
 chromadb==0.6.3
 click==8.1.8
 colorama==0.4.6
 coloredlogs==15.0.1
+cryptography==46.0.2
 dataclasses-json==0.6.7
 deepseek-sdk==0.1.0
 Deprecated==1.2.18
@@ -60,6 +61,7 @@ jsonpatch==1.33
 jsonpointer==3.0.0
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
+jwt==1.4.0
 kubernetes==32.0.1
 langchain==0.3.21
 langchain-community==0.3.20

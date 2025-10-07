@@ -30,7 +30,7 @@ CORS_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 CORS_METHODS = ["GET", "POST", "OPTIONS"]
-CORS_HEADERS = ["Content-Type"]
+CORS_HEADERS = ["Content-Type", "Authorization"]
 
 # Directory and file paths
 VECTORSTORE_DIRECTORY = "database"
@@ -71,3 +71,7 @@ Question: {question}
 
 If the context does not contain the answer, use other sources.
 """
+
+# Authentication
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")

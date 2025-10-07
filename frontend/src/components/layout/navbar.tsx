@@ -1,5 +1,5 @@
 "use client";
-import {AlignLeft, ChevronsDown, Github, Menu, Send} from "lucide-react";
+import {AlignLeft, Github} from "lucide-react";
 import React from "react";
 import {
     Sheet,
@@ -23,6 +23,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { ToggleTheme } from "./toogle-theme";
 import { motion, AnimatePresence } from "framer-motion";
+import { getStoredUser, clearAuth } from "@/utils/auth-client";
+import { useRouter } from "next/navigation";
+import type { AuthUser } from "@/utils/api";
 
 interface RouteProps {
     href: string;
@@ -73,6 +76,8 @@ const featureList: FeatureProps[] = [
 export const Navbar = () => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [scrolled, setScrolled] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<AuthUser | null>(null);
+    const router = useRouter();
 
     // Handle scroll effect
     React.useEffect(() => {
@@ -85,6 +90,27 @@ export const Navbar = () => {
             window.removeEventListener("scroll", handleScroll);
         };
     }, []);
+
+    React.useEffect(() => {
+        const updateUser = () => {
+            setCurrentUser(getStoredUser());
+        };
+
+        updateUser();
+        window.addEventListener("auth-change", updateUser);
+        return () => window.removeEventListener("auth-change", updateUser);
+    }, []);
+
+    const handleLogout = () => {
+        clearAuth();
+        setCurrentUser(null);
+        router.push("/login");
+    };
+
+    const handleNavigate = (href: string) => {
+        setIsOpen(false);
+        router.push(href);
+    };
 
     // Animation variants for mobile menu items
     const containerVariants = {
@@ -189,7 +215,7 @@ export const Navbar = () => {
                                                         variant="ghost"
                                                         className="justify-start text-base transition-all duration-300 hover:pl-4 hover:text-primary"
                                                     >
-                                                        <Link href={`${href}`}>{label}</Link>
+                                                        <Link href={href} onClick={() => setIsOpen(false)}>{label}</Link>
                                                     </Button>
                                                 </motion.div>
                                             ))}
@@ -202,6 +228,45 @@ export const Navbar = () => {
                                     >
                                         <SheetFooter className="flex-col sm:flex-col justify-start items-start">
                                             <Separator className="mb-2" />
+                                            <div className="flex flex-col gap-2 w-full">
+                                                {currentUser ? (
+                                                    <>
+                                                        <Button
+                                                            onClick={() => handleNavigate("/chat")}
+                                                            variant="outline"
+                                                            className="w-full"
+                                                        >
+                                                            Open Chat
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => {
+                                                                handleLogout();
+                                                                setIsOpen(false);
+                                                            }}
+                                                            variant="destructive"
+                                                            className="w-full"
+                                                        >
+                                                            Log out
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Button
+                                                            onClick={() => handleNavigate("/login")}
+                                                            variant="outline"
+                                                            className="w-full"
+                                                        >
+                                                            Log in
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => handleNavigate("/register")}
+                                                            className="w-full"
+                                                        >
+                                                            Sign up
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
                                             <motion.div
                                                 whileHover={{ scale: 1.05 }}
                                                 transition={{ duration: 0.2 }}
@@ -241,6 +306,32 @@ export const Navbar = () => {
                 <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
                     <ToggleTheme />
                 </motion.div>
+                {currentUser ? (
+                    <>
+                        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                            <Button
+                                variant="outline"
+                                onClick={() => router.push("/chat")}
+                            >
+                                Open Chat
+                            </Button>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                            <Button variant="destructive" onClick={handleLogout}>
+                                Log out
+                            </Button>
+                        </motion.div>
+                    </>
+                ) : (
+                    <>
+                        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                            <Button variant="outline" onClick={() => router.push("/login")}>Log in</Button>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                            <Button onClick={() => router.push("/register")}>Sign up</Button>
+                        </motion.div>
+                    </>
+                )}
                 <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} transition={{ duration: 0.2 }}>
                     <Button
                         asChild

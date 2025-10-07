@@ -20,27 +20,42 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getSavedQueries, SavedQuery } from "@/utils/api";
+import { getChatHistoryEntries, ChatHistoryEntry } from "@/utils/api";
+import { getStoredUser } from "@/utils/auth-client";
 
 export function AppSidebar() {
     const router = useRouter();
-    const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([]);
+    const [historyEntries, setHistoryEntries] = useState<ChatHistoryEntry[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let isMounted = true;
-        getSavedQueries()
+        const user = getStoredUser();
+
+        if (!user) {
+            if (isMounted) {
+                setError("Log in to view your chat history");
+                setIsLoading(false);
+            }
+            return () => {
+                isMounted = false;
+            };
+        }
+
+        setIsLoading(true);
+
+        getChatHistoryEntries()
             .then((data) => {
                 if (isMounted) {
-                    setSavedQueries(data);
+                    setHistoryEntries(data);
                 }
             })
             .catch((err: unknown) => {
-                console.error("Failed to load saved queries:", err);
+                console.error("Failed to load chat history:", err);
                 if (isMounted) {
-                    setError("Unable to load saved queries");
+                    setError("Unable to load chat history");
                 }
             })
             .finally(() => {
@@ -56,35 +71,35 @@ export function AppSidebar() {
 
     useEffect(() => {
         const handleCreated = (event: Event) => {
-            const customEvent = event as CustomEvent<SavedQuery>;
-            const newQuery = customEvent.detail;
-            if (!newQuery) {
+            const customEvent = event as CustomEvent<ChatHistoryEntry>;
+            const newEntry = customEvent.detail;
+            if (!newEntry) {
                 return;
             }
-            setSavedQueries((prev) => {
-                if (prev.some((item) => item.id === newQuery.id)) {
+            setHistoryEntries((prev) => {
+                if (prev.some((item) => item.id === newEntry.id)) {
                     return prev;
                 }
-                return [newQuery, ...prev];
+                return [newEntry, ...prev];
             });
         };
 
-        window.addEventListener("saved-query-created", handleCreated as EventListener);
+        window.addEventListener("chat-history-created", handleCreated as EventListener);
         return () => {
-            window.removeEventListener("saved-query-created", handleCreated as EventListener);
+            window.removeEventListener("chat-history-created", handleCreated as EventListener);
         };
     }, []);
 
-    const filteredQueries = useMemo(() => {
+    const filteredEntries = useMemo(() => {
         const term = searchTerm.toLowerCase();
-        return savedQueries.filter((query) =>
-            query.query_text.toLowerCase().includes(term)
+        return historyEntries.filter((entry) =>
+            entry.queryText.toLowerCase().includes(term)
         );
-    }, [savedQueries, searchTerm]);
+    }, [historyEntries, searchTerm]);
 
-    const handleSavedQuerySelect = (query: SavedQuery) => {
-        if (query.chat_external_id) {
-            router.push(`/chat/${query.chat_external_id}`);
+    const handleHistorySelect = (entry: ChatHistoryEntry) => {
+        if (entry.chatExternalId) {
+            router.push(`/chat/${entry.chatExternalId}`);
         }
     };
 
@@ -147,26 +162,26 @@ export function AppSidebar() {
                     </div>
                     <div className="px-4 pb-6 overflow-y-auto">
                         {isLoading && (
-                            <p className="text-sm text-gray-500">Loading saved queries...</p>
+                            <p className="text-sm text-gray-500">Loading chat history...</p>
                         )}
                         {!isLoading && error && (
                             <p className="text-sm text-red-500">{error}</p>
                         )}
-                        {!isLoading && !error && filteredQueries.length === 0 && (
-                            <p className="text-sm text-gray-500">No saved queries yet.</p>
+                        {!isLoading && !error && filteredEntries.length === 0 && (
+                            <p className="text-sm text-gray-500">No chat history yet.</p>
                         )}
-                        {!isLoading && !error && filteredQueries.length > 0 && (
+                        {!isLoading && !error && filteredEntries.length > 0 && (
                             <ul className="space-y-3">
-                                {filteredQueries.map((query) => (
-                                    <li key={query.id}>
+                                {filteredEntries.map((entry) => (
+                                    <li key={entry.id}>
                                         <button
                                             type="button"
-                                            onClick={() => handleSavedQuerySelect(query)}
+                                            onClick={() => handleHistorySelect(entry)}
                                             className="w-full text-left p-3 rounded-xl border hover:border-blue-300 transition"
                                         >
-                                            <p className="text-sm font-medium truncate">{query.query_text}</p>
+                                            <p className="text-sm font-medium truncate">{entry.queryText}</p>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {new Date(query.created_at).toLocaleString()}
+                                                {new Date(entry.createdAt).toLocaleString()}
                                             </p>
                                         </button>
                                     </li>

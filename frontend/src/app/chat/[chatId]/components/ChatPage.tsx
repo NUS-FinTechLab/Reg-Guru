@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { createSavedQuery, fetchChatHistory, sendChatMessage } from "@/utils/api";
-import { ChatMessageDTO, ChatSession, Message } from "@/utils/api/types";
+import { createChatHistoryEntry, fetchChatHistory, sendChatMessage } from "@/utils/api";
+import { AuthUser, ChatMessageDTO, ChatSession, Message } from "@/utils/api/types";
+import { getStoredUser } from "@/utils/auth-client";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
@@ -21,11 +22,13 @@ const mapDtoToMessage = (dto: ChatMessageDTO): Message => ({
 });
 
 export default function ChatPage() {
+    const router = useRouter();
     const params = useParams();
     const chatParam = Array.isArray(params?.chatId) ? params.chatId[0] : params?.chatId;
     const chatId = chatParam?.toString() ?? "";
     const searchParams = useSearchParams();
 
+    const [authUser, setAuthUser] = useState<AuthUser | null>(null);
     const [, setSession] = useState<ChatSession | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
@@ -41,6 +44,29 @@ export default function ChatPage() {
     const bootstrapInitialQuestion = useRef(false);
 
     useEffect(() => {
+        const user = getStoredUser();
+        if (!user) {
+            router.replace("/login");
+            return;
+        }
+
+        setAuthUser(user);
+
+        const handleAuthChange = () => {
+            const updated = getStoredUser();
+            setAuthUser(updated);
+            if (!updated) {
+                router.replace("/login");
+            }
+        };
+
+        window.addEventListener("auth-change", handleAuthChange);
+        return () => {
+            window.removeEventListener("auth-change", handleAuthChange);
+        };
+    }, [router]);
+
+    useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
@@ -48,6 +74,11 @@ export default function ChatPage() {
 
     useEffect(() => {
         if (!chatId) {
+            setIsLoadingHistory(false);
+            return;
+        }
+
+        if (!authUser) {
             setIsLoadingHistory(false);
             return;
         }
@@ -85,7 +116,7 @@ export default function ChatPage() {
         return () => {
             isMounted = false;
         };
-    }, [chatId]);
+    }, [authUser, chatId]);
 
     useEffect(() => {
         if (autoScroll && messagesEndRef.current) {
@@ -142,6 +173,11 @@ export default function ChatPage() {
             return;
         }
 
+        if (!authUser) {
+            router.replace("/login");
+            return;
+        }
+
         const placeholderId = `pending-${Date.now()}`;
         const userMessage: Message = {
             id: placeholderId,
@@ -161,6 +197,7 @@ export default function ChatPage() {
                 chatId,
                 text,
                 region,
+                userId: authUser.id,
             });
 
             setSession(data.session);
@@ -178,20 +215,19 @@ export default function ChatPage() {
                 ? `${botMessage.text.slice(0, 600)}…`
                 : botMessage.text;
 
-            void createSavedQuery({
-                chatId,
+            void createChatHistoryEntry(chatId, {
                 query: text,
                 responseSummary: summaryText,
             })
                 .then((result) => {
-                    if (result?.savedQuery) {
+                    if (result?.historyEntry) {
                         window.dispatchEvent(
-                            new CustomEvent("saved-query-created", { detail: result.savedQuery })
+                            new CustomEvent("chat-history-created", { detail: result.historyEntry })
                         );
                     }
                 })
                 .catch((err: unknown) => {
-                    console.error("Failed to cache saved query:", err);
+                    console.error("Failed to cache chat history entry:", err);
                 });
         } catch (error) {
             console.error("Error sending message:", error);
@@ -212,10 +248,10 @@ export default function ChatPage() {
         } finally {
             setIsTyping(false);
         }
-    }, [chatId, region]);
+    }, [authUser, chatId, region, router]);
 
     useEffect(() => {
-        if (!chatId || isLoadingHistory) {
+        if (!authUser || !chatId || isLoadingHistory) {
             return;
         }
         if (bootstrapInitialQuestion.current) {
@@ -236,7 +272,7 @@ export default function ChatPage() {
             bootstrapInitialQuestion.current = true;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [chatId, isLoadingHistory, messages.length, searchParams]);
+    }, [authUser, chatId, isLoadingHistory, messages.length, searchParams]);
 
     const messageGroups = useMemo(() => {
         const groups: { [key: string]: Message[] } = {};

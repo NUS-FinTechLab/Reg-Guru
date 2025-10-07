@@ -1,9 +1,12 @@
 // This file is deprecated. Please use the new API functions from /utils/api/index.ts
 // Re-exporting for backward compatibility
 
-import { getAllData } from "./queries";
+import { getChatHistoryEntries } from "./chat-history";
 
 /**
- * @deprecated Use getAllData from @/utils/api instead
+ * @deprecated Fetch chat history directly via getChatHistoryEntries instead.
  */
-export const getData = getAllData;
+export const getData = async () => {
+  const history = await getChatHistoryEntries();
+  return { history };
+};

@@ -1,4 +1,5 @@
 import { SERVER_URL } from "@/utils/constants";
+import { buildAuthHeaders } from "@/utils/auth-client";
 import { FeedbackRequest } from "./types";
 
 /**
@@ -10,8 +11,9 @@ export const logFeedback = async (feedbackData: FeedbackRequest): Promise<void> 
     try {
         const response = await fetch(`${SERVER_URL}/api/log_feedback`, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json" 
+            headers: {
+                "Content-Type": "application/json",
+                ...buildAuthHeaders(),
             },
             body: JSON.stringify(feedbackData),
         });
@@ -31,7 +33,9 @@ export const logFeedback = async (feedbackData: FeedbackRequest): Promise<void> 
  */
 export const testApi = async (): Promise<{ message: string }> => {
     try {
-        const response = await fetch(`${SERVER_URL}/api/test`);
+        const response = await fetch(`${SERVER_URL}/api/test`, {
+            headers: buildAuthHeaders(),
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

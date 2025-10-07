@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from flask import jsonify, request
 
+from ..auth import decode_auth_header
 from ..models import ChatMessage, ChatSession, User
 from ..utils import process_chat_query
 from . import api
@@ -15,6 +16,13 @@ def chat():
     """Handle chat queries using the RAG system."""
     data = request.json or {}
     print("Received data:", data)
+
+    auth_header = request.headers.get("Authorization")
+    if auth_header:
+        try:
+            decode_auth_header(auth_header)
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 401
 
     user_message = data.get("message", {}).get("text", "").strip()
     region = (data.get("region") or "us").lower()

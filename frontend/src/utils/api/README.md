@@ -88,18 +88,17 @@ All API functions include comprehensive error handling:
 The API layer provides a clean abstraction between the frontend components and backend services, with proper TypeScript typing and error handling throughout.
 - **Message**: Chat message interface
 - **ChatRequest/ChatResponse**: Chat API interfaces
-- **SaveQueryRequest**: Save query request interface
-- **SavedQuery**: Saved query data structure
+- **ChatHistoryEntry**: Chat history record structure
 - **FeedbackRequest**: Feedback logging interface
 - **ApiResponse<T>**: Generic API response wrapper
 
 ### 2. `/frontend/src/utils/api/chat.ts`
 - **sendChatMessage(message)**: Send chat messages to backend
-- **saveQuery(queryData)**: Save question/answer pairs
+- Automatically triggers chat history caching for quick access
 
-### 3. `/frontend/src/utils/api/queries.ts` (Updated)
-- **getSavedQueries()**: Get all saved queries
-- **getAllData()**: Get saved queries (simplified, documents removed)
+### 3. `/frontend/src/utils/api/chat-history.ts`
+- **getChatHistoryEntries()**: Get recent history entries
+- **createChatHistoryEntry()**: Persist question/answer pairs
 
 ### 4. `/frontend/src/utils/api/feedback.ts`
 - **logFeedback(feedbackData)**: Log user feedback (thumbs up/down with comments)
@@ -116,10 +115,10 @@ The API layer provides a clean abstraction between the frontend components and b
 ## Updated Components & Pages
 
 ### ✅ Chat Components
-- **`ChatPage.tsx`**: Already using `sendChatMessage()` and `saveQuery()`
-- **`AppSidebar.tsx`**: NEW - Now displays saved queries using `getSavedQueries()`
-  - Shows recent queries with search functionality
-  - Click to start new chat with saved question
+- **`ChatPage.tsx`**: Uses `sendChatMessage()` and records chat history entries
+- **`AppSidebar.tsx`**: Displays chat history via `getChatHistoryEntries()`
+  - Shows recent conversations with search functionality
+  - Click to resume a conversation from history
   - Loading states and error handling
 
 ### ✅ Contact & Feedback Forms
@@ -140,9 +139,9 @@ The API layer provides a clean abstraction between the frontend components and b
 ## New Features Added
 
 ### 🆕 Smart Sidebar with Saved Queries
-- Displays recent saved queries in the chat sidebar
+- Displays recent chat history entries in the sidebar
 - Search functionality to filter through queries
-- Click any saved query to start a new chat with that question
+- Click any chat history entry to resume the associated conversation
 - Loading skeletons while fetching data
 - Empty state when no queries exist
 
@@ -160,7 +159,7 @@ The API layer provides a clean abstraction between the frontend components and b
 4. **✅ Error Handling**: Consistent error handling across all API calls
 5. **✅ Reusability**: Functions can be easily imported and reused
 6. **✅ User Experience**: Enhanced forms with proper feedback and states
-7. **✅ Smart Features**: Sidebar now shows useful saved queries
+7. **✅ Smart Features**: Sidebar now shows recent chat history
 8. **✅ Maintainability**: Easy to update API endpoints in one location
 
 ## Current API Usage Across Frontend
@@ -168,10 +167,10 @@ The API layer provides a clean abstraction between the frontend components and b
 ### Chat Features
 ```typescript
 // ChatPage.tsx - Main chat functionality
-import { sendChatMessage, saveQuery } from '@/utils/api';
+import { sendChatMessage, createChatHistoryEntry } from '@/utils/api';
 
-// AppSidebar.tsx - Saved queries display
-import { getSavedQueries } from '@/utils/api';
+// AppSidebar.tsx - Chat history display
+import { getChatHistoryEntries } from '@/utils/api';
 ```
 
 ### Contact & Feedback
@@ -188,12 +187,11 @@ import { getAllData } from '@/utils/api';
 
 ## Recommendations for Future Enhancement
 
-1. **Add real-time updates** - Refresh sidebar when new queries are saved
-2. **Implement query management** - Add delete/edit functionality for saved queries
-3. **Add user sessions** - Track queries per user session
-4. **Enhanced search** - Add full-text search across query content
-5. **Add chat history** - Show conversation threads, not just individual queries
-6. **Implement proper feedback API** - Replace mailto with actual backend endpoint
+1. **Add real-time updates** - Refresh sidebar when new history entries are saved
+2. **Implement history management** - Add delete/edit functionality for history entries
+3. **Tighten auth checks** - Decode JWT and authorize per user session
+4. **Enhanced search** - Add full-text search across stored responses
+5. **Implement proper feedback API** - Replace mailto with actual backend endpoint
 
 ## Testing Checklist ✅
 

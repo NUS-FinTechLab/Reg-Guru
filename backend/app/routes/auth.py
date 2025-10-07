@@ -5,8 +5,9 @@ from __future__ import annotations
 from flask import jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import api
+from ..auth import generate_jwt
 from ..models import User
+from . import api
 from .serializers import serialize_user
 
 
@@ -31,8 +32,9 @@ def register():
 
     password_hash = generate_password_hash(password)
     user = User.create(username=username, email=email, password_hash=password_hash)
+    token = generate_jwt(str(user.id))
 
-    return jsonify({"user": serialize_user(user)}), 201
+    return jsonify({"user": serialize_user(user), "token": token}), 201
 
 
 @api.route("/auth/login", methods=["POST"])
@@ -48,7 +50,8 @@ def login():
     if user is None or not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    return jsonify({"user": serialize_user(user)}), 200
+    token = generate_jwt(str(user.id))
+    return jsonify({"user": serialize_user(user), "token": token}), 200
 
 
 @api.route("/auth/logout", methods=["POST"])

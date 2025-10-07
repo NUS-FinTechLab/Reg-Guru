@@ -1,20 +1,31 @@
 "use client"
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, MessageCircle, Paperclip, Upload } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ToggleTheme } from "@/components/layout/toogle-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { getStoredUser } from "@/utils/auth-client";
 
 export default function ChatDashboard() {
     const router = useRouter();
     const [question, setQuestion] = useState("");
 
+    useEffect(() => {
+        if (!getStoredUser()) {
+            router.replace("/login");
+        }
+    }, [router]);
+
     const handleAskQuestion = () => {
         if (!question.trim()) return;
+        const user = getStoredUser();
+        if (!user) {
+            router.replace("/login");
+            return;
+        }
         // Generate a unique chat ID
         const chatId = Date.now().toString();
 
