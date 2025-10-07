@@ -18,14 +18,14 @@ DEFAULT_MIGRATIONS_DIR = REPO_ROOT / "backend" / "migrations"
 
 
 def apply_sql_file(path: pathlib.Path) -> None:
-    statements = [stmt.strip() for stmt in path.read_text().split(";") if stmt.strip()]
-    if not statements:
+    sql = path.read_text()
+    if not sql.strip():
         return
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            for statement in statements:
-                cur.execute(statement)
+            # Execute the full file to ensure dollar-quoted blocks stay intact.
+            cur.execute(sql)
 
 
 def main() -> None:
