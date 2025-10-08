@@ -38,8 +38,12 @@ export const FeedbackSection = () => {
         setSubmitStatus('idle');
 
         try {
-            // Test the API first to ensure it's working
-            await testApi();
+            const health = await testApi();
+            if (!health.message || health.message.toLowerCase() === "unreachable") {
+                setSubmitStatus('error');
+                setIsSubmitting(false);
+                return;
+            }
             
             // For now, we'll still use mailto since there's no specific feedback endpoint
             // But we've validated the API is working

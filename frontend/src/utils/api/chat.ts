@@ -62,28 +62,17 @@ export const fetchChat = async (
     });
 
     if (response.status === 404) {
-      throw new Error("not_found");
+      return { chat: null, messages: [] };
     }
 
     if (!response.ok) {
-      const body = await response.text();
-      let message = `HTTP error! status: ${response.status}`;
-      try {
-        const parsed = JSON.parse(body) as { error?: string };
-        if (parsed?.error) {
-          message = parsed.error;
-        }
-      } catch (error) {
-        if (body) {
-          message = body;
-        }
-      }
-      throw new Error(message);
+      console.error("Failed to fetch chat", await response.text());
+      return { chat: null, messages: [] };
     }
 
-    return response.json();
+    return response.json() as Promise<ChatDetailResponse>;
   } catch (error) {
-    console.error("Failed to fetch chat history", error);
-    throw new Error("network_error");
+    console.error("Failed to fetch chat", error);
+    return { chat: null, messages: [] };
   }
 };

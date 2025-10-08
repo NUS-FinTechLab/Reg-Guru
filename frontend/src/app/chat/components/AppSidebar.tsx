@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Cog, Plus, Search } from "lucide-react";
+import { Cog, LayoutGrid, Plus, Search } from "lucide-react";
 
 import {
     Sidebar,
@@ -29,6 +29,10 @@ export function AppSidebar() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+        event.currentTarget.style.visibility = "hidden";
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -122,6 +126,7 @@ export function AppSidebar() {
                                 width={40}
                                 height={40}
                                 className="rounded-full border-2 border-blue-200"
+                                onError={handleImageError}
                             />
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
                         </div>
@@ -150,10 +155,10 @@ export function AppSidebar() {
                     </TooltipProvider>
                 </div>
             </SidebarHeader>
-            <SidebarContent>
-                <div className="flex flex-col h-full">
-                    <div className="flex items-center gap-2 my-4 mx-4">
-                        <div className="relative flex-1 focus:ring-0">
+        <SidebarContent>
+            <div className="flex flex-col h-full">
+                <div className="flex items-center gap-2 my-4 mx-4">
+                    <div className="relative flex-1 focus:ring-0">
                             <Input
                                 placeholder="Search chats"
                                 value={searchTerm}
@@ -204,8 +209,17 @@ export function AppSidebar() {
                     </div>
                 </div>
             </SidebarContent>
-            <SidebarFooter className="absolute bottom-4">
-                <div className="px-2">
+            <SidebarFooter className="mt-auto px-4 pb-4">
+                <div className="flex items-center justify-between gap-2">
+                    <Button
+                        onClick={() => router.push("/app")}
+                        size="sm"
+                        variant="ghost"
+                        className="rounded-full"
+                    >
+                        <LayoutGrid className="mr-1 h-3.5 w-3.5" />
+                        Workspace
+                    </Button>
                     <Button asChild className="cursor-pointer w-10 h-10 rounded-full text-gray-400" variant="outline">
                         <Link href="#">
                             <Cog />

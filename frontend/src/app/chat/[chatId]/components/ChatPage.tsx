@@ -91,6 +91,12 @@ export default function ChatPage() {
                 if (!isMounted) {
                     return;
                 }
+                if (!data.chat) {
+                    setChat(null);
+                    setMessages([]);
+                    return;
+                }
+
                 setChat(data.chat);
                 const mappedMessages = data.messages.map(mapDtoToMessage);
                 setMessages(mappedMessages);
@@ -236,21 +242,23 @@ export default function ChatPage() {
                 return [...withoutPlaceholder, savedUser, botMessage];
             });
 
-            const chatListItem: ChatListItem = {
-                id: resolvedChatId,
-                userId: data.chat.userId,
-                createdAt: data.chat.createdAt,
-                updatedAt: data.chat.updatedAt,
-                lastMessage: {
-                    text: botMessage.text,
-                    role: botMessage.role,
-                    createdAt: botMessage.timestamp.toISOString(),
-                },
-            };
+            if (data.chat) {
+                const chatListItem: ChatListItem = {
+                    id: resolvedChatId,
+                    userId: data.chat.userId,
+                    createdAt: data.chat.createdAt,
+                    updatedAt: data.chat.updatedAt,
+                    lastMessage: {
+                        text: botMessage.text,
+                        role: botMessage.role,
+                        createdAt: botMessage.timestamp.toISOString(),
+                    },
+                };
 
-            window.dispatchEvent(
-                new CustomEvent<ChatListItem>("chat-updated", { detail: chatListItem }),
-            );
+                window.dispatchEvent(
+                    new CustomEvent<ChatListItem>("chat-updated", { detail: chatListItem }),
+                );
+            }
         } catch (error) {
             console.error("Error sending message:", error);
             setMessages((prev) => {

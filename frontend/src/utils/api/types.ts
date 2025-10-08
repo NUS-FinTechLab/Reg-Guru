@@ -49,7 +49,7 @@ export interface ChatResponse {
 }
 
 export interface ChatDetailResponse {
-    chat: ChatSummary;
+    chat: ChatSummary | null;
     messages: ChatMessageDTO[];
 }
 

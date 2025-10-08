@@ -38,8 +38,12 @@ export const ContactSection = () => {
     setSubmitStatus('idle');
 
     try {
-      // Test the API first to ensure it's working
-      await testApi();
+      const health = await testApi();
+      if (!health.message || health.message.toLowerCase() === "unreachable") {
+        setSubmitStatus('error');
+        setIsSubmitting(false);
+        return;
+      }
       
       // Use proper contact email with structured message
       const subject = "Contact Form - Reg-Guru Website";
