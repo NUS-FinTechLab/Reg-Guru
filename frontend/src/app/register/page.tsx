@@ -30,7 +30,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await registerUser({ username: username.trim(), email: email.trim(), password });
-      router.push("/app");
+      router.push("/modules");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Registration failed";
       setError(message);

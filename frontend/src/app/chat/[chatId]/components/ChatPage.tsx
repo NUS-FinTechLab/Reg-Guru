@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { createChatHistoryEntry, fetchChatHistory, sendChatMessage } from "@/utils/api";
-import { AuthUser, ChatMessageDTO, ChatSummary, Message } from "@/utils/api/types";
+import { fetchChat, sendChatMessage } from "@/utils/api";
+import { AuthUser, ChatListItem, ChatMessageDTO, ChatSummary, Message } from "@/utils/api/types";
 import { getStoredUser } from "@/utils/auth-client";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
@@ -86,13 +86,35 @@ export default function ChatPage() {
         let isMounted = true;
         setIsLoadingHistory(true);
 
-        fetchChatHistory(chatId)
+        fetchChat(chatId)
             .then((data) => {
                 if (!isMounted) {
                     return;
                 }
                 setChat(data.chat);
-                setMessages(data.messages.map(mapDtoToMessage));
+                const mappedMessages = data.messages.map(mapDtoToMessage);
+                setMessages(mappedMessages);
+
+                const lastDto = data.messages.length > 0
+                    ? data.messages[data.messages.length - 1]
+                    : null;
+                const chatListItem: ChatListItem = {
+                    id: data.chat.id,
+                    userId: data.chat.userId,
+                    createdAt: data.chat.createdAt,
+                    updatedAt: data.chat.updatedAt,
+                    lastMessage: lastDto
+                        ? {
+                            text: lastDto.text,
+                            role: lastDto.role,
+                            createdAt: lastDto.createdAt,
+                        }
+                        : null,
+                };
+
+                window.dispatchEvent(
+                    new CustomEvent<ChatListItem>("chat-updated", { detail: chatListItem }),
+                );
             })
             .catch((error: unknown) => {
                 if (!isMounted) {
@@ -214,24 +236,21 @@ export default function ChatPage() {
                 return [...withoutPlaceholder, savedUser, botMessage];
             });
 
-            const summaryText = botMessage.text.length > 600
-                ? `${botMessage.text.slice(0, 600)}…`
-                : botMessage.text;
+            const chatListItem: ChatListItem = {
+                id: resolvedChatId,
+                userId: data.chat.userId,
+                createdAt: data.chat.createdAt,
+                updatedAt: data.chat.updatedAt,
+                lastMessage: {
+                    text: botMessage.text,
+                    role: botMessage.role,
+                    createdAt: botMessage.timestamp.toISOString(),
+                },
+            };
 
-            void createChatHistoryEntry(resolvedChatId, {
-                query: text,
-                responseSummary: summaryText,
-            })
-                .then((result) => {
-                    if (result?.historyEntry) {
-                        window.dispatchEvent(
-                            new CustomEvent("chat-history-created", { detail: result.historyEntry })
-                        );
-                    }
-                })
-                .catch((err: unknown) => {
-                    console.error("Failed to cache chat history entry:", err);
-                });
+            window.dispatchEvent(
+                new CustomEvent<ChatListItem>("chat-updated", { detail: chatListItem }),
+            );
         } catch (error) {
             console.error("Error sending message:", error);
             setMessages((prev) => {

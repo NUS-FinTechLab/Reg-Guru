@@ -75,7 +75,7 @@ class Chat:
         if chat_id is not None:
             existing = cls.get_by_id(chat_id)
             if existing is not None:
-                if existing.user_id != user_id:
+                if str(existing.user_id) != str(user_id):
                     raise ValueError("Chat belongs to a different user")
                 cls.touch(existing.id)
                 return existing
@@ -126,3 +126,47 @@ class Chat:
             (user_id,),
         )
         return [cls.from_row(row) for row in rows]
+
+    @classmethod
+    def list_with_last_message_for_user(
+        cls,
+        user_id: UUID | str,
+    ) -> List[Dict[str, Any]]:
+        rows = fetch_all(
+            """
+            SELECT
+                c.id,
+                c.user_id,
+                c.created_at,
+                c.updated_at,
+                lm.role AS last_message_role,
+                lm.body AS last_message_body,
+                lm.created_at AS last_message_created_at
+            FROM app.chats AS c
+            LEFT JOIN LATERAL (
+                SELECT role, body, created_at
+                FROM app.chat_messages
+                WHERE chat_id = c.id
+                ORDER BY created_at DESC
+                LIMIT 1
+            ) AS lm ON TRUE
+            WHERE c.user_id = %s
+            ORDER BY c.updated_at DESC
+            """,
+            (user_id,),
+        )
+
+        results: List[Dict[str, Any]] = []
+        for row in rows:
+            data = dict(row)
+            chat = cls.from_row(data)
+            last_message = None
+            if data.get("last_message_body") is not None:
+                created_at = data.get("last_message_created_at")
+                last_message = {
+                    "text": data["last_message_body"],
+                    "role": data["last_message_role"],
+                    "createdAt": created_at.isoformat() if created_at else None,
+                }
+            results.append({"chat": chat, "last_message": last_message})
+        return results

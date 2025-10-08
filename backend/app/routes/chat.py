@@ -12,6 +12,25 @@ from . import api
 from .serializers import serialize_chat, serialize_message
 
 
+@api.route("/chats", methods=["GET"])
+def list_user_chats():
+    authenticated_user_id = getattr(g, "authenticated_user_id", None)
+    if not authenticated_user_id:
+        return jsonify({"error": "Authenticated user mismatch"}), 403
+
+    chats = []
+    for item in Chat.list_with_last_message_for_user(authenticated_user_id):
+        chat = item["chat"]
+        last_message = item["last_message"]
+        chat_payload = {
+            **chat.to_api_dict(),
+            "lastMessage": last_message,
+        }
+        chats.append(chat_payload)
+
+    return jsonify({"chats": chats}), 200
+
+
 @api.route("/chat", methods=["POST"])
 def chat():
     """Handle chat queries using the RAG system."""
@@ -80,7 +99,7 @@ def chat():
 
         bot_message_obj = ChatMessage.create(
             chat_id=chat.id,
-            user_id=chat.user_id,
+            user_id=None,
             role="ai",
             body=response,
             sources=source_list,

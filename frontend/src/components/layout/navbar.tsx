@@ -231,11 +231,11 @@ export const Navbar = () => {
                                                 {currentUser ? (
                                                     <>
                                                         <Button
-                                                            onClick={() => handleNavigate("/app")}
+                                                            onClick={() => handleNavigate("/modules")}
                                                             variant="outline"
                                                             className="w-full"
                                                         >
-                                                            Open Chat
+                                                            Open Workspace
                                                         </Button>
                                                         <Button
                                                             onClick={() => {
@@ -310,9 +310,9 @@ export const Navbar = () => {
                         <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
                             <Button
                                 variant="outline"
-                                onClick={() => router.push("/app")}
+                                onClick={() => router.push("/modules")}
                             >
-                                Open Chat
+                                Workspace
                             </Button>
                         </motion.div>
                         <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>

@@ -1,6 +1,6 @@
 import { SERVER_URL } from "@/utils/constants";
 import { buildAuthHeaders } from "@/utils/auth-client";
-import { ChatHistoryResponse, ChatRequest, ChatResponse } from "./types";
+import { ChatDetailResponse, ChatRequest, ChatResponse } from "./types";
 
 /**
  * Send a chat message to the backend
@@ -53,9 +53,9 @@ export const sendChatMessage = async (
   }
 };
 
-export const fetchChatHistory = async (
+export const fetchChat = async (
   chatId: string,
-): Promise<ChatHistoryResponse> => {
+): Promise<ChatDetailResponse> => {
   try {
     const response = await fetch(`${SERVER_URL}/api/chat/${chatId}`, {
       headers: buildAuthHeaders(),

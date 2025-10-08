@@ -1,6 +1,6 @@
 """Storage package exposing compatibility helpers."""
 
-from ..models import Chat, ChatHistory, ChatMessage, Feedback, User
+from ..models import Chat, ChatMessage, Feedback, User
 from .chats import (
     create_chat,
     ensure_chat,
@@ -10,7 +10,6 @@ from .chats import (
 )
 from .feedback import insert_feedback
 from .messages import insert_message, list_messages
-from .chat_history import insert_chat_history, list_chat_history
 from .users import (
     create_user,
     get_user_by_email,
@@ -21,7 +20,6 @@ from .users import (
 
 __all__ = [
     "Chat",
-    "ChatHistory",
     "ChatMessage",
     "Feedback",
     "User",
@@ -33,8 +31,6 @@ __all__ = [
     "insert_feedback",
     "insert_message",
     "list_messages",
-    "insert_chat_history",
-    "list_chat_history",
     "create_user",
     "get_user_by_email",
     "get_user_by_id",

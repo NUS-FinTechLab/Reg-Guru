@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getChatHistoryEntries, ChatHistoryEntry } from "@/utils/api";
+import { listChats, ChatListItem } from "@/utils/api";
 import { getStoredUser } from "@/utils/auth-client";
 
 export function AppSidebar() {
     const router = useRouter();
-    const [historyEntries, setHistoryEntries] = useState<ChatHistoryEntry[]>([]);
+    const [chats, setChats] = useState<ChatListItem[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export function AppSidebar() {
 
         if (!user) {
             if (isMounted) {
-                setError("Log in to view your chat history");
+                setError("Log in to view your chats");
                 setIsLoading(false);
             }
             return () => {
@@ -46,16 +46,20 @@ export function AppSidebar() {
 
         setIsLoading(true);
 
-        getChatHistoryEntries()
+        listChats()
             .then((data) => {
                 if (isMounted) {
-                    setHistoryEntries(data);
+                    const sorted = [...data].sort(
+                        (a, b) =>
+                            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+                    );
+                    setChats(sorted);
                 }
             })
             .catch((err: unknown) => {
-                console.error("Failed to load chat history:", err);
+                console.error("Failed to load chats:", err);
                 if (isMounted) {
-                    setError("Unable to load chat history");
+                    setError("Unable to load chats");
                 }
             })
             .finally(() => {
@@ -70,36 +74,39 @@ export function AppSidebar() {
     }, []);
 
     useEffect(() => {
-        const handleCreated = (event: Event) => {
-            const customEvent = event as CustomEvent<ChatHistoryEntry>;
-            const newEntry = customEvent.detail;
-            if (!newEntry) {
+        const handleUpdated = (event: Event) => {
+            const customEvent = event as CustomEvent<ChatListItem>;
+            const updatedChat = customEvent.detail;
+            if (!updatedChat) {
                 return;
             }
-            setHistoryEntries((prev) => {
-                if (prev.some((item) => item.id === newEntry.id)) {
-                    return prev;
-                }
-                return [newEntry, ...prev];
+            setChats((prev) => {
+                const without = prev.filter((item) => item.id !== updatedChat.id);
+                const next = [updatedChat, ...without];
+                return next.sort(
+                    (a, b) =>
+                        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+                );
             });
         };
 
-        window.addEventListener("chat-history-created", handleCreated as EventListener);
+        window.addEventListener("chat-updated", handleUpdated as EventListener);
         return () => {
-            window.removeEventListener("chat-history-created", handleCreated as EventListener);
+            window.removeEventListener("chat-updated", handleUpdated as EventListener);
         };
     }, []);
 
     const filteredEntries = useMemo(() => {
         const term = searchTerm.toLowerCase();
-        return historyEntries.filter((entry) =>
-            entry.queryText.toLowerCase().includes(term)
-        );
-    }, [historyEntries, searchTerm]);
+        return chats.filter((chat) => {
+            const preview = chat.lastMessage?.text?.toLowerCase() ?? "";
+            return preview.includes(term) || chat.id.toLowerCase().includes(term);
+        });
+    }, [chats, searchTerm]);
 
-    const handleHistorySelect = (entry: ChatHistoryEntry) => {
-        if (entry.chatId) {
-            router.push(`/chat/${entry.chatId}`);
+    const handleChatSelect = (chat: ChatListItem) => {
+        if (chat.id) {
+            router.push(`/chat/${chat.id}`);
         }
     };
 
@@ -162,30 +169,36 @@ export function AppSidebar() {
                     </div>
                     <div className="px-4 pb-6 overflow-y-auto">
                         {isLoading && (
-                            <p className="text-sm text-gray-500">Loading chat history...</p>
+                            <p className="text-sm text-gray-500">Loading chats...</p>
                         )}
                         {!isLoading && error && (
                             <p className="text-sm text-red-500">{error}</p>
                         )}
                         {!isLoading && !error && filteredEntries.length === 0 && (
-                            <p className="text-sm text-gray-500">No chat history yet.</p>
+                            <p className="text-sm text-gray-500">No conversations yet.</p>
                         )}
                         {!isLoading && !error && filteredEntries.length > 0 && (
                             <ul className="space-y-3">
-                                {filteredEntries.map((entry) => (
-                                    <li key={entry.id}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleHistorySelect(entry)}
-                                            className="w-full text-left p-3 rounded-xl border hover:border-blue-300 transition"
-                                        >
-                                            <p className="text-sm font-medium truncate">{entry.queryText}</p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                {new Date(entry.createdAt).toLocaleString()}
-                                            </p>
-                                        </button>
-                                    </li>
-                                ))}
+                                {filteredEntries.map((chat) => {
+                                    const preview = chat.lastMessage?.text ?? "Start a conversation";
+                                    const timestamp = chat.lastMessage?.createdAt ?? chat.updatedAt;
+                                    return (
+                                        <li key={chat.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChatSelect(chat)}
+                                                className="w-full text-left p-3 rounded-xl border hover:border-blue-300 transition"
+                                            >
+                                                <p className="text-sm font-medium truncate">
+                                                    {preview}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    {new Date(timestamp).toLocaleString()}
+                                                </p>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
                     </div>

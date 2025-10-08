@@ -57,7 +57,6 @@ from . import auth  # noqa: F401  (imported for side effects)
 from . import chat  # noqa: F401
 from . import feedback  # noqa: F401
 from . import misc  # noqa: F401
-from . import chat_history  # noqa: F401
 from . import sessions  # noqa: F401
 from . import users  # noqa: F401
 

@@ -57,7 +57,7 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                       <span className="text-sm opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>
                     </div>
                     <div className={"py-2"}>
-                      {/* Show source links for bot messages */}
+                      {/* Show source links for AI messages */}
                       {message.role === "ai" && message.sources && (
                         <SourceLinks sources={message.sources} />
                       )}

@@ -48,7 +48,7 @@ export interface ChatResponse {
     };
 }
 
-export interface ChatHistoryResponse {
+export interface ChatDetailResponse {
     chat: ChatSummary;
     messages: ChatMessageDTO[];
 }
@@ -60,23 +60,14 @@ export interface ChatRequest {
     userId: string;
 }
 
-export interface FeedbackRequest {
-    chatId: string;
-    rating: 'thumbs_up' | 'thumbs_down';
-    comments?: string;
-    messageId?: number;
-}
-
-export interface ApiResponse<T> {
-    data?: T;
-    error?: string;
-    status: number;
-}
-
-export interface ChatHistoryEntry {
-    id: number;
-    chatId: string | null;
-    queryText: string;
-    responseSummary: string | null;
-    createdAt: string;
+export interface ChatListItem {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage: {
+    text: string;
+    role: "user" | "ai";
+    createdAt: string | null;
+  } | null;
 }
