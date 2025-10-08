@@ -45,7 +45,7 @@ export const HeroSection = () => {
           <div className="space-y-4 md:space-y-0 md:space-x-4">
             <Button asChild className="w-5/6 md:w-1/4 font-bold font-mono uppercase text-xs py-6">
               <Link
-                href="/chat"
+                href="/app"
                 target="_blank"
                 className={"flex items-center py-6"}
               >

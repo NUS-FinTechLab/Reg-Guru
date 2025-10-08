@@ -19,7 +19,6 @@ class ChatHistory:
     query_text: str
     response_summary: Optional[str]
     created_at: datetime
-    chat_external_id: Optional[str] = None
 
     @classmethod
     def from_row(cls, row: Row) -> "ChatHistory":
@@ -29,46 +28,24 @@ class ChatHistory:
             query_text=row["query_text"],
             response_summary=row.get("response_summary"),
             created_at=row["created_at"],
-            chat_external_id=row.get("chat_external_id"),
         )
 
     @classmethod
     def list_recent(cls, limit: int = 25, chat_id: UUID | str | None = None) -> List["ChatHistory"]:
-        if chat_id is not None:
-            rows = fetch_all(
-                """
-                SELECT
-                    ch.id,
-                    ch.chat_id,
-                    ch.query_text,
-                    ch.response_summary,
-                    ch.created_at,
-                    cs.external_id AS chat_external_id
-                FROM app.chat_history ch
-                LEFT JOIN app.chat_sessions cs ON cs.id = ch.chat_id
-                WHERE ch.chat_id = %s
-                ORDER BY ch.created_at DESC
-                LIMIT %s
-                """,
-                (chat_id, limit),
-            )
-        else:
-            rows = fetch_all(
-                """
-                SELECT
-                    ch.id,
-                    ch.chat_id,
-                    ch.query_text,
-                    ch.response_summary,
-                    ch.created_at,
-                    cs.external_id AS chat_external_id
-                FROM app.chat_history ch
-                LEFT JOIN app.chat_sessions cs ON cs.id = ch.chat_id
-                ORDER BY ch.created_at DESC
-                LIMIT %s
-                """,
-                (limit,),
-            )
+        sql = """
+            SELECT
+                ch.id,
+                ch.chat_id,
+                ch.query_text,
+                ch.response_summary,
+                ch.created_at
+            FROM app.chat_history ch
+            WHERE (%s IS NULL) OR ch.chat_id = %s
+            ORDER BY ch.created_at DESC
+            LIMIT %s
+        """
+        params = (chat_id, chat_id, limit)
+        rows = fetch_all(sql, params)
         return [cls.from_row(row) for row in rows]
 
     @classmethod
@@ -78,7 +55,6 @@ class ChatHistory:
         response_summary: Optional[str],
         *,
         chat_id: UUID | str,
-        chat_external_id: Optional[str] = None,
     ) -> "ChatHistory":
         row = execute_returning(
             """
@@ -88,9 +64,7 @@ class ChatHistory:
             """,
             (chat_id, query_text, response_summary),
         )
-        data: Dict[str, Any] = dict(row)
-        data["chat_external_id"] = chat_external_id
-        return cls.from_row(data)
+        return cls.from_row(row)
 
     def to_record(self) -> Dict[str, Any]:
         return {
@@ -99,16 +73,13 @@ class ChatHistory:
             "query_text": self.query_text,
             "response_summary": self.response_summary,
             "created_at": self.created_at,
-            "chat_external_id": self.chat_external_id,
         }
 
     def to_api_dict(self) -> Dict[str, Any]:
-        chat_value = str(self.chat_id) if self.chat_id else None
         return {
             "id": self.id,
-            "chatId": chat_value,
+            "chatId": str(self.chat_id) if self.chat_id else None,
             "queryText": self.query_text,
             "responseSummary": self.response_summary,
             "createdAt": self.created_at.isoformat(),
-            "chatExternalId": self.chat_external_id,
         }

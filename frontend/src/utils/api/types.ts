@@ -7,7 +7,7 @@ export interface Source {
 export interface Message {
     id: number | string;
     text: string;
-    role: "user" | "bot";
+    role: "user" | "ai";
     timestamp: Date;
     sources?: Source[];
     pending?: boolean;
@@ -21,40 +21,40 @@ export interface AuthUser {
   updatedAt: string;
 }
 
-export interface ChatSession {
-    id: string;
-    chatId: string;
-    region: string;
-    userId: string;
-    createdAt: string;
-    updatedAt: string;
+export interface ChatSummary {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ChatMessageDTO {
     id: number;
-    role: "user" | "bot";
+    role: "user" | "ai";
     text: string;
     sources: Source[];
-    timestamp: string;
+    createdAt: string;
+    updatedAt: string;
+    userId?: string | null;
 }
 
 export interface ChatResponse {
     response: string;
     sources: Source[];
-    session: ChatSession;
+    chat: ChatSummary;
     messages: {
         user: ChatMessageDTO;
-        bot: ChatMessageDTO;
+        ai: ChatMessageDTO;
     };
 }
 
 export interface ChatHistoryResponse {
-    session: ChatSession;
+    chat: ChatSummary;
     messages: ChatMessageDTO[];
 }
 
 export interface ChatRequest {
-    chatId: string;
+    chatId?: string;
     text: string;
     region?: string;
     userId: string;
@@ -76,7 +76,6 @@ export interface ApiResponse<T> {
 export interface ChatHistoryEntry {
     id: number;
     chatId: string | null;
-    chatExternalId: string | null;
     queryText: string;
     responseSummary: string | null;
     createdAt: string;

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from flask import jsonify, request
+from uuid import UUID
 
-from ..auth import decode_auth_header
-from ..models import ChatMessage, ChatSession, User
+from flask import g, jsonify, request
+
+from ..models import Chat, ChatMessage, User
 from ..utils import process_chat_query
 from . import api
-from .serializers import serialize_message, serialize_session
+from .serializers import serialize_chat, serialize_message
 
 
 @api.route("/chat", methods=["POST"])
@@ -17,22 +18,20 @@ def chat():
     data = request.json or {}
     print("Received data:", data)
 
-    auth_header = request.headers.get("Authorization")
-    if auth_header:
-        try:
-            decode_auth_header(auth_header)
-        except ValueError as exc:
-            return jsonify({"error": str(exc)}), 401
-
     user_message = data.get("message", {}).get("text", "").strip()
     region = (data.get("region") or "us").lower()
-    chat_external_id = str(data.get("chatId") or data.get("chat_id") or "").strip()
+    raw_chat_id = str(data.get("chatId") or data.get("chat_id") or "").strip()
+    chat_id: UUID | str | None = raw_chat_id or None
     user_id = str(
         data.get("userId")
         or data.get("user_id")
         or (data.get("user") or {}).get("id")
         or ""
     ).strip()
+
+    authenticated_user_id = getattr(g, "authenticated_user_id", None)
+    if authenticated_user_id and user_id != authenticated_user_id:
+        return jsonify({"error": "Authenticated user mismatch"}), 403
 
     valid_regions = ["us", "eu", "sg"]
     if region not in valid_regions:
@@ -42,9 +41,6 @@ def chat():
             ),
             400,
         )
-
-    if not chat_external_id:
-        return jsonify({"error": "chatId is required"}), 400
 
     if not user_message:
         return jsonify({"error": "message text is required"}), 400
@@ -56,11 +52,18 @@ def chat():
     if user is None:
         return jsonify({"error": "User not found"}), 404
 
+    if chat_id is not None:
+        try:
+            chat_id = str(UUID(str(chat_id)))
+        except ValueError:
+            return jsonify({"error": "chatId must be a valid UUID"}), 400
+
     try:
-        session = ChatSession.upsert(chat_external_id, region, user.id)
+        chat = Chat.ensure(chat_id, user.id)
 
         user_message_obj = ChatMessage.create(
-            session_id=session.id,
+            chat_id=chat.id,
+            user_id=user.id,
             role="user",
             body=user_message,
             sources=[],
@@ -76,8 +79,9 @@ def chat():
         source_list = sources.get("sources", [])
 
         bot_message_obj = ChatMessage.create(
-            session_id=session.id,
-            role="bot",
+            chat_id=chat.id,
+            user_id=chat.user_id,
+            role="ai",
             body=response,
             sources=source_list,
         )
@@ -88,10 +92,10 @@ def chat():
                 {
                     "response": response,
                     "sources": source_list,
-                    "session": serialize_session(session),
+                    "chat": serialize_chat(chat),
                     "messages": {
                         "user": serialize_message(user_message_obj),
-                        "bot": serialize_message(bot_message_obj),
+                        "ai": serialize_message(bot_message_obj),
                     },
                 }
             ),

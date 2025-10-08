@@ -29,7 +29,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await loginUser({ identifier: identifier.trim(), password });
-      router.push("/chat");
+      router.push("/app");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);

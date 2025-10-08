@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import Dict
 
-from ..models import ChatHistory, ChatMessage, ChatSession, User
+from ..models import Chat, ChatHistory, ChatMessage, User
 
 
-def serialize_session(session: ChatSession) -> Dict[str, str]:
-    return session.to_api_dict()
+def serialize_chat(chat: Chat) -> Dict[str, str]:
+    return chat.to_api_dict()
 
 
 def serialize_message(message: ChatMessage) -> Dict[str, object]:
@@ -26,6 +26,6 @@ def serialize_user(user: User) -> Dict[str, object]:
 __all__ = [
     "serialize_message",
     "serialize_history_entry",
-    "serialize_session",
+    "serialize_chat",
     "serialize_user",
 ]

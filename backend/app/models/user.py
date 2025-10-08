@@ -22,7 +22,7 @@ class User:
     updated_at: datetime
 
     @classmethod
-    def from_row(cls, row: Row) -> "User":
+    def from_row(cls, row: Row) -> User:
         return cls(
             id=row["id"],
             username=row["username"],
@@ -33,11 +33,11 @@ class User:
         )
 
     @classmethod
-    def get_by_id(cls, user_id: UUID | str) -> Optional["User"]:
+    def get_by_id(cls, user_id: UUID | str) -> Optional[User]:
         row = fetch_one(
             """
             SELECT id, username, email, password_hash, created_at, updated_at
-            FROM app.user
+            FROM app."user"
             WHERE id = %s
             """,
             (user_id,),
@@ -45,11 +45,11 @@ class User:
         return cls.from_row(row) if row else None
 
     @classmethod
-    def get_by_username(cls, username: str) -> Optional["User"]:
+    def get_by_username(cls, username: str) -> Optional[User]:
         row = fetch_one(
             """
             SELECT id, username, email, password_hash, created_at, updated_at
-            FROM app.user
+            FROM app."user"
             WHERE username = %s
             """,
             (username,),
@@ -57,11 +57,11 @@ class User:
         return cls.from_row(row) if row else None
 
     @classmethod
-    def get_by_email(cls, email: str) -> Optional["User"]:
+    def get_by_email(cls, email: str) -> Optional[User]:
         row = fetch_one(
             """
             SELECT id, username, email, password_hash, created_at, updated_at
-            FROM app.user
+            FROM app."user"
             WHERE email = %s
             """,
             (email,),
@@ -69,10 +69,10 @@ class User:
         return cls.from_row(row) if row else None
 
     @classmethod
-    def create(cls, username: str, email: str, password_hash: str) -> "User":
+    def create(cls, username: str, email: str, password_hash: str) -> User:
         row = execute_returning(
             """
-            INSERT INTO app.user (username, email, password_hash)
+            INSERT INTO app."user" (username, email, password_hash)
             VALUES (%s, %s, %s)
             RETURNING id, username, email, password_hash, created_at, updated_at
             """,
@@ -81,11 +81,11 @@ class User:
         return cls.from_row(row)
 
     @classmethod
-    def list_all(cls) -> Iterable["User"]:
+    def list_all(cls) -> Iterable[User]:
         rows = fetch_all(
             """
             SELECT id, username, email, password_hash, created_at, updated_at
-            FROM app.user
+            FROM app."user"
             ORDER BY created_at DESC
             """
         )

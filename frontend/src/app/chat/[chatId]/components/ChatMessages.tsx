@@ -36,7 +36,7 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
                 <div className={`flex items-start gap-2 py-2 max-w-[90%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-                  {message.role === "bot" ? (
+                  {message.role === "ai" ? (
                     <div className="flex-shrink-0">
                       <Image src="/logo.png" alt="Bot avatar" width={36} height={36} className="" />
                     </div>
@@ -58,7 +58,7 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                     </div>
                     <div className={"py-2"}>
                       {/* Show source links for bot messages */}
-                      {message.role === "bot" && message.sources && (
+                      {message.role === "ai" && message.sources && (
                         <SourceLinks sources={message.sources} />
                       )}
                     </div>

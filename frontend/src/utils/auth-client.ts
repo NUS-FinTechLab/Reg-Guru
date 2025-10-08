@@ -14,7 +14,7 @@ export const getStoredUser = (): StoredUser | null => {
     return null;
   }
 
-  const raw = sessionStorage.getItem(USER_STORAGE_KEY);
+  const raw = localStorage.getItem(USER_STORAGE_KEY);
   if (!raw) {
     return null;
   }
@@ -31,15 +31,15 @@ export const getAuthToken = (): string | null => {
   if (typeof window === "undefined") {
     return null;
   }
-  return sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
 };
 
 export const storeAuth = (token: string, user: StoredUser): void => {
   if (typeof window === "undefined") {
     return;
   }
-  sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
-  sessionStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   window.dispatchEvent(new Event("auth-change"));
 };
 
@@ -47,14 +47,24 @@ export const clearAuth = (): void => {
   if (typeof window === "undefined") {
     return;
   }
-  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-  sessionStorage.removeItem(USER_STORAGE_KEY);
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(USER_STORAGE_KEY);
   window.dispatchEvent(new Event("auth-change"));
 };
 
 export const buildAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {};
   const token = getAuthToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const user = getStoredUser();
+  if (user?.id) {
+    headers["X-User-Id"] = user.id;
+  }
+
+  return headers;
 };
 
 export const TOKEN_KEY = TOKEN_STORAGE_KEY;

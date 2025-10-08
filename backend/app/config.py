@@ -30,7 +30,7 @@ CORS_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 CORS_METHODS = ["GET", "POST", "OPTIONS"]
-CORS_HEADERS = ["Content-Type", "Authorization"]
+CORS_HEADERS = ["Content-Type", "Authorization", "X-User-Id"]
 
 # Directory and file paths
 VECTORSTORE_DIRECTORY = "database"

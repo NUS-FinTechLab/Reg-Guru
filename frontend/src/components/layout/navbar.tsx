@@ -1,5 +1,5 @@
 "use client";
-import {AlignLeft, Github} from "lucide-react";
+import { AlignLeft, Github } from "lucide-react";
 import React from "react";
 import {
     Sheet,
@@ -130,9 +130,8 @@ export const Navbar = () => {
     };
 
     return (
-        <header className={`shadow-inner w-full md:w-[70%] lg:w-[100%] lg:max-w-screen-xl mx-auto z-40 flex justify-between items-center p-2 transition-all duration-300 ${
-            scrolled ? "bg-transparent" : "bg-transparent"
-        } py-6`}>
+        <header className={`shadow-inner w-full md:w-[70%] lg:w-[100%] lg:max-w-screen-xl mx-auto z-40 flex justify-between items-center p-2 transition-all duration-300 ${scrolled ? "bg-transparent" : "bg-transparent"
+            } py-6`}>
             <Link href="/" className="font-bold text-lg flex items-center">
                 <Image
                     src={"/logo.png"}
@@ -145,7 +144,7 @@ export const Navbar = () => {
             </Link>
             {/* <!-- Mobile --> */}
             <div className="flex items-center space-x-4 lg:hidden">
-                <ToggleTheme/>
+                <ToggleTheme />
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild>
                         <motion.div
@@ -156,7 +155,7 @@ export const Navbar = () => {
                                 onClick={() => setIsOpen(!isOpen)}
                                 className={"lg:hidden transition-all duration-300 hover:text-primary cursor-pointer w-10 h-10 rounded-full"}
                             >
-                                <AlignLeft/>
+                                <AlignLeft />
                             </Button>
                         </motion.div>
                     </SheetTrigger>
@@ -232,7 +231,7 @@ export const Navbar = () => {
                                                 {currentUser ? (
                                                     <>
                                                         <Button
-                                                            onClick={() => handleNavigate("/chat")}
+                                                            onClick={() => handleNavigate("/app")}
                                                             variant="outline"
                                                             className="w-full"
                                                         >
@@ -311,7 +310,7 @@ export const Navbar = () => {
                         <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
                             <Button
                                 variant="outline"
-                                onClick={() => router.push("/chat")}
+                                onClick={() => router.push("/app")}
                             >
                                 Open Chat
                             </Button>
@@ -332,23 +331,6 @@ export const Navbar = () => {
                         </motion.div>
                     </>
                 )}
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} transition={{ duration: 0.2 }}>
-                    <Button
-                        asChild
-                        size="sm"
-                        variant="secondary"
-                        aria-label="View on GitHub"
-                        className="w-10 h-10 flex justify-center items-center rounded-full transition-colors duration-300 hover:bg-primary/10"
-                    >
-                        <Link
-                            aria-label="View on GitHub"
-                            href="https://github.com/nobruf/shadcn-landing-page.git"
-                            target="_blank"
-                        >
-                            <Github className="size-4" />
-                        </Link>
-                    </Button>
-                </motion.div>
             </div>
         </header>
     );

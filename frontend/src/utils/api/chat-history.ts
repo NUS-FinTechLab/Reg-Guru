@@ -33,11 +33,11 @@ export const getChatHistoryEntries = async (
 };
 
 export const createChatHistoryEntry = async (
-  chatExternalId: string,
+  chatId: string,
   payload: { query: string; responseSummary?: string | null },
 ): Promise<{ historyEntry: ChatHistoryEntry }> => {
   const response = await fetch(
-    `${SERVER_URL}/api/chat/${chatExternalId}/history`,
+    `${SERVER_URL}/api/chat/${chatId}/history`,
     {
       method: "POST",
       headers: {

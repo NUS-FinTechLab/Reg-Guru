@@ -98,8 +98,8 @@ export function AppSidebar() {
     }, [historyEntries, searchTerm]);
 
     const handleHistorySelect = (entry: ChatHistoryEntry) => {
-        if (entry.chatExternalId) {
-            router.push(`/chat/${entry.chatExternalId}`);
+        if (entry.chatId) {
+            router.push(`/chat/${entry.chatId}`);
         }
     };
 

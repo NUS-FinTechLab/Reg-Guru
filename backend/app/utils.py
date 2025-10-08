@@ -18,7 +18,7 @@ from .config import (
     PROMPT_TEMPLATE,
     EMBEDDING_SERVICE_URL,
 )
-from .models import ChatSession, Feedback
+from .models import Chat, Feedback
 
 # Initialize LLM components
 llm = ChatOpenAI(model=MODEL_NAME, temperature=MODEL_TEMPERATURE)
@@ -110,7 +110,7 @@ def process_chat_query(user_message, region="us"):
 
 
 def log_feedback(
-    chat_external_id: str,
+    chat_id: str,
     rating: str,
     comments: str = "",
     message_id: int | None = None,
@@ -123,12 +123,12 @@ def log_feedback(
     if rating_normalized not in valid_ratings:
         raise ValueError("Invalid rating type")
 
-    session = ChatSession.get_by_external_id(chat_external_id)
-    if session is None:
-        raise ValueError("Unknown chat session")
+    chat = Chat.get_by_id(chat_id)
+    if chat is None:
+        raise ValueError("Unknown chat")
 
     Feedback.create(
-        session_id=session.id,
+        chat_id=chat.id,
         rating=rating_normalized,
         comments=comments.strip(),
         message_id=message_id,

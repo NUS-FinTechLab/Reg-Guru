@@ -1,13 +1,12 @@
 """Storage package exposing compatibility helpers."""
 
-from ..models import ChatHistory, ChatMessage, ChatSession, Feedback, User
-from .chat_sessions import (
-    create_session,
-    get_session_by_external_id,
-    get_session_by_id,
-    list_sessions_for_user,
-    touch_session,
-    upsert_session,
+from ..models import Chat, ChatHistory, ChatMessage, Feedback, User
+from .chats import (
+    create_chat,
+    ensure_chat,
+    get_chat_by_id,
+    list_chats_for_user,
+    touch_chat,
 )
 from .feedback import insert_feedback
 from .messages import insert_message, list_messages
@@ -21,17 +20,16 @@ from .users import (
 )
 
 __all__ = [
+    "Chat",
     "ChatHistory",
     "ChatMessage",
-    "ChatSession",
     "Feedback",
     "User",
-    "create_session",
-    "get_session_by_external_id",
-    "get_session_by_id",
-    "list_sessions_for_user",
-    "touch_session",
-    "upsert_session",
+    "create_chat",
+    "ensure_chat",
+    "get_chat_by_id",
+    "list_chats_for_user",
+    "touch_chat",
     "insert_feedback",
     "insert_message",
     "list_messages",

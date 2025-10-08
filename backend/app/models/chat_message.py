@@ -12,84 +12,95 @@ from ..db import execute_returning, fetch_all, to_jsonb
 Row = Mapping[str, Any]
 
 if TYPE_CHECKING:  # pragma: no cover
-    from .chat_session import ChatSession
+    from .chat import Chat
 
 
 @dataclass(frozen=True)
 class ChatMessage:
     id: int
-    session_id: UUID
+    chat_id: UUID
+    user_id: Optional[UUID]
     role: str
     body: str
     sources: List[Dict[str, Any]]
-    sent_at: datetime
+    created_at: datetime
+    updated_at: datetime
 
     @classmethod
     def from_row(cls, row: Row) -> "ChatMessage":
         return cls(
             id=row["id"],
-            session_id=row["session_id"],
+            chat_id=row["chat_id"],
+            user_id=row.get("user_id"),
             role=row["role"],
             body=row["body"],
             sources=row["sources"],
-            sent_at=row["sent_at"],
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
         )
 
     @classmethod
     def create(
         cls,
-        session_id: UUID | str,
+        chat_id: UUID | str,
+        *,
+        user_id: Optional[UUID | str],
         role: str,
         body: str,
         sources: Optional[Iterable[Dict[str, Any]]] = None,
     ) -> "ChatMessage":
         row = execute_returning(
             """
-            INSERT INTO app.chat_messages (session_id, role, body, sources)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id, session_id, role, body, sources, sent_at
+            INSERT INTO app.chat_messages (chat_id, user_id, role, body, sources)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id, chat_id, user_id, role, body, sources, created_at, updated_at
             """,
             (
-                session_id,
+                chat_id,
+                user_id,
                 role,
                 body,
                 to_jsonb(list(sources) if sources is not None else []),
             ),
         )
 
-        from .chat_session import ChatSession
+        from .chat import Chat
 
-        ChatSession.touch(session_id)
+        Chat.touch(chat_id)
         return cls.from_row(row)
 
     @classmethod
-    def list_for_session(cls, session_id: UUID | str) -> List["ChatMessage"]:
+    def list_for_chat(cls, chat_id: UUID | str) -> List["ChatMessage"]:
         rows = fetch_all(
             """
-            SELECT id, session_id, role, body, sources, sent_at
+            SELECT id, chat_id, user_id, role, body, sources, created_at, updated_at
             FROM app.chat_messages
-            WHERE session_id = %s
-            ORDER BY sent_at ASC
+            WHERE chat_id = %s
+            ORDER BY created_at ASC
             """,
-            (session_id,),
+            (chat_id,),
         )
         return [cls.from_row(row) for row in rows]
 
     def to_record(self) -> Dict[str, Any]:
         return {
             "id": self.id,
-            "session_id": self.session_id,
+            "chat_id": self.chat_id,
+            "user_id": self.user_id,
             "role": self.role,
             "body": self.body,
             "sources": self.sources,
-            "sent_at": self.sent_at,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
     def to_api_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
             "role": self.role,
+            "userId": str(self.user_id) if self.user_id else None,
             "text": self.body,
             "sources": self.sources,
-            "timestamp": self.sent_at.isoformat(),
+            "createdAt": self.created_at.isoformat(),
+            "updatedAt": self.updated_at.isoformat(),
         }

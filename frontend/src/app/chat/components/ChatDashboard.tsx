@@ -26,8 +26,8 @@ export default function ChatDashboard() {
             router.replace("/login");
             return;
         }
-        // Generate a unique chat ID
-        const chatId = Date.now().toString();
+        // Generate a unique chat ID compatible with backend UUID requirement
+        const chatId = crypto.randomUUID();
 
         // Navigate to the chat page with the new chatId
         router.push(`/chat/${chatId}?initialQuestion=${encodeURIComponent(question)}`);

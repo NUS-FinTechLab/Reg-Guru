@@ -8,12 +8,12 @@ from ..models import Feedback
 
 
 def insert_feedback(
-    session_id: str,
+    chat_id: str,
     rating: str,
     comments: str = "",
     message_id: Optional[int] = None,
 ) -> Dict[str, object]:
-    return Feedback.create(session_id, rating, comments, message_id).to_record()
+    return Feedback.create(chat_id, rating, comments, message_id).to_record()
 
 
 __all__ = ["insert_feedback"]

@@ -11,18 +11,23 @@ export const sendChatMessage = async (
   request: ChatRequest,
 ): Promise<ChatResponse> => {
   try {
+    const payload: Record<string, unknown> = {
+      message: { text: request.text },
+      region: request.region?.toLowerCase() || "us",
+      userId: request.userId,
+    };
+
+    if (request.chatId) {
+      payload.chatId = request.chatId;
+    }
+
     const response = await fetch(`${SERVER_URL}/api/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...buildAuthHeaders(),
       },
-      body: JSON.stringify({
-        chatId: request.chatId,
-        message: { text: request.text },
-        region: request.region?.toLowerCase() || "us",
-        userId: request.userId,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

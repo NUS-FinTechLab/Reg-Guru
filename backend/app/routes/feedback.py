@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from flask import jsonify, request
 
 from ..utils import log_feedback
@@ -14,9 +16,14 @@ def log_feedback_route():
     data = request.json or {}
 
     try:
-        chat_external_id = str(data.get("chatId", "")).strip()
-        if not chat_external_id:
+        chat_id = str(data.get("chatId", "")).strip()
+        if not chat_id:
             return jsonify({"error": "chatId is required"}), 400
+
+        try:
+            chat_id = str(UUID(chat_id))
+        except ValueError:
+            return jsonify({"error": "chatId must be a valid UUID"}), 400
 
         message_id = data.get("messageId")
         if message_id is not None:
@@ -26,7 +33,7 @@ def log_feedback_route():
                 return jsonify({"error": "messageId must be numeric"}), 400
 
         log_feedback(
-            chat_external_id=chat_external_id,
+            chat_id=chat_id,
             rating=data.get("rating", ""),
             comments=data.get("comments", ""),
             message_id=message_id,

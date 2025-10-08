@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { createChatHistoryEntry, fetchChatHistory, sendChatMessage } from "@/utils/api";
-import { AuthUser, ChatMessageDTO, ChatSession, Message } from "@/utils/api/types";
+import { AuthUser, ChatMessageDTO, ChatSummary, Message } from "@/utils/api/types";
 import { getStoredUser } from "@/utils/auth-client";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
@@ -17,7 +17,7 @@ const mapDtoToMessage = (dto: ChatMessageDTO): Message => ({
     id: dto.id,
     text: dto.text,
     role: dto.role,
-    timestamp: new Date(dto.timestamp),
+    timestamp: new Date(dto.createdAt),
     sources: dto.sources ?? [],
 });
 
@@ -29,7 +29,7 @@ export default function ChatPage() {
     const searchParams = useSearchParams();
 
     const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-    const [, setSession] = useState<ChatSession | null>(null);
+    const [, setChat] = useState<ChatSummary | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [region, setRegion] = useState("US");
@@ -91,8 +91,7 @@ export default function ChatPage() {
                 if (!isMounted) {
                     return;
                 }
-                setSession(data.session);
-                setRegion(data.session.region.toUpperCase());
+                setChat(data.chat);
                 setMessages(data.messages.map(mapDtoToMessage));
             })
             .catch((error: unknown) => {
@@ -103,7 +102,7 @@ export default function ChatPage() {
                 if (err.message !== "not_found") {
                     console.error("Failed to load chat history:", err);
                 } else {
-                    setSession(null);
+                    setChat(null);
                     setMessages([]);
                 }
             })
@@ -200,11 +199,15 @@ export default function ChatPage() {
                 userId: authUser.id,
             });
 
-            setSession(data.session);
-            setRegion(data.session.region.toUpperCase());
+            setChat(data.chat);
+
+            const resolvedChatId = data.chat.id;
+            if (resolvedChatId !== chatId) {
+                router.replace(`/chat/${resolvedChatId}`);
+            }
 
             const savedUser = mapDtoToMessage(data.messages.user);
-            const botMessage = mapDtoToMessage(data.messages.bot);
+            const botMessage = mapDtoToMessage(data.messages.ai);
 
             setMessages((prev) => {
                 const withoutPlaceholder = prev.filter((msg) => msg.id !== placeholderId);
@@ -215,7 +218,7 @@ export default function ChatPage() {
                 ? `${botMessage.text.slice(0, 600)}…`
                 : botMessage.text;
 
-            void createChatHistoryEntry(chatId, {
+            void createChatHistoryEntry(resolvedChatId, {
                 query: text,
                 responseSummary: summaryText,
             })
@@ -240,7 +243,7 @@ export default function ChatPage() {
                     {
                         id: `error-${Date.now()}`,
                         text: "Sorry, something went wrong. Please try again.",
-                        role: "bot",
+                        role: "ai",
                         timestamp: new Date(),
                     },
                 ];
