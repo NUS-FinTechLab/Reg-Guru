@@ -8,6 +8,7 @@ from uuid import UUID
 from flask import g, jsonify, request
 
 from ..models import Checklist, ChecklistItem
+from ..utils import generate_checklist_draft
 from . import api
 
 
@@ -219,3 +220,40 @@ def delete_checklist(checklist_id: str):
 
     return ("", 204)
 
+
+@api.route("/checklists/generate", methods=["POST"])
+def generate_checklist_draft_route():
+    user_id = _require_user_id()
+    if isinstance(user_id, tuple):
+        return user_id
+
+    data = request.get_json(silent=True) or {}
+    mission = str(data.get("mission", "")).strip()
+    context = str(data.get("context", "")).strip()
+    prompt_text = str(data.get("prompt", "")).strip()
+    region_raw = str(data.get("region", "us")).strip().lower()
+
+    if not mission:
+        return jsonify({"error": "mission is required"}), 400
+
+    valid_regions = {"us", "sg", "eu"}
+    if region_raw not in valid_regions:
+        allowed = ", ".join(sorted(valid_regions))
+        return jsonify({"error": f"region must be one of: {allowed}"}), 400
+
+    if not prompt_text:
+        return jsonify({"error": "prompt is required"}), 400
+
+    try:
+        result_payload = generate_checklist_draft(
+            prompt_text,
+            region_raw,
+            mission=mission,
+            context=context,
+        )
+    except NotImplementedError:
+        return jsonify({"error": "Checklist generation is not implemented yet"}), 501
+    except Exception as exc:  # pragma: no cover - defensive logging
+        return jsonify({"error": f"Failed to generate checklist: {exc}"}), 500
+
+    return jsonify({"result": result_payload}), 200

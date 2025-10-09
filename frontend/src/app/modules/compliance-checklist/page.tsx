@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 import ChecklistCard from "@/components/modules/compliance-checklist/ChecklistCard";
 import ChecklistGeneratePopover from "@/components/modules/compliance-checklist/ChecklistGeneratePopover";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { ChecklistSummaryDTO, listChecklists } from "@/utils/api";
 
 export default function ComplianceChecklistPage() {
   const [checklists, setChecklists] = useState<ChecklistSummaryDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,7 +46,20 @@ export default function ComplianceChecklistPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10">
+      {isGeneratorOpen && (
+        <div
+          className="fixed inset-0 z-[180] bg-black/40 backdrop-blur-lg transition-opacity"
+          onClick={() => setIsGeneratorOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <main
+        className={cn(
+          "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 transition duration-200",
+          isGeneratorOpen && "blur-sm",
+        )}
+        aria-hidden={isGeneratorOpen}
+      >
         <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
             <h1 className="text-4xl font-semibold tracking-tight">
@@ -56,7 +71,10 @@ export default function ComplianceChecklistPage() {
             </p>
           </div>
 
-          <ChecklistGeneratePopover />
+          <ChecklistGeneratePopover
+            open={isGeneratorOpen}
+            onOpenChange={setIsGeneratorOpen}
+          />
         </header>
 
         {error && (
@@ -82,4 +100,3 @@ export default function ComplianceChecklistPage() {
     </div>
   );
 }
-

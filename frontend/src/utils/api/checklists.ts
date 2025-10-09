@@ -185,3 +185,60 @@ export const deleteChecklist = async (checklistId: string): Promise<boolean> => 
   }
 };
 
+export interface ChecklistGenerationPayload {
+  mission: string;
+  context: string;
+  region: "US" | "SG" | "EU";
+  prompt: string;
+}
+
+export interface ChecklistGenerationResult {
+  ok: boolean;
+  status: number;
+  message: string;
+  data?: unknown;
+}
+
+export const requestChecklistGeneration = async (
+  payload: ChecklistGenerationPayload,
+): Promise<ChecklistGenerationResult> => {
+  try {
+    const response = await fetchWithAuth(`${SERVER_URL}/api/checklists/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mission: payload.mission,
+        context: payload.context,
+        region: payload.region.toLowerCase(),
+        prompt: payload.prompt,
+      }),
+    });
+
+    const text = await response.text();
+    let parsed: any = null;
+    if (text) {
+      try {
+        parsed = JSON.parse(text);
+      } catch (error) {
+        console.warn("Failed to parse checklist generation response", error);
+      }
+    }
+
+    const message =
+      parsed?.error || parsed?.message || (response.ok ? "Checklist generation request submitted." : "Checklist generation request failed.");
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      message,
+      data: parsed?.result,
+    };
+  } catch (error) {
+    console.error("Failed to request checklist generation", error);
+    return {
+      ok: false,
+      status: 500,
+      message: "Failed to request checklist generation.",
+    };
+  }
+};

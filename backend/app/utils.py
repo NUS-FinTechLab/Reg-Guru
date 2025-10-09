@@ -2,7 +2,7 @@ import os
 import shutil
 from hashlib import md5
 import json
-from typing import List
+from typing import Any, Dict, List
 
 import requests
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -293,3 +293,19 @@ def _get_collection_count(region: str) -> int:
         return int(count)
     except (TypeError, ValueError):
         return 0
+
+
+def generate_checklist_draft(
+    prompt_text: str,
+    region: str,
+    *,
+    mission: str,
+    context: str,
+) -> Dict[str, Any]:
+    """Placeholder for future checklist generation logic.
+
+    This function will coordinate with OpenAI and regional embeddings to build
+    customised compliance checklists. Implementation will be provided later.
+    """
+
+    raise NotImplementedError("Checklist generation flow is not implemented yet")
