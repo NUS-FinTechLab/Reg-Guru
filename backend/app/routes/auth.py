@@ -6,9 +6,24 @@ from flask import jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..auth import generate_jwt
-from ..models import User
+from ..models import RefreshToken, User
 from . import api
 from .serializers import serialize_user
+
+
+def _issue_auth_tokens(user: User) -> dict:
+    access_token = generate_jwt(str(user.id))
+    refresh_token_value, _ = RefreshToken.issue(user.id)
+    return {
+        "user": serialize_user(user),
+        "token": access_token,
+        "refreshToken": refresh_token_value,
+    }
+
+
+def _extract_refresh_token(payload: dict) -> str:
+    raw_value = payload.get("refreshToken") if isinstance(payload, dict) else None
+    return raw_value.strip() if isinstance(raw_value, str) else ""
 
 
 @api.route("/auth/register", methods=["POST"])
@@ -32,9 +47,9 @@ def register():
 
     password_hash = generate_password_hash(password)
     user = User.create(username=username, email=email, password_hash=password_hash)
-    token = generate_jwt(str(user.id))
+    payload = _issue_auth_tokens(user)
 
-    return jsonify({"user": serialize_user(user), "token": token}), 201
+    return jsonify(payload), 201
 
 
 @api.route("/auth/login", methods=["POST"])
@@ -50,10 +65,39 @@ def login():
     if user is None or not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    token = generate_jwt(str(user.id))
-    return jsonify({"user": serialize_user(user), "token": token}), 200
+    payload = _issue_auth_tokens(user)
+    return jsonify(payload), 200
 
 
 @api.route("/auth/logout", methods=["POST"])
 def logout():
+    data = request.json or {}
+    provided_refresh = _extract_refresh_token(data)
+    if provided_refresh:
+        token_record = RefreshToken.get_active_by_token(provided_refresh)
+        if token_record:
+            token_record.revoke_this()
+
     return jsonify({"message": "Logout successful"}), 200
+
+
+@api.route("/auth/refresh", methods=["POST"])
+def refresh_token():
+    data = request.json or {}
+    provided_refresh = _extract_refresh_token(data)
+
+    if not provided_refresh:
+        return jsonify({"error": "refreshToken is required"}), 400
+
+    token_record = RefreshToken.get_active_by_token(provided_refresh)
+    if token_record is None:
+        return jsonify({"error": "Invalid refresh token"}), 401
+
+    user = User.get_by_id(token_record.user_id)
+    if user is None:
+        token_record.revoke_this()
+        return jsonify({"error": "Invalid refresh token"}), 401
+
+    token_record.revoke_this()
+    payload = _issue_auth_tokens(user)
+    return jsonify(payload), 200

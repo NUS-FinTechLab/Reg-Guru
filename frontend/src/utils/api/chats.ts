@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/utils/constants";
-import { buildAuthHeaders } from "@/utils/auth-client";
+import { fetchWithAuth } from "@/utils/auth-client";
 import { ChatListItem } from "./types";
 
 const normalizeChat = (raw: any): ChatListItem => ({
@@ -18,9 +18,7 @@ const normalizeChat = (raw: any): ChatListItem => ({
 
 export const listChats = async (): Promise<ChatListItem[]> => {
   try {
-    const response = await fetch(`${SERVER_URL}/api/chats`, {
-      headers: buildAuthHeaders(),
-    });
+    const response = await fetchWithAuth(`${SERVER_URL}/api/chats`);
 
     if (!response.ok) {
       console.error("Failed to fetch chats", await response.text());

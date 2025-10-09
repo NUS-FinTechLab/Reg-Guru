@@ -1,4 +1,4 @@
-"""Minimal helpers for generating and validating JWT access tokens."""
+"""Helpers for generating and validating JWT access tokens."""
 
 from __future__ import annotations
 
@@ -6,13 +6,22 @@ import base64
 import hashlib
 import hmac
 import json
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
 from .config import JWT_ALGORITHM, JWT_SECRET_KEY
 
-_DEFAULT_EXPIRATION = timedelta(hours=12)
+_DEFAULT_ACCESS_EXPIRATION = timedelta(hours=12)
 _SUPPORTED_ALGORITHM = "HS256"
+
+
+class TokenError(ValueError):
+    """Base error raised for token validation failures."""
+
+
+class TokenExpiredError(TokenError):
+    """Raised when a JWT is structurally valid but past its expiration."""
 
 
 def _ensure_supported_algorithm() -> None:
@@ -37,7 +46,7 @@ def generate_jwt(user_id: str, expires_delta: Optional[timedelta] = None) -> str
     _ensure_supported_algorithm()
 
     now = datetime.now(timezone.utc)
-    expiration = now + (expires_delta or _DEFAULT_EXPIRATION)
+    expiration = now + (expires_delta or _DEFAULT_ACCESS_EXPIRATION)
 
     header = {"alg": _SUPPORTED_ALGORITHM, "typ": "JWT"}
     payload = {
@@ -63,16 +72,16 @@ def decode_auth_header(auth_header: str) -> Dict[str, Any]:
     _ensure_supported_algorithm()
 
     if not auth_header:
-        raise ValueError("Missing Authorization header")
+        raise TokenError("Missing Authorization header")
 
     parts = auth_header.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise ValueError("Invalid authorization header format")
+        raise TokenError("Invalid authorization header format")
 
     token = parts[1]
     segments = token.split(".")
     if len(segments) != 3:
-        raise ValueError("Invalid authorization token")
+        raise TokenError("Invalid authorization token")
 
     header_b64, payload_b64, signature_b64 = segments
 
@@ -80,10 +89,10 @@ def decode_auth_header(auth_header: str) -> Dict[str, Any]:
         header = json.loads(_urlsafe_b64decode(header_b64))
         payload = json.loads(_urlsafe_b64decode(payload_b64))
     except (ValueError, json.JSONDecodeError) as exc:
-        raise ValueError("Invalid authorization token") from exc
+        raise TokenError("Invalid authorization token") from exc
 
     if header.get("alg", "").upper() != _SUPPORTED_ALGORITHM:
-        raise ValueError("Unsupported token algorithm")
+        raise TokenError("Unsupported token algorithm")
 
     signing_input = f"{header_b64}.{payload_b64}".encode("ascii")
     expected_sig = hmac.new(
@@ -92,15 +101,23 @@ def decode_auth_header(auth_header: str) -> Dict[str, Any]:
     try:
         provided_sig = _urlsafe_b64decode(signature_b64)
     except (ValueError, json.JSONDecodeError) as exc:
-        raise ValueError("Invalid authorization token") from exc
+        raise TokenError("Invalid authorization token") from exc
 
     if not hmac.compare_digest(expected_sig, provided_sig):
-        raise ValueError("Invalid authorization token")
+        raise TokenError("Invalid authorization token")
 
     exp_ts = payload.get("exp")
     if isinstance(exp_ts, (int, float)):
         now_ts = int(datetime.now(timezone.utc).timestamp())
         if now_ts > int(exp_ts):
-            raise ValueError("Authorization token expired")
+            raise TokenExpiredError("Authorization token expired")
 
     return payload
+
+
+def generate_refresh_token(size: int = 48) -> str:
+    """Return a cryptographically secure random refresh token string."""
+
+    if size <= 0:
+        raise ValueError("size must be positive")
+    return secrets.token_urlsafe(size)

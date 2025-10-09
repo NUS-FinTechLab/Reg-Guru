@@ -155,10 +155,10 @@ export function AppSidebar() {
                     </TooltipProvider>
                 </div>
             </SidebarHeader>
-        <SidebarContent>
-            <div className="flex flex-col h-full">
-                <div className="flex items-center gap-2 my-4 mx-4">
-                    <div className="relative flex-1 focus:ring-0">
+            <SidebarContent>
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center gap-2 my-4 mx-4">
+                        <div className="relative flex-1 focus:ring-0">
                             <Input
                                 placeholder="Search chats"
                                 value={searchTerm}
@@ -212,7 +212,7 @@ export function AppSidebar() {
             <SidebarFooter className="mt-auto px-4 pb-4">
                 <div className="flex items-center justify-between gap-2">
                     <Button
-                        onClick={() => router.push("/app")}
+                        onClick={() => router.push("/modules")}
                         size="sm"
                         variant="ghost"
                         className="rounded-full"

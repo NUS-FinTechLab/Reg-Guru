@@ -1,5 +1,5 @@
 import { SERVER_URL } from "@/utils/constants";
-import { buildAuthHeaders } from "@/utils/auth-client";
+import { fetchWithAuth } from "@/utils/auth-client";
 import { ChatDetailResponse, ChatRequest, ChatResponse } from "./types";
 
 /**
@@ -21,12 +21,9 @@ export const sendChatMessage = async (
       payload.chatId = request.chatId;
     }
 
-    const response = await fetch(`${SERVER_URL}/api/chat`, {
+    const response = await fetchWithAuth(`${SERVER_URL}/api/chat`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...buildAuthHeaders(),
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
@@ -57,9 +54,7 @@ export const fetchChat = async (
   chatId: string,
 ): Promise<ChatDetailResponse> => {
   try {
-    const response = await fetch(`${SERVER_URL}/api/chat/${chatId}`, {
-      headers: buildAuthHeaders(),
-    });
+    const response = await fetchWithAuth(`${SERVER_URL}/api/chat/${chatId}`);
 
     if (response.status === 404) {
       return { chat: null, messages: [] };

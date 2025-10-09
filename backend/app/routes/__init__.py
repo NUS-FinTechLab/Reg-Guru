@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flask import Blueprint, g, jsonify, request
 
-from ..auth import decode_auth_header
+from ..auth import TokenError, TokenExpiredError, decode_auth_header
 
 api = Blueprint("api", __name__, url_prefix="/api")
 
@@ -13,6 +13,7 @@ _EXEMPT_ENDPOINTS = {
     "api.register",
     "api.login",
     "api.logout",
+    "api.refresh_token",
     "api.test",
     "api.options_handler",
 }
@@ -38,7 +39,9 @@ def enforce_authenticated_user():
 
     try:
         payload = decode_auth_header(auth_header)
-    except ValueError as exc:
+    except TokenExpiredError:
+        return jsonify({"error": "token_expired"}), 401
+    except TokenError as exc:
         return jsonify({"error": str(exc)}), 401
 
     provided_user_id = (request.headers.get("X-User-Id") or "").strip()
@@ -55,6 +58,7 @@ def enforce_authenticated_user():
 # Import route modules so they attach their handlers to the blueprint.
 from . import auth  # noqa: F401  (imported for side effects)
 from . import chat  # noqa: F401
+from . import checklists  # noqa: F401
 from . import feedback  # noqa: F401
 from . import misc  # noqa: F401
 from . import sessions  # noqa: F401

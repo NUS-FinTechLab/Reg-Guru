@@ -1,11 +1,9 @@
 import { SERVER_URL } from "@/utils/constants";
-import { buildAuthHeaders } from "@/utils/auth-client";
+import { fetchWithAuth } from "@/utils/auth-client";
 
 export const testApi = async (): Promise<{ message: string }> => {
   try {
-    const response = await fetch(`${SERVER_URL}/api/test`, {
-      headers: buildAuthHeaders(),
-    });
+    const response = await fetchWithAuth(`${SERVER_URL}/api/test`);
 
     if (!response.ok) {
       console.error("API health check failed", await response.text());

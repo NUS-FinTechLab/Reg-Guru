@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { MessageSquare } from "lucide-react";
+import { ClipboardCheck, MessageSquare } from "lucide-react";
 
 export type WorkspaceModule = {
   name: string;
@@ -14,5 +14,11 @@ export const WORKSPACE_MODULES: WorkspaceModule[] = [
     description: "Document Q&A assistant",
     href: "/chat",
     icon: MessageSquare,
+  },
+  {
+    name: "Compliance Checklist",
+    description: "Track regulatory tasks and progress",
+    href: "/modules/compliance-checklist",
+    icon: ClipboardCheck,
   },
 ];

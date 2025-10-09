@@ -1,9 +1,15 @@
 import { SERVER_URL } from "@/utils/constants";
-import { buildAuthHeaders, clearAuth, storeAuth } from "@/utils/auth-client";
+import {
+  clearAuth,
+  fetchWithAuth,
+  getRefreshToken,
+  storeAuth,
+} from "@/utils/auth-client";
 import type { AuthUser } from "./types";
 
 interface AuthSuccessResponse {
   token: string;
+  refreshToken: string;
   user: AuthUser;
 }
 
@@ -36,43 +42,62 @@ async function handleAuthResponse(response: Response): Promise<AuthSuccessRespon
     error?: string;
   };
 
-  if (!data.token || !data.user) {
-    throw new Error(data.error || "Authentication response missing token");
+  if (!data.token || !data.user || !data.refreshToken) {
+    throw new Error(data.error || "Authentication response missing token information");
   }
 
-  storeAuth(data.token, data.user);
-  return { token: data.token, user: data.user };
+  storeAuth({ token: data.token, refreshToken: data.refreshToken, user: data.user });
+  return { token: data.token, refreshToken: data.refreshToken, user: data.user };
 }
 
 export const registerUser = async (
   payload: RegisterPayload,
 ): Promise<AuthSuccessResponse> => {
-  const response = await fetch(`${SERVER_URL}/api/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...buildAuthHeaders(),
+  const response = await fetchWithAuth(
+    `${SERVER_URL}/api/auth/register`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  });
+    { skipAuth: true },
+  );
 
   return handleAuthResponse(response);
 };
 
 export const loginUser = async (payload: LoginPayload): Promise<AuthSuccessResponse> => {
-  const response = await fetch(`${SERVER_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: payload.identifier,
-      email: payload.identifier,
-      password: payload.password,
-    }),
-  });
+  const response = await fetchWithAuth(
+    `${SERVER_URL}/api/auth/login`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: payload.identifier,
+        email: payload.identifier,
+        password: payload.password,
+      }),
+    },
+    { skipAuth: true },
+  );
 
   return handleAuthResponse(response);
 };
 
-export const logoutUser = (): void => {
+export const logoutUser = async (): Promise<void> => {
+  const refreshToken = getRefreshToken();
+
+  if (refreshToken) {
+    try {
+      await fetch(`${SERVER_URL}/api/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+    } catch (error) {
+      console.warn("Failed to notify backend about logout", error);
+    }
+  }
+
   clearAuth();
 };
