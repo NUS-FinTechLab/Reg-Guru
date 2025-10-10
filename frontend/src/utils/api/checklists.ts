@@ -6,6 +6,7 @@ import {
   ChecklistItemDTO,
   ChecklistItemPriority,
   ChecklistItemStatus,
+  ChecklistStageDTO,
   ChecklistSummaryDTO,
 } from "./types";
 
@@ -39,12 +40,28 @@ const toNumber = (value: unknown, fallback = 0): number => {
 const normalizeItem = (raw: any): ChecklistItemDTO => ({
   id: String(raw?.id ?? ""),
   checklistId: String(raw?.checklistId ?? raw?.checklist_id ?? ""),
+  stageId: String(raw?.stageId ?? raw?.stage_id ?? ""),
   content: String(raw?.content ?? ""),
   status: normalizeStatus(raw?.status),
   priority: normalizePriority(raw?.priority),
+  position: Math.max(0, Math.trunc(toNumber(raw?.position, 0))),
   createdAt: String(raw?.createdAt ?? raw?.created_at ?? new Date().toISOString()),
   updatedAt: String(raw?.updatedAt ?? raw?.updated_at ?? new Date().toISOString()),
 });
+
+const normalizeStage = (raw: any): ChecklistStageDTO => {
+  const items = Array.isArray(raw?.items) ? raw.items.map(normalizeItem) : [];
+  return {
+    id: String(raw?.id ?? ""),
+    checklistId: String(raw?.checklistId ?? raw?.checklist_id ?? ""),
+    title: String(raw?.title ?? ""),
+    description: String(raw?.description ?? ""),
+    position: Math.max(0, Math.trunc(toNumber(raw?.position, 0))),
+    createdAt: String(raw?.createdAt ?? raw?.created_at ?? new Date().toISOString()),
+    updatedAt: String(raw?.updatedAt ?? raw?.updated_at ?? new Date().toISOString()),
+    items,
+  };
+};
 
 const normalizeSummary = (raw: any): ChecklistSummaryDTO => ({
   id: String(raw?.id ?? ""),
@@ -53,6 +70,7 @@ const normalizeSummary = (raw: any): ChecklistSummaryDTO => ({
   description: String(raw?.description ?? ""),
   createdAt: String(raw?.createdAt ?? raw?.created_at ?? new Date().toISOString()),
   updatedAt: String(raw?.updatedAt ?? raw?.updated_at ?? new Date().toISOString()),
+  stageCount: Math.max(0, Math.trunc(toNumber(raw?.stageCount ?? raw?.stage_count, 0))),
   totalItems: Math.max(0, Math.trunc(toNumber(raw?.totalItems ?? raw?.total_items, 0))),
   finishedItems: Math.max(0, Math.trunc(toNumber(raw?.finishedItems ?? raw?.finished_items, 0))),
   progress: Math.max(0, Math.min(1, Number(toNumber(raw?.progress, 0)))),
@@ -60,14 +78,18 @@ const normalizeSummary = (raw: any): ChecklistSummaryDTO => ({
 
 const normalizeDetail = (raw: any): ChecklistDetailDTO => {
   const summary = normalizeSummary(raw);
-  const items = Array.isArray(raw?.items) ? raw.items.map(normalizeItem) : [];
+  const stages = Array.isArray(raw?.stages) ? raw.stages.map(normalizeStage) : [];
+  const fallbackItems = Array.isArray(raw?.items) ? raw.items.map(normalizeItem) : [];
+  const items = stages.length > 0 ? stages.flatMap((stage) => stage.items) : fallbackItems;
   const totalItems = items.length || summary.totalItems;
   const finishedItems = items.filter((item) => item.status === "finished").length || summary.finishedItems;
   const progress = totalItems > 0 ? finishedItems / totalItems : summary.progress;
 
   return {
     ...summary,
+    stages,
     items,
+    stageCount: stages.length || summary.stageCount,
     totalItems,
     finishedItems,
     progress,
@@ -163,6 +185,79 @@ export const updateChecklist = async (
   return normalizeDetail(payload.checklist);
 };
 
+export const updateChecklistItemStatus = async (
+  checklistId: string,
+  itemId: string,
+  status: ChecklistItemStatus,
+): Promise<ChecklistItemDTO> => {
+  const response = await fetchWithAuth(`${SERVER_URL}/api/checklists/${checklistId}/items/${itemId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to update checklist item status");
+  }
+
+  const payload = (await response.json()) as { item?: unknown };
+  if (!payload?.item) {
+    throw new Error("Invalid response when updating checklist item status");
+  }
+
+  return normalizeItem(payload.item);
+};
+
+export const updateChecklistItem = async (
+  checklistId: string,
+  itemId: string,
+  input: Partial<Pick<ChecklistItemDTO, "content" | "status" | "priority">>,
+): Promise<ChecklistItemDTO> => {
+  const response = await fetchWithAuth(`${SERVER_URL}/api/checklists/${checklistId}/items/${itemId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to update checklist item");
+  }
+
+  const payload = (await response.json()) as { item?: unknown };
+  if (!payload?.item) {
+    throw new Error("Invalid response when updating checklist item");
+  }
+
+  return normalizeItem(payload.item);
+};
+
+export const deleteChecklistItem = async (
+  checklistId: string,
+  itemId: string,
+): Promise<boolean> => {
+  try {
+    const response = await fetchWithAuth(`${SERVER_URL}/api/checklists/${checklistId}/items/${itemId}`, {
+      method: "DELETE",
+    });
+
+    if (response.status === 404) {
+      return false;
+    }
+
+    if (!response.ok) {
+      console.error("Failed to delete checklist item", await response.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Failed to delete checklist item", error);
+    return false;
+  }
+};
+
 export const deleteChecklist = async (checklistId: string): Promise<boolean> => {
   try {
     const response = await fetchWithAuth(`${SERVER_URL}/api/checklists/${checklistId}`, {
@@ -189,7 +284,6 @@ export interface ChecklistGenerationPayload {
   mission: string;
   context: string;
   region: "US" | "SG" | "EU";
-  prompt: string;
 }
 
 export interface ChecklistGenerationResult {
@@ -210,7 +304,6 @@ export const requestChecklistGeneration = async (
         mission: payload.mission,
         context: payload.context,
         region: payload.region.toLowerCase(),
-        prompt: payload.prompt,
       }),
     });
 

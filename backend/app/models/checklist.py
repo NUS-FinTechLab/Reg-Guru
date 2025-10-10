@@ -122,10 +122,12 @@ class Checklist:
                 c.description,
                 c.created_at,
                 c.updated_at,
+                COUNT(DISTINCT cs.id) AS stage_count,
                 COUNT(ci.*)            AS total_items,
                 COUNT(ci.*) FILTER (WHERE ci.status = 'finished') AS finished_items
             FROM app.checklist AS c
-            LEFT JOIN app.checklist_item AS ci ON ci.checklist_id = c.id
+            LEFT JOIN app.checklist_stage AS cs ON cs.checklist_id = c.id
+            LEFT JOIN app.checklist_item AS ci ON ci.stage_id = cs.id
             WHERE c.user_id = %s
             GROUP BY c.id
             ORDER BY c.updated_at DESC
@@ -138,11 +140,13 @@ class Checklist:
             checklist = cls.from_row(row)
             total_items = int(row.get("total_items", 0) or 0)
             finished_items = int(row.get("finished_items", 0) or 0)
+            stage_count = int(row.get("stage_count", 0) or 0)
             summaries.append(
                 {
                     "checklist": checklist,
                     "total_items": total_items,
                     "finished_items": finished_items,
+                    "stage_count": stage_count,
                 }
             )
         return summaries
@@ -166,4 +170,3 @@ class Checklist:
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
         }
-

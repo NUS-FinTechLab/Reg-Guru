@@ -30,7 +30,8 @@ export default function ChecklistCard({ checklist, onSelect }: ChecklistCardProp
   const router = useRouter();
   const progress = clampProgress(checklist.progress);
   const progressPercent = Math.round(progress * 100);
-  const { totalItems, finishedItems } = checklist;
+  const { totalItems, finishedItems, stageCount } = checklist;
+  const stageLabel = stageCount === 1 ? "stage" : "stages";
 
   const handleSelect = useCallback(() => {
     if (onSelect) {
@@ -69,6 +70,13 @@ export default function ChecklistCard({ checklist, onSelect }: ChecklistCardProp
           </span>
           <span className="text-muted-foreground">({progressPercent}% done)</span>
         </div>
+        {stageCount > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>
+              {stageCount} {stageLabel}
+            </span>
+          </div>
+        )}
         <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-all"

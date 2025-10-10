@@ -78,9 +78,11 @@ export type ChecklistItemPriority = "low" | "medium" | "high";
 export interface ChecklistItemDTO {
   id: string;
   checklistId: string;
+  stageId: string;
   content: string;
   status: ChecklistItemStatus;
   priority: ChecklistItemPriority;
+  position: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -92,12 +94,25 @@ export interface ChecklistSummaryDTO {
   description: string;
   createdAt: string;
   updatedAt: string;
+  stageCount: number;
   totalItems: number;
   finishedItems: number;
   progress: number;
 }
 
+export interface ChecklistStageDTO {
+  id: string;
+  checklistId: string;
+  title: string;
+  description: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+  items: ChecklistItemDTO[];
+}
+
 export interface ChecklistDetailDTO extends ChecklistSummaryDTO {
+  stages: ChecklistStageDTO[];
   items: ChecklistItemDTO[];
 }
 
@@ -105,10 +120,22 @@ export interface ChecklistItemInput {
   content: string;
   status: ChecklistItemStatus;
   priority: ChecklistItemPriority;
+  position?: number;
+}
+
+export interface ChecklistStageInput {
+  title: string;
+  description?: string;
+  position?: number;
+  items: ChecklistItemInput[];
 }
 
 export interface ChecklistInput {
   title: string;
   description: string;
-  items: ChecklistItemInput[];
+  stages: ChecklistStageInput[];
+  /**
+   * Fallback for legacy payloads. When provided, the backend will map these items into a default stage.
+   */
+  items?: ChecklistItemInput[];
 }

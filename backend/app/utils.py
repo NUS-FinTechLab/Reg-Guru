@@ -21,6 +21,7 @@ from .config import (
     CHECKLIST_SYSTEM_PROMPT,
     CHECKLIST_USER_PROMPT_TEMPLATE,
     CHECKLIST_JSON_SCHEMA,
+    CHECKLIST_DEFAULT_PROMPT,
     EMBEDDING_SERVICE_URL,
 )
 from .models import Chat, Feedback
@@ -350,9 +351,7 @@ def generate_checklist_draft(
 ) -> Dict[str, Any]:
     """Generate a structured checklist draft using embeddings and OpenAI JSON mode."""
 
-    prompt_clean = (prompt_text or "").strip()
-    if not prompt_clean:
-        raise ValueError("prompt text is required")
+    prompt_clean = (prompt_text or "").strip() or CHECKLIST_DEFAULT_PROMPT
 
     mission_clean = (mission or "").strip()
     context_clean = (context or "").strip()

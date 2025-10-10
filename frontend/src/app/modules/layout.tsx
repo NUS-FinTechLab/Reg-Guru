@@ -1,17 +1,15 @@
 import type { ReactNode } from "react";
 
-import ModuleNav, { ModuleNavMobile } from "./module-nav";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/app/chat/components/AppSidebar";
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+export default function ModulesLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <ModuleNav />
-      <div className="flex-1 overflow-y-auto">
-        <ModuleNavMobile />
-        <div className="pb-6">
-          {children}
-        </div>
-      </div>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="container ml-0 w-full max-w-none px-4 pb-10 pt-6 md:ml-36">
+        {children}
+      </main>
+    </SidebarProvider>
   );
 }

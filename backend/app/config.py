@@ -29,7 +29,7 @@ CORS_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
-CORS_METHODS = ["GET", "POST", "OPTIONS"]
+CORS_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 CORS_HEADERS = ["Content-Type", "Authorization", "X-User-Id"]
 
 # Directory and file paths
@@ -81,17 +81,23 @@ the provided regulatory materials when available.
 Your output must be a single JSON object with the following top-level keys:
 - overview (string): concise 2-4 sentence summary of the compliance approach.
 - focusAreas (array of strings): key themes or workstreams to organise the tasks.
-- items (array): each item is an object describing one actionable task.
+- stages (array): staged workplan detailing grouped checklist items.
 - caveats (array of strings): residual risks, assumptions, or open questions.
 
-Every object inside the items array must include exactly these keys:
+Each element inside the stages array must include exactly these keys:
+- title (string): human-readable stage heading.
+- description (string): 1-3 sentence narrative for the stage; use an empty string if none.
+- position (integer): zero-based sequence number for ordering (0, 1, 2, ...).
+- items (array): actionable tasks within the stage.
+
+Every object inside a stage's items array must include exactly these keys:
 - title (string): short label for the task.
 - description (string): clear explanation of what must be done.
 - priority (string): one of "low", "medium", or "high".
-- recommendedOwner (string): suggested functional owner (e.g. Legal, Compliance).
-- dependencies (array of strings): prerequisites; use an empty array if none.
-- references (array): supporting citations, each with title, citation, and link keys.
-If no authoritative reference is available, return an empty array for references.
+
+Task titles must be concise action phrases (ideally under 12 words) and must
+never contain citations, URLs, reference labels, or the word "References".
+Place any supporting sources inside the description instead of the title.
 
 Do not emit commentary outside of the JSON response. All strings should stay within
 500 characters and avoid bullet characters such as "-" or "*" inside the text.
@@ -114,6 +120,10 @@ Retrieved regulatory passages:
 {retrieved_context}
 """
 
+CHECKLIST_DEFAULT_PROMPT = (
+    "Generate a compliance checklist outlining actionable tasks."
+)
+
 CHECKLIST_JSON_SCHEMA = {
     "name": "compliance_checklist_payload",
     "schema": {
@@ -124,44 +134,36 @@ CHECKLIST_JSON_SCHEMA = {
                 "type": "array",
                 "items": {"type": "string"},
             },
-            "items": {
+            "stages": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "title": {"type": "string"},
                         "description": {"type": "string"},
-                        "priority": {
-                            "type": "string",
-                            "enum": ["low", "medium", "high"],
-                        },
-                        "recommendedOwner": {"type": "string"},
-                        "dependencies": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                        },
-                        "references": {
+                        "position": {"type": "integer", "minimum": 0},
+                        "items": {
                             "type": "array",
                             "items": {
                                 "type": "object",
                                 "properties": {
                                     "title": {"type": "string"},
-                                    "citation": {"type": "string"},
-                                    "link": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": ["low", "medium", "high"],
+                                    },
                                 },
-                                "required": ["title", "citation", "link"],
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "priority",
+                                ],
                                 "additionalProperties": False,
                             },
                         },
                     },
-                    "required": [
-                        "title",
-                        "description",
-                        "priority",
-                        "recommendedOwner",
-                        "dependencies",
-                        "references",
-                    ],
+                    "required": ["title", "description", "position", "items"],
                     "additionalProperties": False,
                 },
             },
@@ -170,7 +172,7 @@ CHECKLIST_JSON_SCHEMA = {
                 "items": {"type": "string"},
             },
         },
-        "required": ["overview", "focusAreas", "items", "caveats"],
+        "required": ["overview", "focusAreas", "stages", "caveats"],
         "additionalProperties": False,
     },
     "strict": True,
