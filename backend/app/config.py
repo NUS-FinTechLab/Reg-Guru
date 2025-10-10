@@ -72,6 +72,110 @@ Question: {question}
 If the context does not contain the answer, use other sources.
 """
 
+CHECKLIST_SYSTEM_PROMPT = """
+You are Reg-Guru's compliance checklist strategist. You support compliance teams by
+turning regulatory context and business goals into actionable programmes of work.
+Operate with a factual, implementation-focused tone and ground recommendations in
+the provided regulatory materials when available.
+
+Your output must be a single JSON object with the following top-level keys:
+- overview (string): concise 2-4 sentence summary of the compliance approach.
+- focusAreas (array of strings): key themes or workstreams to organise the tasks.
+- items (array): each item is an object describing one actionable task.
+- caveats (array of strings): residual risks, assumptions, or open questions.
+
+Every object inside the items array must include exactly these keys:
+- title (string): short label for the task.
+- description (string): clear explanation of what must be done.
+- priority (string): one of "low", "medium", or "high".
+- recommendedOwner (string): suggested functional owner (e.g. Legal, Compliance).
+- dependencies (array of strings): prerequisites; use an empty array if none.
+- references (array): supporting citations, each with title, citation, and link keys.
+If no authoritative reference is available, return an empty array for references.
+
+Do not emit commentary outside of the JSON response. All strings should stay within
+500 characters and avoid bullet characters such as "-" or "*" inside the text.
+"""
+
+CHECKLIST_USER_PROMPT_TEMPLATE = """
+Region:
+{region}
+
+Mission:
+{mission}
+
+Additional context:
+{user_context}
+
+User guidance for the assistant:
+{user_prompt}
+
+Retrieved regulatory passages:
+{retrieved_context}
+"""
+
+CHECKLIST_JSON_SCHEMA = {
+    "name": "compliance_checklist_payload",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "overview": {"type": "string"},
+            "focusAreas": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "description": {"type": "string"},
+                        "priority": {
+                            "type": "string",
+                            "enum": ["low", "medium", "high"],
+                        },
+                        "recommendedOwner": {"type": "string"},
+                        "dependencies": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                        "references": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "citation": {"type": "string"},
+                                    "link": {"type": "string"},
+                                },
+                                "required": ["title", "citation", "link"],
+                                "additionalProperties": False,
+                            },
+                        },
+                    },
+                    "required": [
+                        "title",
+                        "description",
+                        "priority",
+                        "recommendedOwner",
+                        "dependencies",
+                        "references",
+                    ],
+                    "additionalProperties": False,
+                },
+            },
+            "caveats": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        "required": ["overview", "focusAreas", "items", "caveats"],
+        "additionalProperties": False,
+    },
+    "strict": True,
+}
+
 # Authentication
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
