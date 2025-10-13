@@ -29,13 +29,13 @@ RDS connection
    ```
 
 ### Chat & Feedback Persistence
-- Chat sessions, messages, feedback, and saved queries now live in PostgreSQL (schema `app`).
+- Chats, messages, and feedback now live in PostgreSQL (schema `app`).
 - The backend reads the same credentials defined for the ingestion pipelines; no additional secrets are required.
 - REST endpoints:
-  - `POST /api/chat` accepts `chatId`, `message.text`, and `region`; responses include stored message metadata.
-  - `GET /api/chat/<chatId>` returns the persisted conversation history.
-  - `POST /api/log_feedback` stores per-message feedback tied to the chat session.
-  - `GET|POST /api/saved_queries` expose lightweight query bookmarking.
+- `GET /api/chats` lists conversations for the authenticated user.
+- `POST /api/chat` accepts `chatId`, `message.text`, and `region`; responses include stored message metadata.
+- `GET /api/chat/<chatId>` returns the persisted conversation history.
+- `POST /api/log_feedback` stores per-message feedback tied to the chat session.
 - Use the migration helper whenever SQL files change in `backend/migrations/` (see the workflow below).
 
 ### Database Migration Workflow

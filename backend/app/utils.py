@@ -2,12 +2,14 @@ import os
 import shutil
 from hashlib import md5
 import json
-from typing import List
+from dataclasses import dataclass
+from typing import Any, Dict, List
 
 import requests
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
 from apscheduler.schedulers.background import BackgroundScheduler
+from langchain.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from openai import OpenAI
 
 from .config import (
     VECTORSTORE_DIRECTORY,
@@ -16,17 +18,59 @@ from .config import (
     MODEL_TEMPERATURE,
     RETRIEVAL_K,
     PROMPT_TEMPLATE,
+    CHECKLIST_SYSTEM_PROMPT,
+    CHECKLIST_USER_PROMPT_TEMPLATE,
+    CHECKLIST_JSON_SCHEMA,
+    CHECKLIST_DEFAULT_PROMPT,
     EMBEDDING_SERVICE_URL,
 )
-from .storage import (
-    get_session_by_external_id,
-    insert_feedback,
-)
+from .models import Chat, Feedback
 
 # Initialize LLM components
 llm = ChatOpenAI(model=MODEL_NAME, temperature=MODEL_TEMPERATURE)
 embeddings = OpenAIEmbeddings()
 prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+openai_client = OpenAI()
+
+MAX_CONTEXT_SNIPPET_CHARS = 1600
+
+
+@dataclass(frozen=True)
+class ChecklistPromptTemplate:
+    """Helper for assembling checklist prompts with consistent sections."""
+
+    template: str
+
+    def render(
+        self,
+        *,
+        mission: str,
+        user_context: str,
+        region: str,
+        user_prompt: str,
+        retrieved_context: str,
+    ) -> str:
+        return self.template.format(
+            mission=self._clean_text(mission, "Not provided."),
+            user_context=self._clean_text(user_context, "Not provided."),
+            region=self._clean_text(region, "Not specified"),
+            user_prompt=self._clean_text(
+                user_prompt,
+                "Provide a compliance checklist aligned with the mission.",
+            ),
+            retrieved_context=self._clean_text(
+                retrieved_context,
+                "No retrieved regulatory passages available.",
+            ),
+        ).strip()
+
+    @staticmethod
+    def _clean_text(value: str, fallback: str) -> str:
+        value = (value or "").strip()
+        return value if value else fallback
+
+
+checklist_prompt_template = ChecklistPromptTemplate(CHECKLIST_USER_PROMPT_TEMPLATE)
 
 # Initialize backup scheduler
 scheduler = BackgroundScheduler()
@@ -113,7 +157,7 @@ def process_chat_query(user_message, region="us"):
 
 
 def log_feedback(
-    chat_external_id: str,
+    chat_id: str,
     rating: str,
     comments: str = "",
     message_id: int | None = None,
@@ -126,12 +170,12 @@ def log_feedback(
     if rating_normalized not in valid_ratings:
         raise ValueError("Invalid rating type")
 
-    session = get_session_by_external_id(chat_external_id)
-    if session is None:
-        raise ValueError("Unknown chat session")
+    chat = Chat.get_by_id(chat_id)
+    if chat is None:
+        raise ValueError("Unknown chat")
 
-    insert_feedback(
-        session_id=session["id"],
+    Feedback.create(
+        chat_id=chat.id,
         rating=rating_normalized,
         comments=comments.strip(),
         message_id=message_id,
@@ -296,3 +340,172 @@ def _get_collection_count(region: str) -> int:
         return int(count)
     except (TypeError, ValueError):
         return 0
+
+
+def generate_checklist_draft(
+    prompt_text: str,
+    region: str,
+    *,
+    mission: str,
+    context: str,
+) -> Dict[str, Any]:
+    """Generate a structured checklist draft using embeddings and OpenAI JSON mode."""
+
+    prompt_clean = (prompt_text or "").strip() or CHECKLIST_DEFAULT_PROMPT
+
+    mission_clean = (mission or "").strip()
+    context_clean = (context or "").strip()
+
+    collection_count = 0
+    try:
+        collection_count = _get_collection_count(region)
+    except Exception as exc:  # pragma: no cover - defensive logging/propagation
+        raise RuntimeError(f"Failed to inspect {region} region collection: {exc}") from exc
+
+    combined_query_parts = [mission_clean, context_clean, prompt_clean]
+    combined_query = " \n".join(part for part in combined_query_parts if part)
+    documents: List[str] = []
+    metadatas: List[Dict[str, Any]] = []
+    distances: List[Any] = []
+
+    if collection_count > 0 and combined_query:
+        try:
+            query_results = _query_embedding_service([combined_query], region, RETRIEVAL_K)
+        except Exception as exc:  # pragma: no cover - defensive logging
+            raise RuntimeError(
+                f"Failed to query embedding service for checklist generation: {exc}"
+            ) from exc
+
+        raw_documents = query_results.get("documents") or []
+        if raw_documents and isinstance(raw_documents, list):
+            documents = raw_documents[0] or []
+
+        raw_metadatas = query_results.get("metadatas") or []
+        if raw_metadatas and isinstance(raw_metadatas, list):
+            metadatas = raw_metadatas[0] or []
+
+        raw_distances = query_results.get("distances") or []
+        if raw_distances and isinstance(raw_distances, list):
+            distances = raw_distances[0] or []
+
+    context_sections: List[str] = []
+    sources: List[Dict[str, Any]] = []
+
+    for index, document in enumerate(documents):
+        if not isinstance(document, str):
+            continue
+
+        snippet = document.strip()
+        if not snippet:
+            continue
+        if len(snippet) > MAX_CONTEXT_SNIPPET_CHARS:
+            snippet = f"{snippet[:MAX_CONTEXT_SNIPPET_CHARS].rstrip()}..."
+
+        metadata = {}
+        if index < len(metadatas) and isinstance(metadatas[index], dict):
+            metadata = metadatas[index]
+
+        distance_value = None
+        if index < len(distances):
+            try:
+                distance_value = float(distances[index])
+            except (TypeError, ValueError):
+                distance_value = None
+
+        title = str(metadata.get("title") or f"Document {index + 1}")
+        link = metadata.get("link") or metadata.get("url")
+        citation = metadata.get("citation") or metadata.get("source")
+
+        section_lines = [f"Title: {title}"]
+        if link:
+            section_lines.append(f"Link: {link}")
+        if distance_value is not None:
+            section_lines.append(f"Similarity: {distance_value}")
+        section_lines.append("Content:")
+        section_lines.append(snippet)
+        context_sections.append("\n".join(section_lines))
+
+        filtered_metadata: Dict[str, Any] = {}
+        for key, value in metadata.items():
+            if key in {"chunk", "content", "text"}:
+                continue
+            if isinstance(value, (str, int, float, bool)) or value is None:
+                filtered_metadata[key] = value
+            else:
+                filtered_metadata[key] = str(value)
+
+        sources.append(
+            {
+                "title": title,
+                "link": link,
+                "citation": citation,
+                "distance": distance_value,
+                "metadata": filtered_metadata,
+            }
+        )
+
+    if not context_sections:
+        context_sections.append(
+            "No relevant regulatory documents were retrieved for this request. Provide"
+            " pragmatic best-practice guidance and flag missing citations."
+        )
+
+    retrieved_context = "\n\n".join(context_sections)
+
+    region_label = (region or "").strip().upper() or "N/A"
+
+    user_message = checklist_prompt_template.render(
+        mission=mission_clean,
+        user_context=context_clean,
+        region=region_label,
+        user_prompt=prompt_clean,
+        retrieved_context=retrieved_context,
+    )
+
+    messages = [
+        {"role": "system", "content": CHECKLIST_SYSTEM_PROMPT.strip()},
+        {"role": "user", "content": user_message},
+    ]
+
+    try:
+        completion = openai_client.chat.completions.create(
+            model=MODEL_NAME,
+            temperature=MODEL_TEMPERATURE,
+            response_format={
+                "type": "json_schema",
+                "json_schema": CHECKLIST_JSON_SCHEMA,
+            },
+            messages=messages,
+        )
+    except Exception as exc:  # pragma: no cover - network failure path
+        raise RuntimeError(f"OpenAI checklist generation failed: {exc}") from exc
+
+    choices = getattr(completion, "choices", None) or []
+    if not choices:
+        raise RuntimeError("OpenAI returned no choices for checklist generation")
+
+    content = getattr(choices[0].message, "content", None) if choices[0].message else None
+    if not content:
+        raise RuntimeError("OpenAI returned empty content for checklist generation")
+
+    try:
+        parsed_payload = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("OpenAI response was not valid JSON") from exc
+
+    if not isinstance(parsed_payload, dict):
+        raise RuntimeError("Checklist generation response must be a JSON object")
+
+    return {
+        "checklist": parsed_payload,
+        "sources": sources,
+        "metadata": {
+            "region": region,
+            "mission": mission_clean,
+            "context": context_clean,
+            "prompt": prompt_clean,
+            "retrievedDocumentCount": len(sources),
+            "collectionDocumentCount": collection_count,
+            "retrievedContext": retrieved_context,
+        },
+    }

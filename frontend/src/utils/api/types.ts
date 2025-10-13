@@ -7,58 +7,135 @@ export interface Source {
 export interface Message {
     id: number | string;
     text: string;
-    role: "user" | "bot";
+    role: "user" | "ai";
     timestamp: Date;
     sources?: Source[];
     pending?: boolean;
 }
 
-export interface ChatSession {
-    id: string;
-    chatId: string;
-    region: string;
-    createdAt: string;
-    updatedAt: string;
+export interface AuthUser {
+  id: string;
+  username: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatSummary {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ChatMessageDTO {
     id: number;
-    role: "user" | "bot";
+    role: "user" | "ai";
     text: string;
     sources: Source[];
-    timestamp: string;
+    createdAt: string;
+    updatedAt: string;
+    userId?: string | null;
 }
 
 export interface ChatResponse {
     response: string;
     sources: Source[];
-    session: ChatSession;
+    chat: ChatSummary;
     messages: {
         user: ChatMessageDTO;
-        bot: ChatMessageDTO;
+        ai: ChatMessageDTO;
     };
 }
 
-export interface ChatHistoryResponse {
-    session: ChatSession;
+export interface ChatDetailResponse {
+    chat: ChatSummary | null;
     messages: ChatMessageDTO[];
 }
 
 export interface ChatRequest {
-    chatId: string;
+    chatId?: string;
     text: string;
     region?: string;
+    userId: string;
 }
 
-export interface FeedbackRequest {
-    chatId: string;
-    rating: 'thumbs_up' | 'thumbs_down';
-    comments?: string;
-    messageId?: number;
+export interface ChatListItem {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage: {
+    text: string;
+    role: "user" | "ai";
+    createdAt: string | null;
+  } | null;
 }
 
-export interface ApiResponse<T> {
-    data?: T;
-    error?: string;
-    status: number;
+export type ChecklistItemStatus = "not_started" | "ongoing" | "finished";
+export type ChecklistItemPriority = "low" | "medium" | "high";
+
+export interface ChecklistItemDTO {
+  id: string;
+  checklistId: string;
+  stageId: string;
+  content: string;
+  status: ChecklistItemStatus;
+  priority: ChecklistItemPriority;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChecklistSummaryDTO {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  stageCount: number;
+  totalItems: number;
+  finishedItems: number;
+  progress: number;
+}
+
+export interface ChecklistStageDTO {
+  id: string;
+  checklistId: string;
+  title: string;
+  description: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+  items: ChecklistItemDTO[];
+}
+
+export interface ChecklistDetailDTO extends ChecklistSummaryDTO {
+  stages: ChecklistStageDTO[];
+  items: ChecklistItemDTO[];
+}
+
+export interface ChecklistItemInput {
+  content: string;
+  status: ChecklistItemStatus;
+  priority: ChecklistItemPriority;
+  position?: number;
+}
+
+export interface ChecklistStageInput {
+  title: string;
+  description?: string;
+  position?: number;
+  items: ChecklistItemInput[];
+}
+
+export interface ChecklistInput {
+  title: string;
+  description: string;
+  stages: ChecklistStageInput[];
+  /**
+   * Fallback for legacy payloads. When provided, the backend will map these items into a default stage.
+   */
+  items?: ChecklistItemInput[];
 }

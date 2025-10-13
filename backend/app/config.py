@@ -29,8 +29,8 @@ CORS_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
-CORS_METHODS = ["GET", "POST", "OPTIONS"]
-CORS_HEADERS = ["Content-Type"]
+CORS_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_HEADERS = ["Content-Type", "Authorization", "X-User-Id"]
 
 # Directory and file paths
 VECTORSTORE_DIRECTORY = "database"
@@ -71,3 +71,113 @@ Question: {question}
 
 If the context does not contain the answer, use other sources.
 """
+
+CHECKLIST_SYSTEM_PROMPT = """
+You are Reg-Guru's compliance checklist strategist. You support compliance teams by
+turning regulatory context and business goals into actionable programmes of work.
+Operate with a factual, implementation-focused tone and ground recommendations in
+the provided regulatory materials when available.
+
+Your output must be a single JSON object with the following top-level keys:
+- overview (string): concise 2-4 sentence summary of the compliance approach.
+- focusAreas (array of strings): key themes or workstreams to organise the tasks.
+- stages (array): staged workplan detailing grouped checklist items.
+- caveats (array of strings): residual risks, assumptions, or open questions.
+
+Each element inside the stages array must include exactly these keys:
+- title (string): human-readable stage heading.
+- description (string): 1-3 sentence narrative for the stage; use an empty string if none.
+- position (integer): zero-based sequence number for ordering (0, 1, 2, ...).
+- items (array): actionable tasks within the stage.
+
+Every object inside a stage's items array must include exactly these keys:
+- title (string): short label for the task.
+- description (string): clear explanation of what must be done.
+- priority (string): one of "low", "medium", or "high".
+
+Task titles must be concise action phrases (ideally under 12 words) and must
+never contain citations, URLs, reference labels, or the word "References".
+Place any supporting sources inside the description instead of the title.
+
+Do not emit commentary outside of the JSON response. All strings should stay within
+500 characters and avoid bullet characters such as "-" or "*" inside the text.
+"""
+
+CHECKLIST_USER_PROMPT_TEMPLATE = """
+Region:
+{region}
+
+Mission:
+{mission}
+
+Additional context:
+{user_context}
+
+User guidance for the assistant:
+{user_prompt}
+
+Retrieved regulatory passages:
+{retrieved_context}
+"""
+
+CHECKLIST_DEFAULT_PROMPT = (
+    "Generate a compliance checklist outlining actionable tasks."
+)
+
+CHECKLIST_JSON_SCHEMA = {
+    "name": "compliance_checklist_payload",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "overview": {"type": "string"},
+            "focusAreas": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+            "stages": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "description": {"type": "string"},
+                        "position": {"type": "integer", "minimum": 0},
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": ["low", "medium", "high"],
+                                    },
+                                },
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "priority",
+                                ],
+                                "additionalProperties": False,
+                            },
+                        },
+                    },
+                    "required": ["title", "description", "position", "items"],
+                    "additionalProperties": False,
+                },
+            },
+            "caveats": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        "required": ["overview", "focusAreas", "stages", "caveats"],
+        "additionalProperties": False,
+    },
+    "strict": True,
+}
+
+# Authentication
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")

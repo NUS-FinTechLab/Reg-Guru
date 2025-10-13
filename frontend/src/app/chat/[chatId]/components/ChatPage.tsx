@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { createSavedQuery, fetchChatHistory, sendChatMessage } from "@/utils/api";
-import { ChatMessageDTO, ChatSession, Message } from "@/utils/api/types";
+import { fetchChat, sendChatMessage } from "@/utils/api";
+import { AuthUser, ChatListItem, ChatMessageDTO, ChatSummary, Message } from "@/utils/api/types";
+import { getStoredUser } from "@/utils/auth-client";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
@@ -16,17 +17,19 @@ const mapDtoToMessage = (dto: ChatMessageDTO): Message => ({
     id: dto.id,
     text: dto.text,
     role: dto.role,
-    timestamp: new Date(dto.timestamp),
+    timestamp: new Date(dto.createdAt),
     sources: dto.sources ?? [],
 });
 
 export default function ChatPage() {
+    const router = useRouter();
     const params = useParams();
     const chatParam = Array.isArray(params?.chatId) ? params.chatId[0] : params?.chatId;
     const chatId = chatParam?.toString() ?? "";
     const searchParams = useSearchParams();
 
-    const [, setSession] = useState<ChatSession | null>(null);
+    const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+    const [, setChat] = useState<ChatSummary | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [region, setRegion] = useState("US");
@@ -41,6 +44,29 @@ export default function ChatPage() {
     const bootstrapInitialQuestion = useRef(false);
 
     useEffect(() => {
+        const user = getStoredUser();
+        if (!user) {
+            router.replace("/login");
+            return;
+        }
+
+        setAuthUser(user);
+
+        const handleAuthChange = () => {
+            const updated = getStoredUser();
+            setAuthUser(updated);
+            if (!updated) {
+                router.replace("/login");
+            }
+        };
+
+        window.addEventListener("auth-change", handleAuthChange);
+        return () => {
+            window.removeEventListener("auth-change", handleAuthChange);
+        };
+    }, [router]);
+
+    useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
@@ -52,17 +78,49 @@ export default function ChatPage() {
             return;
         }
 
+        if (!authUser) {
+            setIsLoadingHistory(false);
+            return;
+        }
+
         let isMounted = true;
         setIsLoadingHistory(true);
 
-        fetchChatHistory(chatId)
+        fetchChat(chatId)
             .then((data) => {
                 if (!isMounted) {
                     return;
                 }
-                setSession(data.session);
-                setRegion(data.session.region.toUpperCase());
-                setMessages(data.messages.map(mapDtoToMessage));
+                if (!data.chat) {
+                    setChat(null);
+                    setMessages([]);
+                    return;
+                }
+
+                setChat(data.chat);
+                const mappedMessages = data.messages.map(mapDtoToMessage);
+                setMessages(mappedMessages);
+
+                const lastDto = data.messages.length > 0
+                    ? data.messages[data.messages.length - 1]
+                    : null;
+                const chatListItem: ChatListItem = {
+                    id: data.chat.id,
+                    userId: data.chat.userId,
+                    createdAt: data.chat.createdAt,
+                    updatedAt: data.chat.updatedAt,
+                    lastMessage: lastDto
+                        ? {
+                            text: lastDto.text,
+                            role: lastDto.role,
+                            createdAt: lastDto.createdAt,
+                        }
+                        : null,
+                };
+
+                window.dispatchEvent(
+                    new CustomEvent<ChatListItem>("chat-updated", { detail: chatListItem }),
+                );
             })
             .catch((error: unknown) => {
                 if (!isMounted) {
@@ -72,7 +130,7 @@ export default function ChatPage() {
                 if (err.message !== "not_found") {
                     console.error("Failed to load chat history:", err);
                 } else {
-                    setSession(null);
+                    setChat(null);
                     setMessages([]);
                 }
             })
@@ -85,7 +143,7 @@ export default function ChatPage() {
         return () => {
             isMounted = false;
         };
-    }, [chatId]);
+    }, [authUser, chatId]);
 
     useEffect(() => {
         if (autoScroll && messagesEndRef.current) {
@@ -142,6 +200,11 @@ export default function ChatPage() {
             return;
         }
 
+        if (!authUser) {
+            router.replace("/login");
+            return;
+        }
+
         const placeholderId = `pending-${Date.now()}`;
         const userMessage: Message = {
             id: placeholderId,
@@ -161,38 +224,41 @@ export default function ChatPage() {
                 chatId,
                 text,
                 region,
+                userId: authUser.id,
             });
 
-            setSession(data.session);
-            setRegion(data.session.region.toUpperCase());
+            setChat(data.chat);
+
+            const resolvedChatId = data.chat.id;
+            if (resolvedChatId !== chatId) {
+                router.replace(`/chat/${resolvedChatId}`);
+            }
 
             const savedUser = mapDtoToMessage(data.messages.user);
-            const botMessage = mapDtoToMessage(data.messages.bot);
+            const botMessage = mapDtoToMessage(data.messages.ai);
 
             setMessages((prev) => {
                 const withoutPlaceholder = prev.filter((msg) => msg.id !== placeholderId);
                 return [...withoutPlaceholder, savedUser, botMessage];
             });
 
-            const summaryText = botMessage.text.length > 600
-                ? `${botMessage.text.slice(0, 600)}…`
-                : botMessage.text;
+            if (data.chat) {
+                const chatListItem: ChatListItem = {
+                    id: resolvedChatId,
+                    userId: data.chat.userId,
+                    createdAt: data.chat.createdAt,
+                    updatedAt: data.chat.updatedAt,
+                    lastMessage: {
+                        text: botMessage.text,
+                        role: botMessage.role,
+                        createdAt: botMessage.timestamp.toISOString(),
+                    },
+                };
 
-            void createSavedQuery({
-                chatId,
-                query: text,
-                responseSummary: summaryText,
-            })
-                .then((result) => {
-                    if (result?.savedQuery) {
-                        window.dispatchEvent(
-                            new CustomEvent("saved-query-created", { detail: result.savedQuery })
-                        );
-                    }
-                })
-                .catch((err: unknown) => {
-                    console.error("Failed to cache saved query:", err);
-                });
+                window.dispatchEvent(
+                    new CustomEvent<ChatListItem>("chat-updated", { detail: chatListItem }),
+                );
+            }
         } catch (error) {
             console.error("Error sending message:", error);
             setMessages((prev) => {
@@ -204,7 +270,7 @@ export default function ChatPage() {
                     {
                         id: `error-${Date.now()}`,
                         text: "Sorry, something went wrong. Please try again.",
-                        role: "bot",
+                        role: "ai",
                         timestamp: new Date(),
                     },
                 ];
@@ -212,10 +278,10 @@ export default function ChatPage() {
         } finally {
             setIsTyping(false);
         }
-    }, [chatId, region]);
+    }, [authUser, chatId, region, router]);
 
     useEffect(() => {
-        if (!chatId || isLoadingHistory) {
+        if (!authUser || !chatId || isLoadingHistory) {
             return;
         }
         if (bootstrapInitialQuestion.current) {
@@ -236,7 +302,7 @@ export default function ChatPage() {
             bootstrapInitialQuestion.current = true;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [chatId, isLoadingHistory, messages.length, searchParams]);
+    }, [authUser, chatId, isLoadingHistory, messages.length, searchParams]);
 
     const messageGroups = useMemo(() => {
         const groups: { [key: string]: Message[] } = {};

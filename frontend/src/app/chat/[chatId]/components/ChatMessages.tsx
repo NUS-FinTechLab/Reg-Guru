@@ -1,5 +1,6 @@
 "use client";
 
+import type { SyntheticEvent } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
@@ -20,6 +21,10 @@ interface ChatMessagesProps {
 }
 
 export default function ChatMessages({ messageGroups, isTyping, formatDate, formatTime, messagesEndRef }: ChatMessagesProps) {
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    event.currentTarget.style.visibility = "hidden";
+  };
+
   return (
     <div className="w-full px-4 mx-auto space-y-6 pb-20">
       {messageGroups.map((group) => (
@@ -36,9 +41,15 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
                 <div className={`flex items-start gap-2 py-2 max-w-[90%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-                  {message.role === "bot" ? (
+                  {message.role === "ai" ? (
                     <div className="flex-shrink-0">
-                      <Image src="/logo.png" alt="Bot avatar" width={36} height={36} className="" />
+                      <Image
+                        src="/logo.png"
+                        alt="Bot avatar"
+                        width={36}
+                        height={36}
+                        onError={handleImageError}
+                      />
                     </div>
                   ) : (
                     <div className="flex-shrink-0 border bg-[#f1f1f1] dark:bg-[#171717] w-9 h-9 rounded-full flex items-center justify-center">
@@ -57,8 +68,8 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                       <span className="text-sm opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>
                     </div>
                     <div className={"py-2"}>
-                      {/* Show source links for bot messages */}
-                      {message.role === "bot" && message.sources && (
+                      {/* Show source links for AI messages */}
+                      {message.role === "ai" && message.sources && (
                         <SourceLinks sources={message.sources} />
                       )}
                     </div>
@@ -74,7 +85,14 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex justify-start">
           <div className="flex items-end gap-2">
             <div className="flex-shrink-0">
-              <Image src="/logo.png" alt="Bot avatar" width={36} height={36} className="rounded-full" />
+              <Image
+                src="/logo.png"
+                alt="Bot avatar"
+                width={36}
+                height={36}
+                className="rounded-full"
+                onError={handleImageError}
+              />
             </div>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl rounded-bl-none shadow-sm">
               <div className="flex space-x-1">
