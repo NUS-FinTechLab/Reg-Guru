@@ -360,7 +360,9 @@ def generate_checklist_draft(
     try:
         collection_count = _get_collection_count(region)
     except Exception as exc:  # pragma: no cover - defensive logging/propagation
-        raise RuntimeError(f"Failed to inspect {region} region collection: {exc}") from exc
+        raise RuntimeError(
+            f"Failed to inspect {region} region collection: {exc}"
+        ) from exc
 
     combined_query_parts = [mission_clean, context_clean, prompt_clean]
     combined_query = " \n".join(part for part in combined_query_parts if part)
@@ -370,7 +372,9 @@ def generate_checklist_draft(
 
     if collection_count > 0 and combined_query:
         try:
-            query_results = _query_embedding_service([combined_query], region, RETRIEVAL_K)
+            query_results = _query_embedding_service(
+                [combined_query], region, RETRIEVAL_K
+            )
         except Exception as exc:  # pragma: no cover - defensive logging
             raise RuntimeError(
                 f"Failed to query embedding service for checklist generation: {exc}"
@@ -414,7 +418,6 @@ def generate_checklist_draft(
 
         title = str(metadata.get("title") or f"Document {index + 1}")
         link = metadata.get("link") or metadata.get("url")
-        citation = metadata.get("citation") or metadata.get("source")
 
         section_lines = [f"Title: {title}"]
         if link:
@@ -423,7 +426,12 @@ def generate_checklist_draft(
             section_lines.append(f"Similarity: {distance_value}")
         section_lines.append("Content:")
         section_lines.append(snippet)
+        context_sections.append("<document> \n")
+        context_sections.append("Document Title:" + title + "\n")
+        context_sections.append("Document Link:" + (link or "N/A") + "\n")
+        context_sections.append(title + "'s Content:\n")
         context_sections.append("\n".join(section_lines))
+        context_sections.append("</document> \n")  # Blank line between sections
 
         filtered_metadata: Dict[str, Any] = {}
         for key, value in metadata.items():
@@ -438,7 +446,6 @@ def generate_checklist_draft(
             {
                 "title": title,
                 "link": link,
-                "citation": citation,
                 "distance": distance_value,
                 "metadata": filtered_metadata,
             }
@@ -484,7 +491,9 @@ def generate_checklist_draft(
     if not choices:
         raise RuntimeError("OpenAI returned no choices for checklist generation")
 
-    content = getattr(choices[0].message, "content", None) if choices[0].message else None
+    content = (
+        getattr(choices[0].message, "content", None) if choices[0].message else None
+    )
     if not content:
         raise RuntimeError("OpenAI returned empty content for checklist generation")
 

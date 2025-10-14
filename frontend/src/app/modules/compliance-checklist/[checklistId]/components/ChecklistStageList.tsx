@@ -184,6 +184,11 @@ function StageListContent({
                                   <span className="text-xs text-muted-foreground">
                                     Updated {getRelativeTime(item.updatedAt)}
                                   </span>
+                                  <span> Reference: {item.referenceLink?.map((link, index) => (
+                                    <a key={index} href={link} target="_blank" rel="noopener noreferrer">
+                                      {link}
+                                    </a>
+                                  ))}</span>
                                 </div>
                               </div>
                             </motion.div>

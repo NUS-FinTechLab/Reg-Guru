@@ -12,7 +12,7 @@ export const WORKSPACE_MODULES: WorkspaceModule[] = [
   {
     name: "Chat",
     description: "Document Q&A assistant",
-    href: "/chat",
+    href: "/modules/chat",
     icon: MessageSquare,
   },
   {

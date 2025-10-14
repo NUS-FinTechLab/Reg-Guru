@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS app.checklist_item (
     checklist_id UUID NOT NULL REFERENCES app.checklist (id) ON DELETE CASCADE,
     stage_id UUID NOT NULL REFERENCES app.checklist_stage (id) ON DELETE CASCADE,
     content TEXT NOT NULL,
+    referenceLink TEXT[] NOT NULL DEFAULT '{}',
     status app.checklist_item_status NOT NULL DEFAULT 'not_started',
     priority app.checklist_item_priority NOT NULL DEFAULT 'medium',
     position INTEGER NOT NULL DEFAULT 0,

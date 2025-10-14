@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import ChatPage from "@/app/chat/[chatId]/components/ChatPage";
+import ChatPage from "@/app/modules/chat/[chatId]/components/ChatPage";
 
 export default function ChatSessionPage() {
   return <ChatPage />;

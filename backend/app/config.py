@@ -87,6 +87,7 @@ Your output must be a single JSON object with the following top-level keys:
 Each element inside the stages array must include exactly these keys:
 - title (string): human-readable stage heading.
 - description (string): 1-3 sentence narrative for the stage; use an empty string if none.
+- referenceLinks (string): URLs or citations to relevant regulations or guidelines; use an empty string if none. This is usually provided in the retrieved context.
 - position (integer): zero-based sequence number for ordering (0, 1, 2, ...).
 - items (array): actionable tasks within the stage.
 
@@ -120,9 +121,7 @@ Retrieved regulatory passages:
 {retrieved_context}
 """
 
-CHECKLIST_DEFAULT_PROMPT = (
-    "Generate a compliance checklist outlining actionable tasks."
-)
+CHECKLIST_DEFAULT_PROMPT = "You are a compliance checklist strategist. Generate a compliance checklist outlining actionable tasks."
 
 CHECKLIST_JSON_SCHEMA = {
     "name": "compliance_checklist_payload",
@@ -142,6 +141,7 @@ CHECKLIST_JSON_SCHEMA = {
                         "title": {"type": "string"},
                         "description": {"type": "string"},
                         "position": {"type": "integer", "minimum": 0},
+                        "referenceLinks": {"type": "string"},
                         "items": {
                             "type": "array",
                             "items": {
@@ -163,7 +163,13 @@ CHECKLIST_JSON_SCHEMA = {
                             },
                         },
                     },
-                    "required": ["title", "description", "position", "items"],
+                    "required": [
+                        "title",
+                        "description",
+                        "position",
+                        "items",
+                        "referenceLinks",
+                    ],
                     "additionalProperties": False,
                 },
             },

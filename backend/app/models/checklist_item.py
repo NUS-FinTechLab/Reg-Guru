@@ -21,6 +21,7 @@ class ChecklistItem:
     status: str
     priority: str
     position: int
+    referenceLink: list[str] | None = None
     created_at: datetime
     updated_at: datetime
 
