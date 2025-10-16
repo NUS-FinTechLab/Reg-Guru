@@ -3,7 +3,7 @@ import pandas as pd
 from eu.feed.processor import EUFeedProcessor
 
 class EUHistoryProcessor(EUFeedProcessor):
-    def __init__(self, ds_code, batch_size=12):
+    def __init__(self, ds_code, batch_size=2):
         super().__init__(ds_code, batch_size)
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.s3_obj = "data_ingestion/raw/eu/eurlex-feed"
@@ -20,7 +20,7 @@ class EUHistoryProcessor(EUFeedProcessor):
         query = f"SELECT source_id FROM logs.feeds WHERE id = {log_id}"
         source_id = self.db_client.execute(query)[0][0]
         # Fetch new entries from raw metadata table
-        query = f"SELECT * FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}" # test
+        query = f"SELECT * FROM bronze.feeds_{self.ds_code} WHERE log_id = {log_id}"
         new_entries = self.db_client.execute(query)
         meta = pd.DataFrame(new_entries, columns=new_entries[0].keys() if new_entries else [])
         meta['title'] = meta["title"].apply(lambda t: self.clean_title(t) if t else None)

@@ -9,21 +9,39 @@ import chromadb
 from chromadb.api import configuration as chroma_configuration
 import torch
 import uvicorn
-from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from FlagEmbedding import BGEM3FlagModel
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+# from FlagEmbedding import BGEM3FlagModel
 
 # Load model once at startup
 # Setting use_fp16 to True speeds up computation with a slight performance degradation
-if torch.cuda.is_available():
-    device = "cuda:0"
-    use_fp16 = True
-else:
-    device = "cpu"
-    use_fp16 = False
+# if torch.cuda.is_available():
+#     device = "cuda:0"
+#     use_fp16 = True
+# else:
+#     device = "cpu"
+#     use_fp16 = False
+
+# model_name = os.getenv("EMBEDDER_MODEL", "BAAI/bge-m3")
+# model = BGEM3FlagModel(model_name, use_fp16=use_fp16, devices=[device])
+
+from sentence_transformers import SentenceTransformer
 model_name = os.getenv("EMBEDDER_MODEL", "BAAI/bge-m3")
-model = BGEM3FlagModel(model_name, use_fp16=use_fp16, devices=[device])
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = SentenceTransformer(model_name, device=device)
+
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("CORS_ORIGINS").split(','),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 executor = ThreadPoolExecutor(max_workers=1)
 
 # Persistent Chroma configuration
@@ -108,17 +126,20 @@ class QueryResponse(BaseModel):
 @app.post("/embed", response_model=EmbedResponse)
 def embed(request: EmbedRequest):
     def run():
-        all_embeddings = []
-        for i in range(0, len(request.texts), request.batch_size):
-            batch_texts = request.texts[i : i + request.batch_size]
-            embeddings_dict = model.encode(
-                batch_texts, batch_size=min(len(batch_texts), 12)
-            )
-            batch_embeddings = embeddings_dict.get("dense_vecs", [])
-            if hasattr(batch_embeddings, "tolist"):
-                batch_embeddings = batch_embeddings.tolist()
-            all_embeddings.extend(batch_embeddings)
-        return all_embeddings
+        # all_embeddings = []
+        # for i in range(0, len(request.texts), request.batch_size):
+        #     batch_texts = request.texts[i : i + request.batch_size]
+        #     batch_embeddings = model.encode(
+        #         batch_texts, batch_size=len(batch_texts)
+        #     )
+        #     if hasattr(batch_embeddings, "tolist"):
+        #         batch_embeddings = batch_embeddings.tolist()
+        #     all_embeddings.extend(batch_embeddings)
+        # return all_embeddings
+        embeddings = model.encode(request.texts, batch_size=request.batch_size)
+        if hasattr(embeddings, "tolist"):
+            embeddings = embeddings.tolist()
+        return embeddings
 
     return {"embeddings": executor.submit(run).result()}
 
@@ -130,8 +151,7 @@ def query(request: QueryRequest):
         if not texts:
             return {"documents": [[]], "metadatas": [[]], "distances": [[]]}
 
-        embeddings_dict = model.encode(texts, batch_size=min(len(texts), 12))
-        query_embeddings = embeddings_dict.get("dense_vecs", [])
+        query_embeddings = model.encode(texts, batch_size=min(len(texts), 12))
         if hasattr(query_embeddings, "tolist"):
             query_embeddings = query_embeddings.tolist()
         if not query_embeddings:

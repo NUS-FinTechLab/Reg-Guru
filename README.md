@@ -59,6 +59,17 @@ RDS connection
 3. To add schema changes, drop a new, incrementally numbered SQL file (for example `backend/migrations/002_add_indexes.sql`) and rerun your migration command.
    ```bash
    python scripts/apply_migrations.py
+
+### Embedding Service
+1. Switch to a separate environment which is for running the embedding service only.
+2. Navigate to the data_ingestion directory:
+   ```
+   cd data_ingestion
+   ```
+
+3. Start the service:
+   ```
+   uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
    ```
 
 ### Frontend

@@ -14,18 +14,32 @@ Currently implemented pipelines:
 All pipelines rely on a dedicated virtual environment (`.venv-bgem3`) because the BGE-M3 embedding model requires NumPy < 2. Use it for both batch ingestion and the long-running embedding/query service.
 
 ### Setup
-
-```bash
-python -m venv .venv-bgem3
-source .venv-bgem3/bin/activate
-pip install -r requirements.txt
-```
+Create a new environment (if needed):
+   ```bash
+   # In venv: this will create a venv environment.
+   # Create a .venv-bgem3 folder inside the project
+   python -m venv .venv-bgem3
+   source .venv-bgem3/bin/activate
+   pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
+   ```bash
+   # In conda: this will create a conda environment
+   conda create -n reg-embed
+   conda activate reg-embed
+   pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
 
 Or activate the existing environment:
-
-```bash
-source .venv-bgem3/bin/activate
-```
+   ```bash
+   # In venv: 
+   source .venv-bgem3/bin/activate
+   ```
+   ```bash
+   # Or in conda:
+   conda activate bgem3
+   ```
 
 ### Key Dependencies
 
@@ -39,6 +53,15 @@ source .venv-bgem3/bin/activate
 ## Pipeline Architecture
 
 ### Stage 1 – Scrape (`*_Scraper`)
+1. **Activate the environment**:
+   ```bash
+   # In venv:
+   source .venv-bgem3/bin/activate
+   ```
+   ```bash
+   # Or in conda:
+   conda activate reg-embed
+   ```
 
 - `BaseScraper` provides throttled HTML requests, pagination helpers, and logging utilities in `src/common/`.
 - Dataset scrapers (`FincenScraper`, `SsoScraper`) fetch listing/browse pages via `_request_html`, follow `_next_page_url`, and deduplicate records using `doc_id`.
@@ -110,7 +133,15 @@ python3 src/pipelines/run_all.py
 A FastAPI app wraps the embedder and ChromaDB queries so other services do not need to manage the ingestion environment.
 
 ```bash
+# In venv
 source .venv-bgem3/bin/activate
+```
+```bash
+# Or in conda:
+conda activate reg-embed
+```
+
+```bash
 cd src
 uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 ```
