@@ -1,22 +1,37 @@
 "use client"
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, MessageCircle, Paperclip, Upload } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import { ToggleTheme } from "@/components/layout/toogle-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { getStoredUser } from "@/utils/auth-client";
 
 export default function ChatDashboard() {
     const router = useRouter();
     const [question, setQuestion] = useState("");
 
+    const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+        event.currentTarget.style.visibility = "hidden";
+    };
+
+    useEffect(() => {
+        if (!getStoredUser()) {
+            router.replace("/login");
+        }
+    }, [router]);
+
     const handleAskQuestion = () => {
         if (!question.trim()) return;
-        // Generate a unique chat ID
-        const chatId = Date.now().toString();
+        const user = getStoredUser();
+        if (!user) {
+            router.replace("/login");
+            return;
+        }
+        // Generate a unique chat ID compatible with backend UUID requirement
+        const chatId = crypto.randomUUID();
 
         // Navigate to the chat page with the new chatId
         router.push(`/chat/${chatId}?initialQuestion=${encodeURIComponent(question)}`);
@@ -29,7 +44,14 @@ export default function ChatDashboard() {
                 <ToggleTheme />
             </div>
             <main className={"flex px-6 justify-center items-center flex-col"}>
-                <Image src={"/logo.png"} className={"w-20 h-auto"} width={400} height={400} alt={"logo"} />
+                <Image
+                    src={"/logo.png"}
+                    className={"w-20 h-auto"}
+                    width={400}
+                    height={400}
+                    alt={"logo"}
+                    onError={handleImageError}
+                />
                 <div className="w-full max-w-md space-y-6">
                     {/* Header */}
                     <div className="text-center py-2">

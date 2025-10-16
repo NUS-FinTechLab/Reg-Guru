@@ -48,6 +48,10 @@ def downloadPdf(url, dest_path):
 def downloadPdftoS3(url, dest_key):
     r"""Puts a PDF from a given URL as an S3 object specified by the object key.
     """
+    bucket_name = os.getenv("S3_BUCKET_NAME")
+    if not bucket_name:
+        raise ValueError("S3_BUCKET_NAME is not configured; cannot upload to S3.")
+
     # AWS S3 config
     s3_client = boto3.client(
         "s3",
@@ -65,7 +69,7 @@ def downloadPdftoS3(url, dest_key):
         response.raise_for_status()
 
         s3_client.put_object(
-            Bucket=os.getenv("S3_BUCKET_NAME"),
+            Bucket=bucket_name,
             Key=dest_key,
             Body=response.content,
             ContentType="application/pdf"

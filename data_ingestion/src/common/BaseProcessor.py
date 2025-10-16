@@ -39,8 +39,8 @@ class BaseProcessor(ABC):
     
     def check_if_metadata_cleaned(self, log_id):
         self.db_client.connect()
-        query = f"SELECT COUNT(id) FROM silver.metadata WHERE log_id = {log_id} LIMIT 1"
-        result = self.db_client.execute(query)[0][0]
+        query = "SELECT COUNT(id) FROM silver.metadata WHERE log_id = %s LIMIT 1"
+        result = self.db_client.execute(query, (log_id,))[0][0]
         self.db_client.close()
         return result > 0
     

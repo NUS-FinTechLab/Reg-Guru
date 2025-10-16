@@ -1,11 +1,11 @@
-import ChatDashboard from "@/app/chat/components/ChatDashboard";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
-export default function Home() {
-    return (
-        <ChatDashboard />
-    );
+import ChatDashboard from "@/app/chat/components/ChatDashboard";
+
+export default function ChatHomePage() {
+  return <ChatDashboard />;
 }
+
 export const metadata: Metadata = {
-    title: "Chat | Reg-Guru - Document Q&A Chatbot",
-}
+  title: "Chat | Reg-Guru - Document Q&A Chatbot",
+};

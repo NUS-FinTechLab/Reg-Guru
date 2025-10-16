@@ -1,28 +1,27 @@
-"""
-Run all ingestion pipelines for different regions.
-This script orchestrates the execution of FinCEN (US) and SSO (Singapore) pipelines.
-"""
+"""Run the available ingestion pipelines sequentially."""
 
 import sys
-import os
 from datetime import datetime
+from pathlib import Path
 
-# Add the parent directories to the Python path to resolve imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..')
-sys.path.insert(0, src_dir)
+# Ensure the repository root and src package are importable when run as a script.
+SRC_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = SRC_ROOT.parent
+for path in (REPO_ROOT, SRC_ROOT):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
-# Import pipeline classes
-from us.fincen.pipeline import FincenPipeline
-from sg.sso.pipeline import SsoPipeline
+from src.us.fincen.pipeline import FincenPipeline
+from src.sg.sso.pipeline import SsoPipeline
+
 
 def run_pipeline(pipeline_class, name):
     """Run a single pipeline with error handling."""
     print(f"\n{'='*60}")
     print(f"STARTING {name} PIPELINE")
-    print('='*60)
+    print("=" * 60)
     start_time = datetime.now()
-    
+
     try:
         pipeline = pipeline_class()
         pipeline.run()
@@ -35,33 +34,35 @@ def run_pipeline(pipeline_class, name):
         print(f"Error: {str(e)}")
         return False
 
+
 def main():
     """Run all pipelines."""
     print("STARTING DATA INGESTION PIPELINES")
     print(f"Timestamp: {datetime.now().isoformat()}")
-    
+
     total_start_time = datetime.now()
-    
+
     # Run both pipelines
     fincen_success = run_pipeline(FincenPipeline, "FINCEN (US)")
     sso_success = run_pipeline(SsoPipeline, "SSO (SINGAPORE)")
-    
+
     # Print summary
     total_duration = datetime.now() - total_start_time
     successful = sum([fincen_success, sso_success])
-    
+
     print(f"\n{'='*60}")
     print("📊 PIPELINE EXECUTION SUMMARY")
-    print('='*60)
+    print("=" * 60)
     print(f"FINCEN: {'✅ SUCCESS' if fincen_success else '❌ FAILED'}")
     print(f"SSO: {'✅ SUCCESS' if sso_success else '❌ FAILED'}")
     print(f"\nTotal execution time: {total_duration}")
     print(f"Successful pipelines: {successful}/2")
-    
+
     if successful == 2:
         print("🎉 All pipelines completed successfully!")
-    
+
     return successful == 2
+
 
 if __name__ == "__main__":
     success = main()
