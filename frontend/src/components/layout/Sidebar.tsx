@@ -72,14 +72,22 @@ export default function Sidebar() {
     event.currentTarget.style.visibility = "hidden";
   };
 
+  const LOGIN_CHAT_MESSAGE = "Log in to view your chats";
+  const LOGIN_CHECKLIST_MESSAGE = "Log in to view your checklists";
+  const loginLinkClass =
+    "underline underline-offset-2 font-medium text-destructive transition hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/60";
+
   useEffect(() => {
     let isMounted = true;
     const user = getStoredUser();
 
     if (!user) {
       if (isMounted) {
-        setChatError("Log in to view your chats");
+        setChatError(LOGIN_CHAT_MESSAGE);
         setIsLoadingChats(false);
+        setChecklists([]);
+        setChecklistError(LOGIN_CHECKLIST_MESSAGE);
+        setIsLoadingChecklists(false);
       }
       return () => {
         isMounted = false;
@@ -87,6 +95,9 @@ export default function Sidebar() {
     }
 
     setIsLoadingChats(true);
+    setIsLoadingChecklists(true);
+    setChatError(null);
+    setChecklistError(null);
 
     Promise.allSettled([listChats(), listChecklists()])
       .then((results) => {
@@ -214,7 +225,7 @@ export default function Sidebar() {
           <ArrowLeft className="h-4 w-4" />
           Back to workspace
         </Button>
-        <SectionToggle
+      <SectionToggle
           title={
             <span
               onClick={() => router.push("/modules/chat")}
@@ -234,7 +245,20 @@ export default function Sidebar() {
               </div>
             ) : chatError ? (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-4 text-xs text-destructive">
-                {chatError}
+                {chatError === LOGIN_CHAT_MESSAGE ? (
+                  <span>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/login")}
+                      className={loginLinkClass}
+                    >
+                      Log in
+                    </button>
+                    <span> to view your chats.</span>
+                  </span>
+                ) : (
+                  chatError
+                )}
               </div>
             ) : chatEntries.length === 0 ? (
               <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-4 text-xs text-muted-foreground">
@@ -288,7 +312,20 @@ export default function Sidebar() {
               </div>
             ) : checklistError ? (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-4 text-xs text-destructive">
-                {checklistError}
+                {checklistError === LOGIN_CHECKLIST_MESSAGE ? (
+                  <span>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/login")}
+                      className={loginLinkClass}
+                    >
+                      Log in
+                    </button>
+                    <span> to view your checklists.</span>
+                  </span>
+                ) : (
+                  checklistError
+                )}
               </div>
             ) : checklists.length === 0 ? (
               <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-4 text-xs text-muted-foreground">

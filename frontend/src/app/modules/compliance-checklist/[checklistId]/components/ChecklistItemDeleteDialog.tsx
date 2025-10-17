@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 import type { ChecklistItemDTO } from "@/utils/api";
 
@@ -61,8 +62,21 @@ export default function ChecklistItemDeleteDialog({
           <Button type="button" variant="ghost" onClick={onCancel} disabled={isDeleting}>
             Cancel
           </Button>
-          <Button type="button" variant="destructive" onClick={onConfirm} disabled={isDeleting}>
-            {isDeleting ? "Deleting…" : "Delete"}
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            aria-busy={isDeleting}
+          >
+            {isDeleting ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Deleting…
+              </span>
+            ) : (
+              "Delete"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -13,6 +13,11 @@ export interface Message {
   pending?: boolean;
 }
 
+export interface ReferenceLink {
+  title: string;
+  url: string;
+}
+
 export interface AuthUser {
   id: string;
   username: string;
@@ -80,9 +85,9 @@ export interface ChecklistItemDTO {
   checklistId: string;
   stageId: string;
   content: string;
+  referenceLinks: ReferenceLink[];
   status: ChecklistItemStatus;
   priority: ChecklistItemPriority;
-  referenceLink: string[] | null;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -109,6 +114,7 @@ export interface ChecklistStageDTO {
   position: number;
   createdAt: string;
   updatedAt: string;
+  referenceLinks: ReferenceLink[];
   items: ChecklistItemDTO[];
 }
 
@@ -122,12 +128,14 @@ export interface ChecklistItemInput {
   status: ChecklistItemStatus;
   priority: ChecklistItemPriority;
   position?: number;
+  referenceLinks?: ReferenceLink[];
 }
 
 export interface ChecklistStageInput {
   title: string;
   description?: string;
   position?: number;
+  referenceLinks?: ReferenceLink[];
   items: ChecklistItemInput[];
 }
 
