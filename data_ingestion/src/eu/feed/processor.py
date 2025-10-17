@@ -8,7 +8,7 @@ load_dotenv(override=True)
 from common.BaseProcessor import BaseProcessor
 
 class EUFeedProcessor(BaseProcessor):
-    def __init__(self, ds_code, batch_size=12):
+    def __init__(self, ds_code, batch_size):
         super().__init__(ds_code, batch_size)
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.s3_obj = "data_ingestion/raw/eu/eurlex-feed"
@@ -69,6 +69,9 @@ class EUFeedProcessor(BaseProcessor):
         soup = BeautifulSoup(xml_content, "lxml")
         # Find the main content of regulation
         document = soup.find("div", id="PP4Contents")
+        if document is None:
+            print("No PP4Contents from document: ", key)
+            return []
         # Remove script and style
         for tag in document(["script", "style"]):
             tag.decompose()
@@ -95,6 +98,7 @@ class EUFeedProcessor(BaseProcessor):
                 doc = { 
                     "content": text,
                     "metadata": row.to_dict(),
+                    "key": key
                 }
         return doc
     
@@ -105,9 +109,10 @@ class EUFeedProcessor(BaseProcessor):
         new_metadata = self.extract_metadata(log_id) 
         # Process and yield document in records batch by batch
         processed_docs = []
-        for _, row in new_metadata.iterrows(): 
+        for _, row in new_metadata.iloc[244:].iterrows(): # Continue from error
             doc = self._process_a_document(log_id, row)
-            processed_docs.append(doc)
+            if doc != {}:
+                processed_docs.append(doc)
             if len(processed_docs) == self.batch_size:
                 yield processed_docs
                 processed_docs = []

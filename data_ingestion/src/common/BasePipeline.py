@@ -20,5 +20,8 @@ class BasePipeline(ABC):
 
     def run(self):
         self.ingest()
+        count = 1
         for minibatch in self.process():
+            print("Embed batch ", count)
             self.embed(minibatch)
+            count += 1

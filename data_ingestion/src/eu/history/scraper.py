@@ -1,6 +1,7 @@
 import os
 import requests
 import pandas as pd
+from tqdm import tqdm
 from io import StringIO
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -30,7 +31,7 @@ class EUHistoryIngestor(BaseScraper):
         obj = self.s3_client.client.get_object(Bucket=self.bucket_name, Key=self.history_csv_key)
         data = obj['Body'].read().decode("utf-8")
         entries = pd.read_csv(StringIO(data))
-        return entries[0:2]
+        return entries #test
         # entries = pd.read_csv(obj).sort_values(by='CELEX number', ascending=False)
 
     def log_into_database(self, entries):
@@ -95,7 +96,7 @@ class EUHistoryIngestor(BaseScraper):
         new_entries = self.db_client.execute(query)
         self.db_client.close()
         s3_folder = self.s3_obj + '/' + str(log_id)
-        for entry in new_entries:
+        for entry in tqdm(new_entries, desc="Storing documents"):
             url = entry['link']
             response = requests.get(url)
             celex = entry['celex_number']
