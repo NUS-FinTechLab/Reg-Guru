@@ -231,7 +231,7 @@ export default function ChatPage() {
 
             const resolvedChatId = data.chat.id;
             if (resolvedChatId !== chatId) {
-                router.replace(`/chat/${resolvedChatId}`);
+                router.replace(`/modules/chat/${resolvedChatId}`);
             }
 
             const savedUser = mapDtoToMessage(data.messages.user);

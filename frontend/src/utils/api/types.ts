@@ -1,16 +1,21 @@
 // Common types for API responses and requests
 export interface Source {
-    title: string;
-    link: string;
+  title: string;
+  link: string;
 }
 
 export interface Message {
-    id: number | string;
-    text: string;
-    role: "user" | "ai";
-    timestamp: Date;
-    sources?: Source[];
-    pending?: boolean;
+  id: number | string;
+  text: string;
+  role: "user" | "ai";
+  timestamp: Date;
+  sources?: Source[];
+  pending?: boolean;
+}
+
+export interface ReferenceLink {
+  title: string;
+  url: string;
 }
 
 export interface AuthUser {
@@ -29,35 +34,35 @@ export interface ChatSummary {
 }
 
 export interface ChatMessageDTO {
-    id: number;
-    role: "user" | "ai";
-    text: string;
-    sources: Source[];
-    createdAt: string;
-    updatedAt: string;
-    userId?: string | null;
+  id: number;
+  role: "user" | "ai";
+  text: string;
+  sources: Source[];
+  createdAt: string;
+  updatedAt: string;
+  userId?: string | null;
 }
 
 export interface ChatResponse {
-    response: string;
-    sources: Source[];
-    chat: ChatSummary;
-    messages: {
-        user: ChatMessageDTO;
-        ai: ChatMessageDTO;
-    };
+  response: string;
+  sources: Source[];
+  chat: ChatSummary;
+  messages: {
+    user: ChatMessageDTO;
+    ai: ChatMessageDTO;
+  };
 }
 
 export interface ChatDetailResponse {
-    chat: ChatSummary | null;
-    messages: ChatMessageDTO[];
+  chat: ChatSummary | null;
+  messages: ChatMessageDTO[];
 }
 
 export interface ChatRequest {
-    chatId?: string;
-    text: string;
-    region?: string;
-    userId: string;
+  chatId?: string;
+  text: string;
+  region?: string;
+  userId: string;
 }
 
 export interface ChatListItem {
@@ -80,6 +85,7 @@ export interface ChecklistItemDTO {
   checklistId: string;
   stageId: string;
   content: string;
+  referenceLinks: ReferenceLink[];
   status: ChecklistItemStatus;
   priority: ChecklistItemPriority;
   position: number;
@@ -108,6 +114,7 @@ export interface ChecklistStageDTO {
   position: number;
   createdAt: string;
   updatedAt: string;
+  referenceLinks: ReferenceLink[];
   items: ChecklistItemDTO[];
 }
 
@@ -121,12 +128,14 @@ export interface ChecklistItemInput {
   status: ChecklistItemStatus;
   priority: ChecklistItemPriority;
   position?: number;
+  referenceLinks?: ReferenceLink[];
 }
 
 export interface ChecklistStageInput {
   title: string;
   description?: string;
   position?: number;
+  referenceLinks?: ReferenceLink[];
   items: ChecklistItemInput[];
 }
 

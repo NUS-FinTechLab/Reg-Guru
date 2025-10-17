@@ -15,6 +15,8 @@ import {
   getChecklist,
   updateChecklistItem,
 } from "@/utils/api";
+import { getStoredUser } from "@/utils/auth-client";
+import type { AuthUser } from "@/utils/api";
 
 import ChecklistDetailHeader from "./components/ChecklistDetailHeader";
 import ChecklistStageList from "./components/ChecklistStageList";
@@ -124,6 +126,25 @@ export default function ChecklistDetailPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeletingItem, setIsDeletingItem] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    const updateUser = () => {
+      const stored = getStoredUser();
+      if (!stored) {
+        setAuthUser(null);
+        setIsLoading(false);
+        router.replace("/login");
+        return;
+      }
+
+      setAuthUser(stored);
+    };
+
+    updateUser();
+    window.addEventListener("auth-change", updateUser);
+    return () => window.removeEventListener("auth-change", updateUser);
+  }, [router]);
 
   const fetchChecklistData = useCallback(async (): Promise<ChecklistDetailDTO | null> => {
     if (!checklistId) {
@@ -151,7 +172,12 @@ export default function ChecklistDetailPage() {
   }, [fetchChecklistData]);
 
   useEffect(() => {
-    let isMounted = true;
+    if (!authUser) {
+      setChecklist(null);
+      setNotFound(false);
+      setIsLoading(false);
+      return;
+    }
 
     if (!checklistId) {
       setChecklist(null);
@@ -159,6 +185,8 @@ export default function ChecklistDetailPage() {
       setIsLoading(false);
       return;
     }
+
+    let isMounted = true;
 
     setIsLoading(true);
     setNotFound(false);
@@ -187,7 +215,7 @@ export default function ChecklistDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [checklistId, fetchChecklistData]);
+  }, [authUser, checklistId, fetchChecklistData]);
 
   const progressPercent = useMemo(() => {
     if (!checklist) {

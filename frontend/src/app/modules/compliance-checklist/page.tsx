@@ -1,19 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import ChecklistCard from "@/components/modules/compliance-checklist/ChecklistCard";
 import ChecklistGeneratePopover from "@/components/modules/compliance-checklist/ChecklistGeneratePopover";
 import { Badge } from "@/components/ui/badge";
-import { ChecklistSummaryDTO, listChecklists } from "@/utils/api";
+import { getStoredUser } from "@/utils/auth-client";
+import { ChecklistSummaryDTO, listChecklists, type AuthUser } from "@/utils/api";
 
 export default function ComplianceChecklistPage() {
+  const router = useRouter();
   const [checklists, setChecklists] = useState<ChecklistSummaryDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
+    const updateUser = () => {
+      const stored = getStoredUser();
+      if (!stored) {
+        setAuthUser(null);
+        setIsLoading(false);
+        router.replace("/login");
+        return;
+      }
+
+      setAuthUser(stored);
+    };
+
+    updateUser();
+    window.addEventListener("auth-change", updateUser);
+    return () => window.removeEventListener("auth-change", updateUser);
+  }, [router]);
+
+  useEffect(() => {
+    if (!authUser) {
+      setChecklists([]);
+      return;
+    }
+
     let isMounted = true;
 
     const loadChecklists = async () => {
@@ -41,7 +68,7 @@ export default function ComplianceChecklistPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [authUser]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

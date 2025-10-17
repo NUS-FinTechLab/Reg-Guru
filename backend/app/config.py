@@ -87,6 +87,7 @@ Your output must be a single JSON object with the following top-level keys:
 Each element inside the stages array must include exactly these keys:
 - title (string): human-readable stage heading.
 - description (string): 1-3 sentence narrative for the stage; use an empty string if none.
+- referenceLinks (array): list of citation objects. Each object must include "title" (string, can be empty) and "url" (string, can be empty if the source is an internal citation). Provide at most three entries per stage.
 - position (integer): zero-based sequence number for ordering (0, 1, 2, ...).
 - items (array): actionable tasks within the stage.
 
@@ -94,6 +95,7 @@ Every object inside a stage's items array must include exactly these keys:
 - title (string): short label for the task.
 - description (string): clear explanation of what must be done.
 - priority (string): one of "low", "medium", or "high".
+- referenceLinks (array): list of citation objects mirroring the stage format; use an empty array if no specific sources underpin the task.
 
 Task titles must be concise action phrases (ideally under 12 words) and must
 never contain citations, URLs, reference labels, or the word "References".
@@ -120,9 +122,7 @@ Retrieved regulatory passages:
 {retrieved_context}
 """
 
-CHECKLIST_DEFAULT_PROMPT = (
-    "Generate a compliance checklist outlining actionable tasks."
-)
+CHECKLIST_DEFAULT_PROMPT = "You are a compliance checklist strategist. Generate a compliance checklist outlining actionable tasks."
 
 CHECKLIST_JSON_SCHEMA = {
     "name": "compliance_checklist_payload",
@@ -142,6 +142,18 @@ CHECKLIST_JSON_SCHEMA = {
                         "title": {"type": "string"},
                         "description": {"type": "string"},
                         "position": {"type": "integer", "minimum": 0},
+                        "referenceLinks": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "url": {"type": "string"},
+                                },
+                                "required": ["title", "url"],
+                                "additionalProperties": False,
+                            },
+                        },
                         "items": {
                             "type": "array",
                             "items": {
@@ -153,17 +165,36 @@ CHECKLIST_JSON_SCHEMA = {
                                         "type": "string",
                                         "enum": ["low", "medium", "high"],
                                     },
+                                    "referenceLinks": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "title": {"type": "string"},
+                                                "url": {"type": "string"},
+                                            },
+                                            "required": ["title", "url"],
+                                            "additionalProperties": False,
+                                        },
+                                    },
                                 },
                                 "required": [
                                     "title",
                                     "description",
                                     "priority",
+                                    "referenceLinks",
                                 ],
                                 "additionalProperties": False,
                             },
                         },
                     },
-                    "required": ["title", "description", "position", "items"],
+                    "required": [
+                        "title",
+                        "description",
+                        "position",
+                        "items",
+                        "referenceLinks",
+                    ],
                     "additionalProperties": False,
                 },
             },

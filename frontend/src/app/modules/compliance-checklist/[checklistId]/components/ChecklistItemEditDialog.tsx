@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
 
 import type {
   ChecklistItemPriority,
@@ -136,8 +137,20 @@ export default function ChecklistItemEditDialog({
           <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
             Cancel
           </Button>
-          <Button type="button" onClick={onSubmit} disabled={isSaving}>
-            {isSaving ? "Saving…" : "Save changes"}
+          <Button
+            type="button"
+            onClick={onSubmit}
+            disabled={isSaving}
+            aria-busy={isSaving}
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Saving…
+              </span>
+            ) : (
+              "Save changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

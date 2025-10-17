@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import ChatDashboard from "@/app/chat/components/ChatDashboard";
+import ChatDashboard from "@/app/modules/chat/components/ChatDashboard";
 
 export default function ChatHomePage() {
   return <ChatDashboard />;

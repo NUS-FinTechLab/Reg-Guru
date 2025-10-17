@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, Loader2, Pencil, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
@@ -99,6 +99,30 @@ function StageListContent({
                       {stage.description}
                     </p>
                   ) : null}
+                  {stage.referenceLinks?.length ? (
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span>Stage references:</span>
+                      {stage.referenceLinks.map((reference, index) => {
+                        const label = reference.title?.trim() || reference.url?.trim() || `Reference ${index + 1}`;
+                        if (!label) {
+                          return null;
+                        }
+                        return reference.url ? (
+                          <a
+                            key={`${stage.id}-reference-${index}`}
+                            href={reference.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline-offset-2 transition hover:text-primary hover:underline"
+                          >
+                            {label}
+                          </a>
+                        ) : (
+                          <span key={`${stage.id}-reference-${index}`}>{label}</span>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <div className="flex-shrink-0 pt-2">
@@ -131,6 +155,7 @@ function StageListContent({
                           const decorationClass = itemDecoration[item.status] ?? itemDecoration.not_started;
                           const isItemUpdating = updatingItemStatusIds.has(item.id);
                           const isPendingDeletion = pendingDeleteItemId === item.id && isDeletingItem;
+                          const isBusy = isItemUpdating || isPendingDeletion;
 
                           return (
                             <motion.div
@@ -138,8 +163,19 @@ function StageListContent({
                               initial={{ opacity: 0, x: -12 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: itemIndex * 0.05 }}
+                              aria-busy={isBusy}
                               className={`group relative flex gap-4 rounded-xl border p-5 text-sm shadow-sm transition-all duration-200 hover:shadow-md ${decorationClass}`}
                             >
+                              {isBusy ? (
+                                <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-background/80 backdrop-blur-sm">
+                                  <span
+                                    className={`flex items-center gap-2 text-xs font-medium ${isPendingDeletion ? "text-destructive" : "text-muted-foreground"}`}
+                                  >
+                                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                    {isPendingDeletion ? "Deleting…" : "Saving…"}
+                                  </span>
+                                </div>
+                              ) : null}
                               <div className="absolute -top-3 right-3 z-10">
                                 <div className="pointer-events-none -translate-y-1 rounded-full border border-border bg-background/95 px-1 py-0 opacity-0 shadow-sm backdrop-blur transition-all duration-150 group-hover:pointer-events-auto group-hover:-translate-y-2 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:-translate-y-2 group-focus-within:opacity-100">
                                   <div className="flex items-center gap-0.5">
@@ -185,6 +221,30 @@ function StageListContent({
                                     Updated {getRelativeTime(item.updatedAt)}
                                   </span>
                                 </div>
+                                {item.referenceLinks?.length ? (
+                                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    <span>References:</span>
+                                    {item.referenceLinks.map((reference, index) => {
+                                      const label = reference.title?.trim() || reference.url?.trim() || `Reference ${index + 1}`;
+                                      if (!label) {
+                                        return null;
+                                      }
+                                      return reference.url ? (
+                                        <a
+                                          key={`${item.id}-reference-${index}`}
+                                          href={reference.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="underline-offset-2 transition hover:text-primary hover:underline"
+                                        >
+                                          {label}
+                                        </a>
+                                      ) : (
+                                        <span key={`${item.id}-reference-${index}`}>{label}</span>
+                                      );
+                                    })}
+                                  </div>
+                                ) : null}
                               </div>
                             </motion.div>
                           );

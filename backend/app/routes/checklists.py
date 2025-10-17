@@ -46,6 +46,39 @@ def _normalize_priority(raw_priority: Any) -> str:
         )
     return value
 
+
+def _normalize_reference_links(raw_references: Any) -> List[Dict[str, str]]:
+    if not raw_references:
+        return []
+
+    if isinstance(raw_references, Mapping):
+        raw_iterable = [raw_references]
+    elif isinstance(raw_references, Sequence) and not isinstance(raw_references, (str, bytes)):
+        raw_iterable = raw_references
+    else:
+        raw_iterable = [raw_references]
+
+    normalized: List[Dict[str, str]] = []
+    for entry in raw_iterable:
+        if isinstance(entry, Mapping):
+            title = str(entry.get("title") or "").strip()
+            url = str(entry.get("url") or "").strip()
+            if not (title or url):
+                continue
+            normalized.append({"title": title, "url": url})
+            continue
+
+        if entry in (None, ""):
+            continue
+
+        url = str(entry).strip()
+        if not url:
+            continue
+        normalized.append({"title": "", "url": url})
+
+    return normalized
+
+
 def _normalize_position(raw_position: Any, default: int) -> int:
     if raw_position in (None, ""):
         return default
@@ -85,6 +118,9 @@ def _parse_stage_items(raw_items: Any, stage_index: int) -> List[Dict[str, Any]]
                 "status": status,
                 "priority": priority,
                 "position": position,
+                "referenceLinks": _normalize_reference_links(
+                    raw_item.get("referenceLinks") or raw_item.get("references")
+                ),
             }
         )
     return parsed
@@ -110,6 +146,9 @@ def _parse_stage_payload(data: Mapping[str, Any]) -> List[Dict[str, Any]]:
             description = str(raw_stage.get("description") or "").strip()
             position = _normalize_position(raw_stage.get("position"), stage_index)
             items = _parse_stage_items(raw_stage.get("items"), stage_index)
+            references = _normalize_reference_links(
+                raw_stage.get("referenceLinks") or raw_stage.get("references")
+            )
 
             parsed.append(
                 {
@@ -117,6 +156,7 @@ def _parse_stage_payload(data: Mapping[str, Any]) -> List[Dict[str, Any]]:
                     "description": description,
                     "position": position,
                     "items": items,
+                    "referenceLinks": references,
                 }
             )
         return parsed
@@ -130,6 +170,7 @@ def _parse_stage_payload(data: Mapping[str, Any]) -> List[Dict[str, Any]]:
             "description": "",
             "position": 0,
             "items": fallback_items,
+            "referenceLinks": [],
         }
     ]
 
@@ -161,6 +202,7 @@ def _persist_stages(
             title=stage_payload["title"],
             description=str(stage_payload.get("description") or ""),
             position=stage_position,
+            reference_links=stage_payload.get("referenceLinks") or [],
         )
         created_stages.append(stage)
 
@@ -173,6 +215,9 @@ def _persist_stages(
                     "status": item_payload["status"],
                     "priority": item_payload["priority"],
                     "position": _normalize_position(item_payload.get("position"), item_index),
+                    "referenceLinks": _normalize_reference_links(
+                        item_payload.get("referenceLinks") or item_payload.get("references")
+                    ),
                 }
             )
 
@@ -611,6 +656,9 @@ def generate_checklist_draft_route():
             stage_title = str(raw_stage.get("title") or "").strip() or f"Stage {stage_index + 1}"
             stage_description = str(raw_stage.get("description") or "").strip()
             stage_position = _normalize_position(raw_stage.get("position"), stage_index)
+            stage_references = _normalize_reference_links(
+                raw_stage.get("referenceLinks") or raw_stage.get("references")
+            )
 
             raw_stage_items = raw_stage.get("items") or []
             if not isinstance(raw_stage_items, list):
@@ -622,12 +670,16 @@ def generate_checklist_draft_route():
                     continue
                 content = _compose_generated_item_content(stage_item)
                 priority = _normalize_generated_priority(stage_item.get("priority"))
+                references = _normalize_reference_links(
+                    stage_item.get("referenceLinks") or stage_item.get("references")
+                )
                 normalized_items.append(
                     {
                         "content": content,
                         "status": "not_started",
                         "priority": priority,
                         "position": item_index,
+                        "referenceLinks": references,
                     }
                 )
 
@@ -636,6 +688,7 @@ def generate_checklist_draft_route():
                     "title": stage_title,
                     "description": stage_description,
                     "position": stage_position,
+                    "referenceLinks": stage_references,
                     "items": normalized_items,
                 }
             )
@@ -651,11 +704,15 @@ def generate_checklist_draft_route():
                 continue
             content = _compose_generated_item_content(item)
             priority = _normalize_generated_priority(item.get("priority"))
+            references = _normalize_reference_links(
+                item.get("referenceLinks") or item.get("references")
+            )
             persistence_payload.append(
                 {
                     "content": content,
                     "status": "not_started",
                     "priority": priority,
+                    "referenceLinks": references,
                 }
             )
 
@@ -673,6 +730,7 @@ def generate_checklist_draft_route():
                         }
                         for index, item in enumerate(persistence_payload)
                     ],
+                    "referenceLinks": [],
                 }
             ]
 

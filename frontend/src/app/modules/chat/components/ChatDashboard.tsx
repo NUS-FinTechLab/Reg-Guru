@@ -34,7 +34,7 @@ export default function ChatDashboard() {
         const chatId = crypto.randomUUID();
 
         // Navigate to the chat page with the new chatId
-        router.push(`/chat/${chatId}?initialQuestion=${encodeURIComponent(question)}`);
+        router.push(`/modules/chat/${chatId}?initialQuestion=${encodeURIComponent(question)}`);
     };
 
     return (
