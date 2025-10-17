@@ -3,7 +3,7 @@ import pandas as pd
 from eu.feed.processor import EUFeedProcessor
 
 class EUHistoryProcessor(EUFeedProcessor):
-    def __init__(self, ds_code, batch_size=2):
+    def __init__(self, ds_code, batch_size):
         super().__init__(ds_code, batch_size)
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.s3_obj = "data_ingestion/raw/eu/eurlex-feed"

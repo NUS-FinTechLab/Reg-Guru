@@ -1,4 +1,4 @@
-from typing import override
+# from typing import override
 from common.BasePipeline import BasePipeline
 from common.Embedder import Embedder
 from eu.history.scraper import EUHistoryIngestor
@@ -32,18 +32,19 @@ class EUHistoryPipeline(BasePipeline):
     def embed(self, minibatch):
         self.embedder.embed_and_add_documents(minibatch)
 
-    @override
-    def run(self, log_id):
-        # self.embedder.delete_chromadb_collection(self.ds_code+"_embeddings")
-        count = 1
-        for minibatch in self.processor.run(log_id):
-            print("Embed batch ", count)
-            self.embed(minibatch)
-            count += 1
+    # @override
+    # def run(self, log_id):
+    #     # self.embedder.delete_chromadb_collection(self.ds_code+"_embeddings")
+    #     count = 1
+    #     for minibatch in self.processor.run(log_id):
+    #         print("Embed batch ", count)
+    #         self.embed(minibatch)
+    #         count += 1
 
 if __name__ == "__main__":
     pipeline = EUHistoryPipeline(process_batch_size=4)
-    pipeline.run(100)
+    pipeline.run()
+    # pipeline.run(100)
     # embed batch 61 finished
     # No PP4Contents from document:  data_ingestion/raw/eu/eurlex-feed/100/32008R0271.xml
     # No texts to process [data_ingestion/raw/eu/eurlex-feed/100/32008R0271.xml]
