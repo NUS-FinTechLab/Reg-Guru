@@ -57,7 +57,7 @@ source .venv-bgem3/bin/activate
 
 - `_split_documents` chunks cleaned text with `CHUNK_SIZE=1000` and `CHUNK_OVERLAP=200`.
 - `embed_batch` uses the FlagEmbedding BGE-M3 model in batches of 16 to generate dense vectors.
-- `embed_into_chromadb` persists chunk text, embeddings, and metadata into the dataset’s Chroma collection under `chroma/<region>/chromadb_<region>`.
+- `embed_into_chromadb` persists chunk text, embeddings, and metadata into the shared Chroma deployment (`<region>_embeddings`).
 
 ### Stage 4 – Orchestrate (`*_Pipeline`)
 
@@ -70,7 +70,7 @@ source .venv-bgem3/bin/activate
 ### Shared Services & Utilities
 
 - `src/common/embedding_service.py` exposes a FastAPI wrapper around embedding and Chroma queries.
-- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_testing_chromadb_client`, and collection accessors shared across datasets.
+- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_chromadb_client`, and collection accessors shared across datasets.
 - `src/pipelines/init_database.py` provisions bronze/silver tables for local development.
 
 ---
@@ -79,8 +79,8 @@ source .venv-bgem3/bin/activate
 
 | Dataset | Module | Source | Bronze table | Local storage | Chroma collection | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| FinCEN (US) | `src/us/fincen/` | Advisory listings on fincen.gov | `bronze.feeds_us_fincen` | `data_ingestion/raw/us/fincen/<log_id>/` | `us_embeddings` (`chroma/us/chromadb_us`) | Detail-page crawl captures the first advisory PDF; duplicates skipped by `doc_id`. |
-| SSO (Singapore) | `src/sg/sso/` | Singapore Statutes Online browse pages | `bronze.feeds_sg_sso` | `data_ingestion/raw/sg/sso/<log_id>/` | `sg_embeddings` (`chroma/sg/chromadb_sg`) | Flags superseded/missing statutes and records effective/valid dates from act detail pages. |
+| FinCEN (US) | `src/us/fincen/` | Advisory listings on fincen.gov | `bronze.feeds_us_fincen` | `data_ingestion/raw/us/fincen/<log_id>/` | `us_embeddings` (remote) | Detail-page crawl captures the first advisory PDF; duplicates skipped by `doc_id`. |
+| SSO (Singapore) | `src/sg/sso/` | Singapore Statutes Online browse pages | `bronze.feeds_sg_sso` | `data_ingestion/raw/sg/sso/<log_id>/` | `sg_embeddings` (remote) | Flags superseded/missing statutes and records effective/valid dates from act detail pages. |
 
 ---
 
@@ -101,7 +101,7 @@ python3 src/pipelines/run_all.py
 
 - Each run prints ingestion counts and the Chroma destination for embedded chunks.
 - Provide `S3_BUCKET_NAME` to push PDFs to object storage; otherwise they are written under `data_ingestion/raw/…`.
-- Override `CHROMADB_ROOT_DIR` if you need Chroma persistence outside the repository tree.
+- Override `CHROMADB_HOST` or `CHROMADB_PORT` to target a different Chroma deployment.
 
 ---
 
@@ -118,7 +118,8 @@ uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 Environment variables:
 
 - `EMBEDDER_MODEL` – Override the default `BAAI/bge-m3`.
-- `CHROMADB_ROOT_DIR` – Custom location for Chroma persistence.
+- `CHROMADB_HOST` – Remote Chroma endpoint (defaults to the shared EC2 instance).
+- `CHROMADB_PORT` – Remote Chroma port (defaults to `80`).
 - `EMBEDDING_SERVICE_URL` – Backend override (defaults to `http://localhost:6000`).
 
 API endpoints:
@@ -132,12 +133,12 @@ API endpoints:
 ## Local Testing & Validation
 
 ```python
-from common.embedding_helper import embed_batch, get_testing_chromadb_client
+from common.embedding_helper import embed_batch, get_chromadb_client
 
 REGION = "us"  # swap to "sg" for SSO
 COLLECTION = "us_embeddings" if REGION == "us" else "sg_embeddings"
 
-client = get_testing_chromadb_client(REGION, f"chromadb_{REGION}")
+client = get_chromadb_client(REGION, f"chromadb_{REGION}")
 collection = client.get_collection(name=COLLECTION)
 
 query_texts = [
@@ -148,6 +149,9 @@ embeddings = embed_batch(query_texts, batch_size=2)
 results = collection.query(query_embeddings=embeddings, n_results=1)
 print(results["documents"])
 ```
+
+`get_chromadb_client` now returns a remote `chromadb.HttpClient`, so these
+commands operate directly against the shared EC2-hosted collections.
 
 - Update `query_texts` to align with the dataset you are validating.
 - Use the returned `documents` to confirm that recently ingested material is retrievable.
@@ -169,4 +173,3 @@ psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master
 - Implement an embedder function that accepts `{content, metadata}` batches and persists to a dedicated Chroma collection (or your vector store of choice).
 - Register the new pipeline in `src/pipelines/run_all.py` to participate in the multi-region orchestrator.
 - Keep shared utilities in `src/common/` to minimise duplication across jurisdictions.
-

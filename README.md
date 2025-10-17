@@ -29,7 +29,11 @@ RDS connection
    ```
 
 ## ChromaDB
-ssh -i regguru-chromadb.pem ubuntu@ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com
+- Default host: `ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
+- Default port: `80`
+- Override with `CHROMADB_HOST` / `CHROMADB_PORT` if you need to point at a different deployment.
+- SSH access (for maintenance only):
+  - `ssh -i regguru-chromadb.pem ubuntu@ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
 
 ### Chat & Feedback Persistence
 - Chats, messages, and feedback now live in PostgreSQL (schema `app`).

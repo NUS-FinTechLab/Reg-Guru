@@ -1,7 +1,6 @@
 """Embedding and query service for Reg-Guru."""
 
 import os
-from pathlib import Path
 from typing import Any, Dict, List
 from concurrent.futures import ThreadPoolExecutor
 
@@ -9,9 +8,12 @@ import chromadb
 from chromadb.api import configuration as chroma_configuration
 import torch
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 from FlagEmbedding import BGEM3FlagModel
+
+_DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
+_DEFAULT_CHROMADB_PORT = 80
 
 # Load model once at startup
 # Setting use_fp16 to True speeds up computation with a slight performance degradation
@@ -26,9 +28,6 @@ model = BGEM3FlagModel(model_name, use_fp16=use_fp16, devices=[device])
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=1)
 
-# Persistent Chroma configuration
-DEFAULT_CHROMADB_ROOT = Path(__file__).resolve().parents[2] / "chroma"
-CHROMADB_ROOT_DIR = Path(os.getenv("CHROMADB_ROOT_DIR", str(DEFAULT_CHROMADB_ROOT)))
 _COLLECTION_CACHE: Dict[str, chromadb.Collection] = {}
 
 
@@ -56,18 +55,25 @@ def _ensure_legacy_chroma_support() -> None:
 _ensure_legacy_chroma_support()
 
 
+def _build_chromadb_client() -> chromadb.Client:
+    host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
+    port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+
+    try:
+        port = int(port_value)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+        ) from exc
+
+    return chromadb.HttpClient(host=host, port=port)
+
+
 def _get_region_collection(region: str) -> chromadb.Collection:
     if region in _COLLECTION_CACHE:
         return _COLLECTION_CACHE[region]
 
-    region_path = CHROMADB_ROOT_DIR / region / f"chromadb_{region}"
-    if not region_path.exists():
-        raise HTTPException(
-            status_code=404,
-            detail=f"ChromaDB path for region '{region}' not found at {region_path}",
-        )
-
-    client = chromadb.PersistentClient(path=str(region_path))
+    client = _build_chromadb_client()
     collection_name = f"{region}_embeddings"
     try:
         collection = client.get_collection(

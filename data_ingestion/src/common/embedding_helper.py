@@ -1,21 +1,31 @@
+import os
+
 from FlagEmbedding import BGEM3FlagModel
 import chromadb
+
+
+_DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
+_DEFAULT_CHROMADB_PORT = 80
 
 model = BGEM3FlagModel(
     "BAAI/bge-m3", use_fp16=True, devices=["cuda:0"]
 )  # Setting use_fp16 to True speeds up computation with a slight performance degradation
 
 
-def get_testing_chromadb_client(region, collection_name):
-    import os
+def get_chromadb_client(region, collection_name):
+    """Return an HttpClient for the shared ChromaDB deployment."""
 
-    # Get the absolute path to the chromadb_fincen directory
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    chroma_path = os.path.join(
-        current_dir, "..", "..", "chroma", region, collection_name
-    )
-    chroma_client = chromadb.PersistentClient(path=chroma_path)
-    return chroma_client
+    host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
+    port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+
+    try:
+        port = int(port_value)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+        ) from exc
+
+    return chromadb.HttpClient(host=host, port=port)
 
 
 def get_text_splitter(chunk_size=1000, chunk_overlap=200):

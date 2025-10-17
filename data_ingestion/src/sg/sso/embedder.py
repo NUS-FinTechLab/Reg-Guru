@@ -1,6 +1,6 @@
 from typing import Iterable, List, Tuple
 
-from ...common.embedding_helper import embed_batch, get_testing_chromadb_client, get_text_splitter
+from ...common.embedding_helper import embed_batch, get_chromadb_client, get_text_splitter
 
 
 CHUNK_SIZE = 1000
@@ -34,7 +34,7 @@ def _split_documents(docs: Iterable[dict]) -> Tuple[List[str], List[dict], List[
 
 def embed_into_chromadb(docs: Iterable[dict], collection_name: str = "sg_embeddings"):
     """Embed processed documents into a persistent Chroma collection."""
-    chroma_client = get_testing_chromadb_client("sg", "chromadb_sg")
+    chroma_client = get_chromadb_client("sg", "chromadb_sg")
     collection = chroma_client.get_or_create_collection(name=collection_name)
 
     chunks, metadatas, chunk_ids = _split_documents(docs)

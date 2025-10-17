@@ -1,10 +1,11 @@
 import os
 import re
+
 import boto3
+import chromadb
 import pandas as pd
 from data_ingestion.src.pipelines.init_database import db_execute
 from bs4 import BeautifulSoup
-from chromadb import PersistentClient
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import BSHTMLLoader, UnstructuredXMLLoader
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -21,9 +22,19 @@ class EUFeedEmbedder:
         )
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.feed_obj = "data_ingestion/raw/eu/eurlex-feed"
-        # self.chroma_directory = "s3://regguru/data_ingestion/chroma/eu"
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.chroma_directory = os.path.join(current_dir, '..', '..', 'chroma', 'eu', 'chromadb_eu')
+        self._chromadb_host = os.getenv(
+            "CHROMADB_HOST", "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
+        ).strip()
+        port_value = os.getenv("CHROMADB_PORT", "80").strip()
+        try:
+            self._chromadb_port = int(port_value)
+        except ValueError as exc:
+            raise ValueError(
+                f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+            ) from exc
+        self._chromadb_client = chromadb.HttpClient(
+            host=self._chromadb_host, port=self._chromadb_port
+        )
         self.collection_name = collection_name
         return
     
@@ -38,8 +49,7 @@ class EUFeedEmbedder:
 
     def process_documents(self, log_id):
         new_meta = self.extract_meta(log_id)
-        ch_client = PersistentClient(path=self.chroma_directory)
-        collection = ch_client.get_or_create_collection(self.collection_name)
+        collection = self._chromadb_client.get_or_create_collection(self.collection_name)
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,  # Slightly larger chunks
             chunk_overlap=200
@@ -74,8 +84,7 @@ class EUFeedEmbedder:
         return
     
     def test_collection(self):
-        ch_client = PersistentClient(path=self.chroma_directory)
-        collection = ch_client.get_or_create_collection(self.collection_name)
+        collection = self._chromadb_client.get_or_create_collection(self.collection_name)
         assert collection.count() > 0, f"Collection {self.collection_name} is empty!"
         results = collection.query(
             query_texts=[
