@@ -28,6 +28,9 @@ RDS connection
    python app.py
    ```
 
+## ChromaDB
+ssh -i regguru-chromadb.pem ubuntu@ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com
+
 ### Chat & Feedback Persistence
 - Chats, messages, and feedback now live in PostgreSQL (schema `app`).
 - The backend reads the same credentials defined for the ingestion pipelines; no additional secrets are required.
