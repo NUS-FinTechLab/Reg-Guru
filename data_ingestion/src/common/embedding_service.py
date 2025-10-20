@@ -1,7 +1,7 @@
 """Embedding and query service for Reg-Guru."""
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor
 
 import chromadb
@@ -29,6 +29,7 @@ app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=1)
 
 _COLLECTION_CACHE: Dict[str, chromadb.Collection] = {}
+_CHROMADB_CLIENT: Optional[chromadb.HttpClient] = None
 
 
 def _ensure_legacy_chroma_support() -> None:
@@ -56,17 +57,27 @@ _ensure_legacy_chroma_support()
 
 
 def _build_chromadb_client() -> chromadb.Client:
-    host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
-    port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+    global _CHROMADB_CLIENT
 
-    try:
-        port = int(port_value)
-    except ValueError as exc:
-        raise RuntimeError(
-            f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
-        ) from exc
+    if _CHROMADB_CLIENT is None:
+        host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
+        port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+        token = os.getenv("CHROMADB_AUTH_TOKEN", "").strip()
 
-    return chromadb.HttpClient(host=host, port=port)
+        try:
+            port = int(port_value)
+        except ValueError as exc:
+            raise RuntimeError(
+                f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+            ) from exc
+
+        headers = None
+        if token:
+            headers = {"Authorization": f"Bearer {token}"}
+
+        _CHROMADB_CLIENT = chromadb.HttpClient(host=host, port=port, headers=headers)
+
+    return _CHROMADB_CLIENT
 
 
 def _get_region_collection(region: str) -> chromadb.Collection:

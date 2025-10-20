@@ -115,11 +115,12 @@ cd src
 uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 ```
 
-Environment variables:
+ Environment variables:
 
 - `EMBEDDER_MODEL` – Override the default `BAAI/bge-m3`.
 - `CHROMADB_HOST` – Remote Chroma endpoint (defaults to the shared EC2 instance).
 - `CHROMADB_PORT` – Remote Chroma port (defaults to `80`).
+- `CHROMADB_AUTH_TOKEN` – Optional Bearer token when the service requires authentication.
 - `EMBEDDING_SERVICE_URL` – Backend override (defaults to `http://localhost:6000`).
 
 API endpoints:

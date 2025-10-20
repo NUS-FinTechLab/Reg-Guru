@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Optional
 
 from FlagEmbedding import BGEM3FlagModel
 import chromadb
@@ -6,6 +7,7 @@ import chromadb
 
 _DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
 _DEFAULT_CHROMADB_PORT = 80
+_CHROMADB_CLIENT: Optional[chromadb.HttpClient] = None
 
 model = BGEM3FlagModel(
     "BAAI/bge-m3", use_fp16=True, devices=["cuda:0"]
@@ -13,19 +15,29 @@ model = BGEM3FlagModel(
 
 
 def get_chromadb_client(region, collection_name):
-    """Return an HttpClient for the shared ChromaDB deployment."""
+    """Return a cached HttpClient for the shared ChromaDB deployment."""
 
-    host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
-    port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+    global _CHROMADB_CLIENT
 
-    try:
-        port = int(port_value)
-    except ValueError as exc:
-        raise ValueError(
-            f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
-        ) from exc
+    if _CHROMADB_CLIENT is None:
+        host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
+        port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+        token = os.getenv("CHROMADB_AUTH_TOKEN", "").strip()
 
-    return chromadb.HttpClient(host=host, port=port)
+        try:
+            port = int(port_value)
+        except ValueError as exc:
+            raise ValueError(
+                f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+            ) from exc
+
+        headers: Optional[Dict[str, str]] = None
+        if token:
+            headers = {"Authorization": f"Bearer {token}"}
+
+        _CHROMADB_CLIENT = chromadb.HttpClient(host=host, port=port, headers=headers)
+
+    return _CHROMADB_CLIENT
 
 
 def get_text_splitter(chunk_size=1000, chunk_overlap=200):
