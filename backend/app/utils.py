@@ -134,13 +134,23 @@ def process_chat_query(user_message, region="us"):
         seen_links = set()  # To avoid duplicate links
 
         for metadata in metadatas:
-            if metadata and "link" in metadata and "title" in metadata:
-                link = metadata["link"]
-                title = metadata["title"]
-                # Only add unique links
-                if link not in seen_links:
-                    sources.append({"title": title, "link": link})
-                    seen_links.add(link)
+            if not metadata:
+                continue
+
+            title = metadata.get("title")
+            link = (
+                metadata.get("link")
+                or metadata.get("download_url")
+                or metadata.get("weblink")
+                or metadata.get("url")
+            )
+            if not title or not link:
+                continue
+
+            # Only add unique links, regardless of which metadata key they came from.
+            if link not in seen_links:
+                sources.append({"title": title, "link": link})
+                seen_links.add(link)
 
         # Return the response
         response_content = (
@@ -382,8 +392,14 @@ def generate_checklist_draft(
             except (TypeError, ValueError):
                 distance_value = None
 
-        title = str(metadata.get("title") or f"Document {index + 1}")
-        link = metadata.get("link") or metadata.get("url")
+        raw_title = metadata.get("title") or f"Document {index + 1}"
+        title = str(raw_title)
+        link = (
+            metadata.get("link")
+            or metadata.get("download_url")
+            or metadata.get("weblink")
+            or metadata.get("url")
+        )
 
         section_lines = [f"Title: {title}"]
         if link:
@@ -408,14 +424,15 @@ def generate_checklist_draft(
             else:
                 filtered_metadata[key] = str(value)
 
-        sources.append(
-            {
-                "title": title,
-                "link": link,
-                "distance": distance_value,
-                "metadata": filtered_metadata,
-            }
-        )
+        if link:
+            sources.append(
+                {
+                    "title": title,
+                    "link": link,
+                    "distance": distance_value,
+                    "metadata": filtered_metadata,
+                }
+            )
 
     if not context_sections:
         context_sections.append(
