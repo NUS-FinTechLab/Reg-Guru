@@ -6,39 +6,48 @@ Currently implemented pipelines:
 
 - **FinCEN (US)** – Financial Crimes Enforcement Network releases.
 - **SSO (Singapore)** – Singapore Statutes Online acts.
+- **EUR-LEX (EU)** - European Union Regulations on Finance.
 
 ---
 
-## Shared Python Environment
+## 1. Setup
+Create a new environment (if needed):
+   ```bash
+   # In venv: this will create a venv environment.
+   # Create a .venv-bgem3 folder inside the project
+   python -m venv .venv-bgem3
+   source .venv-bgem3/bin/activate
+   pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
+   ```bash
+   # In conda: this will create a conda environment
+   conda create -n reg-embed
+   conda activate reg-embed
+   pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
 
-All pipelines rely on a dedicated virtual environment (`.venv-bgem3`) because the BGE-M3 embedding model requires NumPy < 2. Use it for both batch ingestion and the long-running embedding/query service.
+## 2. Key Dependencies
 
-### Setup
-
-```bash
-python -m venv .venv-bgem3
-source .venv-bgem3/bin/activate
-pip install -r requirements.txt
-```
-
-Or activate the existing environment:
-
-```bash
-source .venv-bgem3/bin/activate
-```
-
-### Key Dependencies
-
-- **FlagEmbedding** – BGE-M3 multilingual embedding model
 - **ChromaDB** – Persistent vector store
-- **Transformers / Sentence-Transformers** – Text preprocessing utilities
+- **Transformers / Sentence-Transformers** – Embedding models and text preprocessing utilities
 - **PyTorch** – Backing framework for embeddings (with CUDA support if available)
 
 ---
 
-## Pipeline Architecture
+## 3. Pipeline Architecture
 
 ### Stage 1 – Scrape (`*_Scraper`)
+1. **Activate the environment**:
+   ```bash
+   # In venv:
+   source .venv-bgem3/bin/activate
+   ```
+   ```bash
+   # Or in conda:
+   conda activate reg-embed
+   ```
 
 - `BaseScraper` provides throttled HTML requests, pagination helpers, and logging utilities in `src/common/`.
 - Dataset scrapers (`FincenScraper`, `SsoScraper`) fetch listing/browse pages via `_request_html`, follow `_next_page_url`, and deduplicate records using `doc_id`.
@@ -69,33 +78,33 @@ source .venv-bgem3/bin/activate
 
 ### Shared Services & Utilities
 
-- `src/common/embedding_service.py` exposes a FastAPI wrapper around embedding and Chroma queries.
-- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_chromadb_client`, and collection accessors shared across datasets.
+- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_testing_chromadb_client`, and collection accessors shared across datasets.
 - `src/pipelines/init_database.py` provisions bronze/silver tables for local development.
 
 ---
 
-## Dataset Quick Reference
+## 4. Dataset Quick Reference
 
-| Dataset | Module | Source | Bronze table | Local storage | Chroma collection | Notes |
+| Dataset | Module | Source | Bronze table | S3 back-up storage | Chroma collection | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | FinCEN (US) | `src/us/fincen/` | Advisory listings on fincen.gov | `bronze.feeds_us_fincen` | `data_ingestion/raw/us/fincen/<log_id>/` | `us_embeddings` (remote) | Detail-page crawl captures the first advisory PDF; duplicates skipped by `doc_id`. |
 | SSO (Singapore) | `src/sg/sso/` | Singapore Statutes Online browse pages | `bronze.feeds_sg_sso` | `data_ingestion/raw/sg/sso/<log_id>/` | `sg_embeddings` (remote) | Flags superseded/missing statutes and records effective/valid dates from act detail pages. |
+| EUR-LEX (EU) | `src/eu/feed/` | Finance regulations on EUR-LEX | `bronze.feeds_eu` | `data_ingestion/raw/eu/eurlex-feed/<log_id>/` | `eu_embeddings` (`chroma/eu/chromadb_eu`) | `CELEX number` is the unique id used in the EUR-LEX system |
 
 ---
 
-## Running Pipelines
+## 5. Running Pipelines
+
+**Activate the dedicated environment for data ingestion before running.**
 
 ```bash
-source .venv-bgem3/bin/activate
-
-# FinCEN (US)
+# Fincen Advisories
 python3 src/us/fincen/pipeline.py
 
 # Singapore Statutes Online
 python3 src/sg/sso/pipeline.py
 
-# Run both sequentially
+# Or run both sequentially
 python3 src/pipelines/run_all.py
 ```
 
@@ -164,7 +173,7 @@ print(results["documents"])
 
 ---
 
-## Database Connection (psql)
+## 7. Database Connection (psql)
 
 ```bash
 psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master -d postgres
@@ -172,7 +181,7 @@ psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master
 
 ---
 
-## Adding Another Pipeline
+## 8. Adding Another Pipeline
 
 - Define dataset-specific constants in a scraper subclass and expose `self.s3_obj` so downstream stages resolve PDF storage correctly.
 - Derive a processor that points `BaseProcessor.DATASET_KEY` to the same storage root used by the scraper and promotes bronze rows to `silver.metadata`.

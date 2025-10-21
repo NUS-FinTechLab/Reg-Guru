@@ -39,8 +39,8 @@ def process_documents_batch(documents, collection):
         format="%(asctime)s - %(levelname)s - %(message)s"
     )
 
-    AWS_ACCESS_KEY_ID = os.getenv("S3_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY")
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     bucket_name = 'regguru'
     # Create an S3 client
     s3 = boto3.client(

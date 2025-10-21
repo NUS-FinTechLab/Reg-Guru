@@ -6,7 +6,7 @@ from embedder import EUFeedEmbedder
 class EUFeedPipeline(BasePipeline):
     """EU pipeline implementation."""
 
-    def __init__(self, process_batch_size=12):
+    def __init__(self, process_batch_size=2):
         super().__init__()
         self.ds_code="eu"
         self.process_batch_size=process_batch_size
@@ -16,7 +16,7 @@ class EUFeedPipeline(BasePipeline):
             ds_description="European Union official publications and legal"
         )
         self.processor = EUFeedProcessor(ds_code=self.ds_code, batch_size=self.process_batch_size)
-        # self.embedder = EUFeedEmbedder("eu_feeds")
+        self.embedder = EUFeedEmbedder("eu_feeds")
         
 
     def ingest(self):
@@ -26,12 +26,11 @@ class EUFeedPipeline(BasePipeline):
 
     def process(self):
         log_id = self.scraper.get_log_id()
-        
         return self.processor.run(log_id)
 
-    def embed(self):
-        pass
+    def embed(self, minibatch):
+        self.embedder.embed_and_add_documents(minibatch)
 
 if __name__ == "__main__":
-    pipeline = EUFeedPipeline()
+    pipeline = EUFeedPipeline(process_batch_size=4)
     pipeline.run()

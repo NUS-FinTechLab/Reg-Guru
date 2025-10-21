@@ -81,6 +81,9 @@ $RECYCLE.BIN/
 # Project-specific ignores
 # -------------------------------
 
+# PDF
+*.pdf
+
 # Node.js (frontend)
 frontend/node_modules/
 frontend/.next/
@@ -102,20 +105,5 @@ data_ingestion/.env
 !data_ingestion/.env.template
 
 # ChromaDB data
-backend/data_ingestion/chroma/eu/*
-backend/data_ingestion/chroma/sg/*
-backend/data_ingestion/chroma/us/*
-!backend/data_ingestion/chroma/eu/.gitkeep
-!backend/data_ingestion/chroma/sg/.gitkeep
-!backend/data_ingestion/chroma/us/.gitkeep
-
-# Large raw zip file
-backend/data_ingestion/raw/eu/eurlex-download/LEG_EN_HTML_20250721_04_08.zip
-backend/data_ingestion/raw/eu/eurlex-download/LEG_MTD_20250709_22_36.zip
-
-# MAS
-/backend/MAS/downloads
-/backend/MAS/2e9b6224-eb46-4bf3-8374-97bf89333861
-/backend/MAS/venv
-/backend/MAS/chroma.sqlite3
-/backend/MAS/.idea
+data_ingestion/chroma/*
+data_ingestion/raw/*

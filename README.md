@@ -8,8 +8,9 @@ RDS connection
 > https://pypi.org/project/psycopg2/
 
 ## Development Setup
+The project consists of a few components, including a web app which user interacts with and a few data ingestion pipelines to be scheduled to keep the vector store up-to-date. **Both the web app and pipelines reply on a separate embedding service.** 
 
-### Backend
+### 1. Backend
 1. Navigate to the backend directory:
    ```
    cd backend
@@ -17,7 +18,7 @@ RDS connection
 
 2. Copy the required environment variables (including `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and optional `DB_SSLMODE`) into `backend/.env`. The backend reuses the same PostgreSQL instance as the ingestion pipeline.
 
-3. Install dependencies:
+3. Create an environment and install dependencies:
    ```
    pip install -r requirements.txt
    # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -47,7 +48,7 @@ RDS connection
 - `POST /api/log_feedback` stores per-message feedback tied to the chat session.
 - Use the migration helper whenever SQL files change in `backend/migrations/` (see the workflow below).
 
-### Database Migration Workflow
+#### Database Migration Workflow
 1. Ensure PostgreSQL connection variables are exported (or stored in `backend/.env`):
    ```bash
    export DB_HOST=...
@@ -68,9 +69,41 @@ RDS connection
 3. To add schema changes, drop a new, incrementally numbered SQL file (for example `backend/migrations/002_add_indexes.sql`) and rerun your migration command.
    ```bash
    python scripts/apply_migrations.py
+
+### 2. Embedding Service
+A separate embedding service allows a smoother experience in switching embedding models and avoids contaminating the backend + data_ingestion environments. A FastAPI app wraps the embedding service and ChromaDB queries. **It can be run persistently and used in both document and query embedding.**
+
+#### Environment variables:
+
+- `EMBEDDER_MODEL` – Override the default `BAAI/bge-m3`.
+- `CHROMADB_ROOT_DIR` – Custom location for Chroma persistence.
+- `EMBEDDING_SERVICE_URL` – Backend override (defaults to `http://localhost:6000`).
+
+#### API endpoints:
+
+- `POST /embed` – Returns dense embeddings for supplied texts.
+- `POST /query` – Queries region-specific Chroma collections.
+- `GET /collections/{region}/count` – Retrieves document counts.
+
+#### Setup
+
+1. In a separate terminal, navigate to the embedding_service directory:
+   ```
+   cd embedding_service
    ```
 
-### Frontend
+2. Create a separate environment which is for running the embedding service only.
+   ```bash
+   pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
+
+3. Start the service:
+   ```
+   uvicorn embedding_service:app --host 0.0.0.0 --port 6000 --reload
+   ```
+
+### 3. Frontend
 1. In a separate terminal, navigate to the frontend directory:
    ```
    cd frontend
@@ -89,3 +122,19 @@ RDS connection
    ```
    npm run dev
    ```
+
+### Data Ingestion
+1. In a separate terminal, navigate to the data_ingestion directory:
+   ```
+   cd data_ingestion
+   ```
+
+2. Copy the required environment variables (including `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and optional `DB_SSLMODE`) into `data_ingestion/.env`. The backend reuses the same PostgreSQL instance as the ingestion pipeline.
+
+3. Create an environment and install the dependencies:
+   ```bash
+   pip install -r requirements.txt
+   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
+
+4. Run the pipelines. Refer to data_ingestion/README.md.

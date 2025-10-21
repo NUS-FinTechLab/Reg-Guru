@@ -11,29 +11,29 @@ from botocore.exceptions import ClientError
 
 
 def getHtml(url):
-    r"""Sends a GET request.
-    """
+    r"""Sends a GET request."""
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     response = requests.get(url, headers=headers, timeout=50)
     response.raise_for_status()
-    
+
     return response.text
 
+
 def getPdfLinks(url):
-    r"""Extracts all PDF links from a given URL.
-    """
+    r"""Extracts all PDF links from a given URL."""
     html = getHtml(url)
-    soup = BeautifulSoup(html, 'html.parser')
-    
+    soup = BeautifulSoup(html, "html.parser")
+
     pdfLinks = set()
-    for a in soup.find_all('a', href=True):
-        href = a['href']
-        if href.lower().endswith('.pdf'):
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if href.lower().endswith(".pdf"):
             pdfLinks.add(href)
-    
+
     return pdfLinks
+
 
 _BASE_PDF_HEADERS = {
     "User-Agent": (
@@ -76,12 +76,12 @@ def _fetch_pdf_bytes(
         except requests.HTTPError as exc:
             status = exc.response.status_code if exc.response is not None else "?"
             if status in {429, 467, 503} and attempt < max_retries - 1:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             raise RuntimeError(f"HTTP {status} while downloading {url}") from exc
         except requests.RequestException as exc:
             if attempt < max_retries - 1:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             raise RuntimeError(f"Error downloading {url}: {exc}") from exc
 
@@ -121,59 +121,63 @@ def downloadPdftoS3(url, dest_key, *, referer: Optional[str] = None) -> None:
     except ClientError as exc:
         raise RuntimeError(f"S3 upload failed for {dest_key}: {exc}") from exc
 
+
 # PostgreSQL-compatible helper functions
-def feed_exists_pg(conn, url, title, region='us'):
+def feed_exists_pg(conn, url, title, region="us"):
     r"""Checks if a feed with the same URL and title already exists in the PostgreSQL database.
-    
+
     Args:
         conn: PostgreSQL database connection
         url: The URL to check
         title: The title to check
         region: The region code (us, sg, eu) to determine which feeds table to query
-        
+
     Returns:
         bool: True if feed exists, False otherwise
     """
-    table_name = f'bronze.feeds_{region}'
-    sql = f''' SELECT COUNT(*) FROM {table_name} 
-              WHERE url = %s AND title = %s '''
+    table_name = f"bronze.feeds_{region}"
+    sql = f""" SELECT COUNT(*) FROM {table_name} 
+              WHERE url = %s AND title = %s """
     cur = conn.cursor()
     cur.execute(sql, (url, title))
     count = cur.fetchone()[0]
     return count > 0
 
-def insert_feed_pg(conn, feed, region='us'):
+
+def insert_feed_pg(conn, feed, region="us"):
     r"""Inserts a feed record into the PostgreSQL database.
-    
+
     Args:
         conn: PostgreSQL database connection
         feed: Tuple containing (id, url, timestamp, title, inserted_at)
         region: The region code (us, sg, eu) to determine which feeds table to insert into
-        
+
     Returns:
         int: Number of rows affected
     """
-    table_name = f'bronze.feeds_{region}'
-    sql = f''' INSERT INTO {table_name}(id, url, timestamp, title, inserted_at)
-              VALUES(%s,%s,%s,%s,%s) '''
+    table_name = f"bronze.feeds_{region}"
+    sql = f""" INSERT INTO {table_name}(id, url, timestamp, title, inserted_at)
+              VALUES(%s,%s,%s,%s,%s) """
     cur = conn.cursor()
     cur.execute(sql, feed)
     conn.commit()
     return cur.rowcount
 
+
 # Keep backwards compatibility for existing US-specific code
 def insert_feed_us_pg(conn, feed):
     r"""Legacy function for backward compatibility. Use insert_feed_pg instead."""
-    return insert_feed_pg(conn, feed, region='us')
+    return insert_feed_pg(conn, feed, region="us")
 
-def insert_feed_if_not_exists_pg(conn, feed, region='us'):
+
+def insert_feed_if_not_exists_pg(conn, feed, region="us"):
     r"""Inserts a feed record only if it doesn't already exist in PostgreSQL.
-    
+
     Args:
         conn: PostgreSQL database connection
         feed: Tuple containing (id, url, timestamp, title, inserted_at)
         region: The region code (us, sg, eu) to determine which feeds table to use
-        
+
     Returns:
         tuple: (was_inserted: bool, row_id: int or None)
                was_inserted is True if new record was inserted
@@ -181,11 +185,11 @@ def insert_feed_if_not_exists_pg(conn, feed, region='us'):
     """
     # Extract url and title from the feed tuple
     _, url, _, title, _ = feed
-    
+
     # Check if feed already exists
     if feed_exists_pg(conn, url, title, region):
         return (False, None)
-    
+
     # If not exists, insert it
     row_count = insert_feed_pg(conn, feed, region)
     return (True, row_count)

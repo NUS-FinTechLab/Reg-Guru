@@ -21,7 +21,7 @@ DB_MAX_CONN = int(os.getenv("DB_MAX_CONN", 5))
 # Application configuration
 DEBUG = True
 HOST = "0.0.0.0"
-PORT = 5001  # Mac system process is using 5000
+PORT = 5000 # Mac system process is using 5000
 
 # CORS settings
 CORS_ORIGINS = [
