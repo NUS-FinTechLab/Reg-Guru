@@ -1,9 +1,12 @@
-import requests
-from bs4 import BeautifulSoup
 import os
 import sqlite3
-import psycopg2
+import time
+from typing import Optional
+
 import boto3
+import psycopg2
+import requests
+from bs4 import BeautifulSoup
 from botocore.exceptions import ClientError
 
 
@@ -32,54 +35,91 @@ def getPdfLinks(url):
     
     return pdfLinks
 
-def downloadPdf(url, dest_path):
-    r"""Downloads a PDF from a given URL to the specified destination path.
-    """
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    response = requests.get(url, headers=headers, stream=True, timeout=50)
-    response.raise_for_status()
-    
-    with open(dest_path, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            f.write(chunk)
+_BASE_PDF_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/pdf,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Connection": "keep-alive",
+}
 
-def downloadPdftoS3(url, dest_key):
-    r"""Puts a PDF from a given URL as an S3 object specified by the object key.
-    """
+
+def _build_pdf_headers(referer: Optional[str] = None) -> dict:
+    headers = dict(_BASE_PDF_HEADERS)
+    if referer:
+        headers["Referer"] = referer
+    return headers
+
+
+def _fetch_pdf_bytes(
+    url: str,
+    *,
+    referer: Optional[str] = None,
+    timeout: tuple = (10, 30),
+    max_retries: int = 3,
+) -> bytes:
+    """Download PDF content with retry/backoff to handle intermittent 4xx/5xx."""
+
+    session = requests.Session()
+    for attempt in range(max_retries):
+        try:
+            response = session.get(
+                url,
+                headers=_build_pdf_headers(referer),
+                stream=True,
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            return response.content
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "?"
+            if status in {429, 467, 503} and attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(f"HTTP {status} while downloading {url}") from exc
+        except requests.RequestException as exc:
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(f"Error downloading {url}: {exc}") from exc
+
+    raise RuntimeError(f"Exceeded retries downloading {url}")
+
+
+def downloadPdf(url, dest_path, *, referer: Optional[str] = None) -> None:
+    """Downloads a PDF from a given URL to the specified destination path."""
+
+    pdf_bytes = _fetch_pdf_bytes(url, referer=referer)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    dest_path.write_bytes(pdf_bytes)
+
+
+def downloadPdftoS3(url, dest_key, *, referer: Optional[str] = None) -> None:
+    """Puts a PDF from a given URL as an S3 object specified by the object key."""
+
     bucket_name = os.getenv("S3_BUCKET_NAME")
     if not bucket_name:
         raise ValueError("S3_BUCKET_NAME is not configured; cannot upload to S3.")
 
-    # AWS S3 config
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"),
         aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY"),
-        region_name=os.getenv("AWS_REGION")
+        region_name=os.getenv("AWS_REGION"),
     )
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    
     try:
-        response = requests.get(url, headers=headers, stream=True, timeout=50)
-        response.raise_for_status()
-
+        pdf_bytes = _fetch_pdf_bytes(url, referer=referer)
         s3_client.put_object(
             Bucket=bucket_name,
             Key=dest_key,
-            Body=response.content,
-            ContentType="application/pdf"
+            Body=pdf_bytes,
+            ContentType="application/pdf",
         )
-
-    except requests.HTTPError as e:
-        print("Download failed:", e)
-    except ClientError as e:
-        print("S3 upload failed:", e)
-    return
+    except ClientError as exc:
+        raise RuntimeError(f"S3 upload failed for {dest_key}: {exc}") from exc
 
 # PostgreSQL-compatible helper functions
 def feed_exists_pg(conn, url, title, region='us'):

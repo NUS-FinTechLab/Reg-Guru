@@ -14,6 +14,9 @@ from FlagEmbedding import BGEM3FlagModel
 
 _DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
 _DEFAULT_CHROMADB_PORT = 80
+_DEFAULT_CHROMADB_COLLECTION = os.getenv(
+    "CHROMADB_COLLECTION", "reg_guru_embeddings"
+).strip()
 
 # Load model once at startup
 # Setting use_fp16 to True speeds up computation with a slight performance degradation
@@ -28,7 +31,7 @@ model = BGEM3FlagModel(model_name, use_fp16=use_fp16, devices=[device])
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=1)
 
-_COLLECTION_CACHE: Dict[str, chromadb.Collection] = {}
+_COLLECTION: Optional[chromadb.Collection] = None
 _CHROMADB_CLIENT: Optional[chromadb.HttpClient] = None
 
 
@@ -80,25 +83,21 @@ def _build_chromadb_client() -> chromadb.Client:
     return _CHROMADB_CLIENT
 
 
-def _get_region_collection(region: str) -> chromadb.Collection:
-    if region in _COLLECTION_CACHE:
-        return _COLLECTION_CACHE[region]
+def _get_collection() -> chromadb.Collection:
+    global _COLLECTION
 
-    client = _build_chromadb_client()
-    collection_name = f"{region}_embeddings"
-    try:
-        collection = client.get_collection(
-            name=collection_name,
-            embedding_function=None,
-        )
-    except Exception:
-        collection = client.get_or_create_collection(
-            name=collection_name,
+    if _COLLECTION is None:
+        client = _build_chromadb_client()
+        _COLLECTION = client.get_or_create_collection(
+            name=_DEFAULT_CHROMADB_COLLECTION,
             embedding_function=None,
         )
 
-    _COLLECTION_CACHE[region] = collection
-    return collection
+    return _COLLECTION
+
+
+def _embedding_tag(region: str) -> str:
+    return f"{region}_embeddings"
 
 
 class EmbedRequest(BaseModel):
@@ -154,11 +153,13 @@ def query(request: QueryRequest):
         if not query_embeddings:
             return {"documents": [[]], "metadatas": [[]], "distances": [[]]}
 
-        collection = _get_region_collection(request.region)
+        collection = _get_collection()
+        embedding_tag = _embedding_tag(request.region)
         results = collection.query(
             query_embeddings=query_embeddings,
             n_results=request.n_results,
             include=["documents", "metadatas", "distances"],
+            where={"embedding_name": embedding_tag},
         )
 
         return {
@@ -169,8 +170,3 @@ def query(request: QueryRequest):
 
     return executor.submit(run).result()
 
-
-@app.get("/collections/{region}/count")
-def collection_count(region: str):
-    collection = _get_region_collection(region)
-    return {"count": collection.count()}

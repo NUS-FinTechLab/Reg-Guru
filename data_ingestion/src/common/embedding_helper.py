@@ -7,14 +7,19 @@ import chromadb
 
 _DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
 _DEFAULT_CHROMADB_PORT = 80
+_DEFAULT_CHROMADB_COLLECTION = os.getenv(
+    "CHROMADB_COLLECTION", "reg_guru_embeddings"
+).strip()
+
 _CHROMADB_CLIENT: Optional[chromadb.HttpClient] = None
+_CHROMADB_COLLECTION_HANDLE: Optional[chromadb.Collection] = None
 
 model = BGEM3FlagModel(
     "BAAI/bge-m3", use_fp16=True, devices=["cuda:0"]
 )  # Setting use_fp16 to True speeds up computation with a slight performance degradation
 
 
-def get_chromadb_client(region, collection_name):
+def get_chromadb_client(*_, **__) -> chromadb.HttpClient:
     """Return a cached HttpClient for the shared ChromaDB deployment."""
 
     global _CHROMADB_CLIENT
@@ -38,6 +43,25 @@ def get_chromadb_client(region, collection_name):
         _CHROMADB_CLIENT = chromadb.HttpClient(host=host, port=port, headers=headers)
 
     return _CHROMADB_CLIENT
+
+
+def get_default_collection() -> chromadb.Collection:
+    """Return the shared ChromaDB collection used across all regions."""
+
+    global _CHROMADB_COLLECTION_HANDLE
+
+    if _CHROMADB_COLLECTION_HANDLE is None:
+        client = get_chromadb_client()
+        _CHROMADB_COLLECTION_HANDLE = client.get_or_create_collection(
+            name=_DEFAULT_CHROMADB_COLLECTION,
+            embedding_function=None,
+        )
+
+    return _CHROMADB_COLLECTION_HANDLE
+
+
+def get_default_collection_name() -> str:
+    return _DEFAULT_CHROMADB_COLLECTION
 
 
 def get_text_splitter(chunk_size=1000, chunk_overlap=200):

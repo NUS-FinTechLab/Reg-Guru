@@ -1,6 +1,10 @@
 from typing import Iterable, List, Tuple
 
-from ...common.embedding_helper import embed_batch, get_chromadb_client, get_text_splitter
+from ...common.embedding_helper import (
+    embed_batch,
+    get_default_collection,
+    get_text_splitter,
+)
 
 
 CHUNK_SIZE = 1000
@@ -32,10 +36,9 @@ def _split_documents(docs: Iterable[dict]) -> Tuple[List[str], List[dict], List[
     return chunks, metadatas, chunk_ids
 
 
-def embed_into_chromadb(docs: Iterable[dict], collection_name: str = "sg_embeddings"):
+def embed_into_chromadb(docs: Iterable[dict], embedding_name: str = "sg_embeddings"):
     """Embed processed documents into a persistent Chroma collection."""
-    chroma_client = get_chromadb_client("sg", "chromadb_sg")
-    collection = chroma_client.get_or_create_collection(name=collection_name)
+    collection = get_default_collection()
 
     chunks, metadatas, chunk_ids = _split_documents(docs)
     if not chunks:
@@ -45,15 +48,21 @@ def embed_into_chromadb(docs: Iterable[dict], collection_name: str = "sg_embeddi
     # Encode the text chunks in moderately-sized batches to amortize model calls.
     embeddings = embed_batch(chunks, batch_size=16)
 
+    enriched_metadatas: List[dict] = []
+    for metadata in metadatas:
+        metadata_copy = dict(metadata or {})
+        metadata_copy["embedding_name"] = embedding_name
+        enriched_metadatas.append(metadata_copy)
+
     batch_size = 100
     for start in range(0, len(chunks), batch_size):
         end = start + batch_size
-        collection.add(
+        collection.upsert(
             documents=chunks[start:end],
-            metadatas=metadatas[start:end],
+            metadatas=enriched_metadatas[start:end],
             embeddings=embeddings[start:end],
-            ids=chunk_ids[start:end],
+            ids=[f"{embedding_name}:{chunk_id}" for chunk_id in chunk_ids[start:end]],
         )
 
-    print(f"Embedded {len(chunks)} chunks into collection '{collection_name}'.")
+    print(f"Embedded {len(chunks)} chunks under tag '{embedding_name}'.")
     return collection

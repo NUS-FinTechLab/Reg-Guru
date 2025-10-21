@@ -32,6 +32,7 @@ RDS connection
 - Default host: `ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
 - Default port: `80`
 - Override with `CHROMADB_HOST` / `CHROMADB_PORT` if you need to point at a different deployment.
+- Configure `CHROMADB_COLLECTION` to rename the shared collection (defaults to `reg_guru_embeddings`).
 - If the deployment enforces auth, set `CHROMADB_AUTH_TOKEN` so runtime clients send the required Bearer header.
 - SSH access (for maintenance only):
   - `ssh -i regguru-chromadb.pem ubuntu@ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`

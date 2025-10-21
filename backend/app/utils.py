@@ -96,9 +96,6 @@ def process_chat_query(user_message, region="us"):
         raise ValueError("Empty message")
 
     try:
-        if _get_collection_count(region) == 0:
-            raise FileNotFoundError(f"No documents found in {region} region collection")
-
         # Query the collection for relevant documents
         results = _query_embedding_service([user_message], region, RETRIEVAL_K)
 
@@ -195,10 +192,6 @@ def query_chroma_collection(user_message, region="us", n_results=5):
         list: List of relevant documents from ChromaDB
     """
     try:
-        if _get_collection_count(region) == 0:
-            print(f"No documents found in {region} region collection")
-            return []
-
         results = _query_embedding_service([user_message], region, n_results)
 
         # Extract documents from results
@@ -323,25 +316,6 @@ def _query_embedding_service(query_texts: List[str], region: str, n_results: int
     }
 
 
-def _get_collection_count(region: str) -> int:
-    url = f"{_embedding_service_base_url()}/collections/{region}/count"
-
-    try:
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-    except (requests.RequestException, ValueError) as exc:
-        raise RuntimeError(f"Failed to fetch collection count: {exc}") from exc
-
-    count = data.get("count")
-    if isinstance(count, int):
-        return count
-    try:
-        return int(count)
-    except (TypeError, ValueError):
-        return 0
-
-
 def generate_checklist_draft(
     prompt_text: str,
     region: str,
@@ -356,21 +330,13 @@ def generate_checklist_draft(
     mission_clean = (mission or "").strip()
     context_clean = (context or "").strip()
 
-    collection_count = 0
-    try:
-        collection_count = _get_collection_count(region)
-    except Exception as exc:  # pragma: no cover - defensive logging/propagation
-        raise RuntimeError(
-            f"Failed to inspect {region} region collection: {exc}"
-        ) from exc
-
     combined_query_parts = [mission_clean, context_clean, prompt_clean]
     combined_query = " \n".join(part for part in combined_query_parts if part)
     documents: List[str] = []
     metadatas: List[Dict[str, Any]] = []
     distances: List[Any] = []
 
-    if collection_count > 0 and combined_query:
+    if combined_query:
         try:
             query_results = _query_embedding_service(
                 [combined_query], region, RETRIEVAL_K
@@ -514,7 +480,6 @@ def generate_checklist_draft(
             "context": context_clean,
             "prompt": prompt_clean,
             "retrievedDocumentCount": len(sources),
-            "collectionDocumentCount": collection_count,
             "retrievedContext": retrieved_context,
         },
     }
