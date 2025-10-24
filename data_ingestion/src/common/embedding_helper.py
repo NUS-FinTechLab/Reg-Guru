@@ -1,21 +1,67 @@
+import os
+from typing import Dict, Optional
+
 from FlagEmbedding import BGEM3FlagModel
 import chromadb
+
+
+_DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
+_DEFAULT_CHROMADB_PORT = 80
+_DEFAULT_CHROMADB_COLLECTION = os.getenv(
+    "CHROMADB_COLLECTION", "reg_guru_embeddings"
+).strip()
+
+_CHROMADB_CLIENT: Optional[chromadb.HttpClient] = None
+_CHROMADB_COLLECTION_HANDLE: Optional[chromadb.Collection] = None
 
 model = BGEM3FlagModel(
     "BAAI/bge-m3", use_fp16=True, devices=["cuda:0"]
 )  # Setting use_fp16 to True speeds up computation with a slight performance degradation
 
 
-def get_testing_chromadb_client(region, collection_name):
-    import os
+def get_chromadb_client(*_, **__) -> chromadb.HttpClient:
+    """Return a cached HttpClient for the shared ChromaDB deployment."""
 
-    # Get the absolute path to the chromadb_fincen directory
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    chroma_path = os.path.join(
-        current_dir, "..", "..", "chroma", region, collection_name
-    )
-    chroma_client = chromadb.PersistentClient(path=chroma_path)
-    return chroma_client
+    global _CHROMADB_CLIENT
+
+    if _CHROMADB_CLIENT is None:
+        host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
+        port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+        token = os.getenv("CHROMADB_AUTH_TOKEN", "").strip()
+
+        try:
+            port = int(port_value)
+        except ValueError as exc:
+            raise ValueError(
+                f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+            ) from exc
+
+        headers: Optional[Dict[str, str]] = None
+        if token:
+            headers = {"Authorization": f"Bearer {token}"}
+
+        _CHROMADB_CLIENT = chromadb.HttpClient(host=host, port=port, headers=headers)
+
+    return _CHROMADB_CLIENT
+
+
+def get_default_collection() -> chromadb.Collection:
+    """Return the shared ChromaDB collection used across all regions."""
+
+    global _CHROMADB_COLLECTION_HANDLE
+
+    if _CHROMADB_COLLECTION_HANDLE is None:
+        client = get_chromadb_client()
+        _CHROMADB_COLLECTION_HANDLE = client.get_or_create_collection(
+            name=_DEFAULT_CHROMADB_COLLECTION,
+            embedding_function=None,
+        )
+
+    return _CHROMADB_COLLECTION_HANDLE
+
+
+def get_default_collection_name() -> str:
+    return _DEFAULT_CHROMADB_COLLECTION
 
 
 def get_text_splitter(chunk_size=1000, chunk_overlap=200):

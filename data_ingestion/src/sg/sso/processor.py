@@ -5,6 +5,7 @@ from typing import Dict, Iterable, List
 
 import pandas as pd
 import pdfplumber
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 
 from ...common.BaseProcessor import BaseProcessor
@@ -107,10 +108,18 @@ class SsoProcessor(BaseProcessor):
     # ---- Text extraction ---------------------------------------------
     def _read_pdf_from_s3(self, key: str) -> bytes:
         """Download a PDF byte stream from S3."""
-        response = self.s3_client.client.get_object(
-            Bucket=self.bucket_name,
-            Key=key,
-        )
+        try:
+            response = self.s3_client.client.get_object(
+                Bucket=self.bucket_name,
+                Key=key,
+            )
+        except ClientError as exc:
+            error_code = exc.response.get("Error", {}).get("Code")
+            if error_code == "NoSuchKey":
+                print(f"Missing S3 object for key {key}; skipping.")
+                return b""
+            raise
+
         return response["Body"].read()
 
     def _read_pdf_from_disk(self, path: Path) -> bytes:
@@ -128,6 +137,9 @@ class SsoProcessor(BaseProcessor):
                 print(f"Missing local PDF for key {key}; skipping.")
                 return []
             pdf_bytes = self._read_pdf_from_disk(pdf_path)
+
+        if not pdf_bytes:
+            return []
 
         chunks: List[str] = []
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:

@@ -15,10 +15,9 @@ class SsoScraper(BaseScraper):
     """Scraper for Singapore Statutes Online (SSO)."""
 
     BASE_URL = "https://sso.agc.gov.sg"
-    BROWSE_URL = (
-        "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
-    )
-    PAGE_DELAY = 0.5
+    BROWSE_URL = "https://sso.agc.gov.sg/Browse/Act/Current/All?PageSize=500&SortBy=Title&SortOrder=ASC"
+    PAGE_DELAY = 6.0
+    DOWNLOAD_DELAY = 6.0
     DATASET_KEY = "data_ingestion/raw/sg/sso"
     DATASET_DIR = Path(__file__).resolve().parents[4] / DATASET_KEY
 
@@ -151,8 +150,7 @@ class SsoScraper(BaseScraper):
             """
         )
 
-        history_query = (
-            f"""
+        history_query = f"""
                 SELECT DISTINCT ON (doc_id)
                     doc_id,
                     valid_date
@@ -160,7 +158,6 @@ class SsoScraper(BaseScraper):
                 WHERE flag = 0
                 ORDER BY doc_id, valid_date DESC;
             """
-        )
         history_rows = self.db_client.execute(history_query)
         history = pd.DataFrame([dict(row) for row in history_rows])
 
@@ -280,6 +277,7 @@ class SsoScraper(BaseScraper):
 
         bucket_name = os.getenv("S3_BUCKET_NAME")
         feed_prefix = f"{self.s3_obj}/{log_id}"
+        referer = self.BASE_URL
 
         for row in rows:
             doc_id = row["doc_id"]
@@ -287,16 +285,26 @@ class SsoScraper(BaseScraper):
             # Store each PDF either under the configured bucket or the local raw folder.
             if bucket_name:
                 try:
-                    downloadPdftoS3(pdf_url, f"{feed_prefix}/{doc_id}.pdf")
+                    downloadPdftoS3(
+                        pdf_url,
+                        f"{feed_prefix}/{doc_id}.pdf",
+                        referer=referer,
+                    )
                 except Exception as exc:
                     print(f"Failed to upload {pdf_url} → S3: {exc}")
             else:
                 target_dir = self.DATASET_DIR / str(log_id)
                 target_dir.mkdir(parents=True, exist_ok=True)
                 try:
-                    downloadPdf(pdf_url, target_dir / f"{doc_id}.pdf")
+                    downloadPdf(
+                        pdf_url,
+                        target_dir / f"{doc_id}.pdf",
+                        referer=referer,
+                    )
                 except Exception as exc:
                     print(f"Failed to download {pdf_url}: {exc}")
+
+            time.sleep(self.DOWNLOAD_DELAY)
 
         destination = bucket_name or str(self.DATASET_DIR)
         print(f"Stored {len(rows)} SSO documents under {destination}.")
