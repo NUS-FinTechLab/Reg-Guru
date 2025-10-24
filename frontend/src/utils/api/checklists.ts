@@ -8,6 +8,7 @@ import {
   ChecklistItemStatus,
   ChecklistStageDTO,
   ChecklistSummaryDTO,
+  ReferenceLink,
 } from "./types";
 
 const STATUS_VALUES: ChecklistItemStatus[] = ["not_started", "ongoing", "finished"];
@@ -37,11 +38,58 @@ const toNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const normalizeReferenceLink = (raw: any): ReferenceLink | null => {
+  if (!raw) {
+    return null;
+  }
+
+  if (typeof raw === "object" && !Array.isArray(raw)) {
+    const title = typeof raw.title === "string" ? raw.title.trim() : "";
+    const url = typeof raw.url === "string" ? raw.url.trim() : "";
+    if (!title && !url) {
+      return null;
+    }
+    return { title, url };
+  }
+
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      return null;
+    }
+    return { title: "", url: trimmed };
+  }
+
+  return null;
+};
+
+const normalizeReferenceLinks = (raw: any): ReferenceLink[] => {
+  if (!raw) {
+    return [];
+  }
+
+  const entries = Array.isArray(raw) ? raw : [raw];
+  const normalized: ReferenceLink[] = [];
+
+  for (const entry of entries) {
+    const normalizedEntry = normalizeReferenceLink(entry);
+    if (!normalizedEntry) {
+      continue;
+    }
+    normalized.push(normalizedEntry);
+  }
+
+  return normalized;
+};
+
 const normalizeItem = (raw: any): ChecklistItemDTO => ({
   id: String(raw?.id ?? ""),
   checklistId: String(raw?.checklistId ?? raw?.checklist_id ?? ""),
   stageId: String(raw?.stageId ?? raw?.stage_id ?? ""),
   content: String(raw?.content ?? ""),
+  referenceLinks: normalizeReferenceLinks(
+    raw?.referenceLinks ?? raw?.referenceLink ?? raw?.references ?? raw?.reference_links,
+  ),
   status: normalizeStatus(raw?.status),
   priority: normalizePriority(raw?.priority),
   position: Math.max(0, Math.trunc(toNumber(raw?.position, 0))),
@@ -59,6 +107,9 @@ const normalizeStage = (raw: any): ChecklistStageDTO => {
     position: Math.max(0, Math.trunc(toNumber(raw?.position, 0))),
     createdAt: String(raw?.createdAt ?? raw?.created_at ?? new Date().toISOString()),
     updatedAt: String(raw?.updatedAt ?? raw?.updated_at ?? new Date().toISOString()),
+    referenceLinks: normalizeReferenceLinks(
+      raw?.referenceLinks ?? raw?.references ?? raw?.reference_links,
+    ),
     items,
   };
 };

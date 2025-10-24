@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -100,14 +101,15 @@ export default function ChecklistGeneratePopover({
         return;
       }
 
-      setFeedback(result.message || "Checklist generation request submitted.");
+      handleClose();
+      window.location.reload();
     } catch (error) {
       console.error("Failed to request checklist generation", error);
       setFeedback("Failed to request checklist generation. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [context, region, mission]);
+  }, [context, region, mission, handleClose]);
 
   return (
     <Dialog open={actualOpen} onOpenChange={setOpen}>
@@ -176,8 +178,19 @@ export default function ChecklistGeneratePopover({
           <Button variant="ghost" onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting…" : "Generate"}
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Submitting…
+              </span>
+            ) : (
+              "Generate"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

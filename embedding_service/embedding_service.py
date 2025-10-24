@@ -1,8 +1,7 @@
 """Embedding and query service for Reg-Guru."""
 
 import os
-from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor
 
 import chromadb
@@ -13,9 +12,25 @@ from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
+
 load_dotenv(override=True)
 
-from sentence_transformers import SentenceTransformer
+_DEFAULT_CHROMADB_HOST = "ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com"
+_DEFAULT_CHROMADB_PORT = 80
+_DEFAULT_CHROMADB_COLLECTION = os.getenv(
+    "CHROMADB_COLLECTION", "reg_guru_embeddings"
+).strip()
+
+# Load model once at startup
+# Setting use_fp16 to True speeds up computation with a slight performance degradation
+if torch.cuda.is_available():
+    device = "cuda:0"
+    use_fp16 = True
+else:
+    device = "cpu"
+    use_fp16 = False
+
 model_name = os.getenv("EMBEDDER_MODEL", "BAAI/bge-m3")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = SentenceTransformer(model_name, device=device)
@@ -23,17 +38,15 @@ model = SentenceTransformer(model_name, device=device)
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS").split(','),
+    allow_origins=os.getenv("CORS_ORIGINS").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 executor = ThreadPoolExecutor(max_workers=1)
 
-# Persistent Chroma configuration
-DEFAULT_CHROMADB_ROOT = Path(__file__).resolve().parents[2] / "chroma"
-CHROMADB_ROOT_DIR = Path(os.getenv("CHROMADB_ROOT_DIR", str(DEFAULT_CHROMADB_ROOT)))
-_COLLECTION_CACHE: Dict[str, chromadb.Collection] = {}
+_COLLECTION: Optional[chromadb.Collection] = None
+_CHROMADB_CLIENT: Optional[chromadb.HttpClient] = None
 
 
 def _ensure_legacy_chroma_support() -> None:
@@ -60,32 +73,45 @@ def _ensure_legacy_chroma_support() -> None:
 _ensure_legacy_chroma_support()
 
 
-def _get_region_collection(region: str) -> chromadb.Collection:
-    if region in _COLLECTION_CACHE:
-        return _COLLECTION_CACHE[region]
+def _build_chromadb_client() -> chromadb.Client:
+    global _CHROMADB_CLIENT
 
-    region_path = CHROMADB_ROOT_DIR / region / f"chromadb_{region}"
-    if not region_path.exists():
-        raise HTTPException(
-            status_code=404,
-            detail=f"ChromaDB path for region '{region}' not found at {region_path}",
-        )
+    if _CHROMADB_CLIENT is None:
+        host = os.getenv("CHROMADB_HOST", _DEFAULT_CHROMADB_HOST).strip()
+        port_value = os.getenv("CHROMADB_PORT", str(_DEFAULT_CHROMADB_PORT)).strip()
+        token = os.getenv("CHROMADB_AUTH_TOKEN", "").strip()
 
-    client = chromadb.PersistentClient(path=str(region_path))
-    collection_name = f"{region}_embeddings"
-    try:
-        collection = client.get_collection(
-            name=collection_name,
+        try:
+            port = int(port_value)
+        except ValueError as exc:
+            raise RuntimeError(
+                f"Invalid CHROMADB_PORT value '{port_value}'. Please provide an integer port."
+            ) from exc
+
+        headers = None
+        if token:
+            headers = {"Authorization": f"Bearer {token}"}
+
+        _CHROMADB_CLIENT = chromadb.HttpClient(host=host, port=port, headers=headers)
+
+    return _CHROMADB_CLIENT
+
+
+def _get_collection() -> chromadb.Collection:
+    global _COLLECTION
+
+    if _COLLECTION is None:
+        client = _build_chromadb_client()
+        _COLLECTION = client.get_or_create_collection(
+            name=_DEFAULT_CHROMADB_COLLECTION,
             embedding_function=None,
         )
-    except Exception:
-        collection = client.get_or_create_collection(
-            name=collection_name,
-            embedding_function=None,
-        )
 
-    _COLLECTION_CACHE[region] = collection
-    return collection
+    return _COLLECTION
+
+
+def _embedding_tag(region: str) -> str:
+    return f"{region}_embeddings"
 
 
 class EmbedRequest(BaseModel):
@@ -143,11 +169,13 @@ def query(request: QueryRequest):
         if not query_embeddings:
             return {"documents": [[]], "metadatas": [[]], "distances": [[]]}
 
-        collection = _get_region_collection(request.region)
+        collection = _get_collection()
+        embedding_tag = _embedding_tag(request.region)
         results = collection.query(
             query_embeddings=query_embeddings,
             n_results=request.n_results,
             include=["documents", "metadatas", "distances"],
+            where={"embedding_name": embedding_tag},
         )
 
         return {
@@ -157,13 +185,3 @@ def query(request: QueryRequest):
         }
 
     return executor.submit(run).result()
-
-
-@app.get("/collections/{region}/count")
-def collection_count(region: str):
-    collection = _get_region_collection(region)
-    return {"count": collection.count()}
-
-@app.get("/")
-def root():
-    return {"status": "ok"}

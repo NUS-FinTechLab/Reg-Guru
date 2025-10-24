@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any, ClassVar, Dict, Iterable, Mapping, Sequence
 from uuid import UUID
 
-from ..db import execute, execute_returning, fetch_all, fetch_one
+from ..db import execute, execute_returning, fetch_all, fetch_one, to_jsonb
 
 Row = Mapping[str, Any]
 
@@ -21,6 +21,7 @@ class ChecklistItem:
     status: str
     priority: str
     position: int
+    reference_links: list[Dict[str, str]]
     created_at: datetime
     updated_at: datetime
 
@@ -37,6 +38,7 @@ class ChecklistItem:
             status=row["status"],
             priority=row["priority"],
             position=int(row.get("position", 0) or 0),
+            reference_links=_normalize_reference_links(row.get("reference_links")),
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
@@ -50,6 +52,7 @@ class ChecklistItem:
                 checklist_id,
                 stage_id,
                 content,
+                reference_links,
                 status::TEXT     AS status,
                 priority::TEXT   AS priority,
                 position,
@@ -72,6 +75,7 @@ class ChecklistItem:
                 checklist_id,
                 stage_id,
                 content,
+                reference_links,
                 status::TEXT   AS status,
                 priority::TEXT AS priority,
                 position,
@@ -97,13 +101,14 @@ class ChecklistItem:
         for item in items:
             row = execute_returning(
                 """
-                INSERT INTO app.checklist_item (checklist_id, stage_id, content, status, priority, position)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO app.checklist_item (checklist_id, stage_id, content, reference_links, status, priority, position)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING
                     id,
                     checklist_id,
                     stage_id,
                     content,
+                    reference_links,
                     status::TEXT AS status,
                     priority::TEXT AS priority,
                     position,
@@ -114,6 +119,7 @@ class ChecklistItem:
                     checklist_id,
                     stage_id,
                     item["content"],
+                    to_jsonb(_normalize_reference_links(item.get("referenceLinks") or item.get("reference_links"))),
                     item["status"],
                     item["priority"],
                     int(item.get("position", 0) or 0),
@@ -146,6 +152,7 @@ class ChecklistItem:
                 ci.checklist_id,
                 ci.stage_id,
                 ci.content,
+                ci.reference_links,
                 ci.status::TEXT   AS status,
                 ci.priority::TEXT AS priority,
                 ci.position,
@@ -213,6 +220,7 @@ class ChecklistItem:
                 ci.checklist_id,
                 ci.stage_id,
                 ci.content,
+                ci.reference_links,
                 ci.status::TEXT   AS status,
                 ci.priority::TEXT AS priority,
                 ci.position,
@@ -277,6 +285,7 @@ class ChecklistItem:
             "checklist_id": self.checklist_id,
             "stage_id": self.stage_id,
             "content": self.content,
+            "reference_links": self.reference_links,
             "status": self.status,
             "priority": self.priority,
             "position": self.position,
@@ -290,9 +299,41 @@ class ChecklistItem:
             "checklistId": str(self.checklist_id),
             "stageId": str(self.stage_id),
             "content": self.content,
+            "referenceLinks": self.reference_links,
             "status": self.status,
             "priority": self.priority,
             "position": self.position,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
         }
+
+
+def _normalize_reference_links(raw: Any) -> list[Dict[str, str]]:
+    if not raw:
+        return []
+
+    if isinstance(raw, Mapping):
+        raw_iterable = [raw]
+    elif isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)):
+        raw_iterable = raw
+    else:
+        raw_iterable = [raw]
+
+    normalized: list[Dict[str, str]] = []
+    for entry in raw_iterable:
+        if isinstance(entry, Mapping):
+            title = str(entry.get("title") or "").strip()
+            url = str(entry.get("url") or "").strip()
+            if not (title or url):
+                continue
+            normalized.append({"title": title, "url": url})
+            continue
+
+        if entry in (None, ""):
+            continue
+        url = str(entry).strip()
+        if not url:
+            continue
+        normalized.append({"title": "", "url": url})
+
+    return normalized

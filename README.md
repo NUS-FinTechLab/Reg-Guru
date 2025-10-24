@@ -29,7 +29,16 @@ The project consists of a few components, including a web app which user interac
    python app.py
    ```
 
-#### Chat & Feedback Persistence
+## ChromaDB
+- Default host: `ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
+- Default port: `80`
+- Override with `CHROMADB_HOST` / `CHROMADB_PORT` if you need to point at a different deployment.
+- Configure `CHROMADB_COLLECTION` to rename the shared collection (defaults to `reg_guru_embeddings`).
+- If the deployment enforces auth, set `CHROMADB_AUTH_TOKEN` so runtime clients send the required Bearer header.
+- SSH access (for maintenance only):
+  - `ssh -i regguru-chromadb.pem ubuntu@ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
+
+### Chat & Feedback Persistence
 - Chats, messages, and feedback now live in PostgreSQL (schema `app`).
 - The backend reads the same credentials defined for the ingestion pipelines; no additional secrets are required.
 - REST endpoints:

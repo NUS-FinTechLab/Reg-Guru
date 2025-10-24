@@ -96,9 +96,6 @@ def process_chat_query(user_message, region="us"):
         raise ValueError("Empty message")
 
     try:
-        if _get_collection_count(region) == 0:
-            raise FileNotFoundError(f"No documents found in {region} region collection")
-
         # Query the collection for relevant documents
         results = _query_embedding_service([user_message], region, RETRIEVAL_K)
 
@@ -137,13 +134,23 @@ def process_chat_query(user_message, region="us"):
         seen_links = set()  # To avoid duplicate links
 
         for metadata in metadatas:
-            if metadata and "link" in metadata and "title" in metadata:
-                link = metadata["link"]
-                title = metadata["title"]
-                # Only add unique links
-                if link not in seen_links:
-                    sources.append({"title": title, "link": link})
-                    seen_links.add(link)
+            if not metadata:
+                continue
+
+            title = metadata.get("title")
+            link = (
+                metadata.get("link")
+                or metadata.get("download_url")
+                or metadata.get("weblink")
+                or metadata.get("url")
+            )
+            if not title or not link:
+                continue
+
+            # Only add unique links, regardless of which metadata key they came from.
+            if link not in seen_links:
+                sources.append({"title": title, "link": link})
+                seen_links.add(link)
 
         # Return the response
         response_content = (
@@ -195,10 +202,6 @@ def query_chroma_collection(user_message, region="us", n_results=5):
         list: List of relevant documents from ChromaDB
     """
     try:
-        if _get_collection_count(region) == 0:
-            print(f"No documents found in {region} region collection")
-            return []
-
         results = _query_embedding_service([user_message], region, n_results)
 
         # Extract documents from results
@@ -323,25 +326,6 @@ def _query_embedding_service(query_texts: List[str], region: str, n_results: int
     }
 
 
-def _get_collection_count(region: str) -> int:
-    url = f"{_embedding_service_base_url()}/collections/{region}/count"
-
-    try:
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-    except (requests.RequestException, ValueError) as exc:
-        raise RuntimeError(f"Failed to fetch collection count: {exc}") from exc
-
-    count = data.get("count")
-    if isinstance(count, int):
-        return count
-    try:
-        return int(count)
-    except (TypeError, ValueError):
-        return 0
-
-
 def generate_checklist_draft(
     prompt_text: str,
     region: str,
@@ -356,21 +340,17 @@ def generate_checklist_draft(
     mission_clean = (mission or "").strip()
     context_clean = (context or "").strip()
 
-    collection_count = 0
-    try:
-        collection_count = _get_collection_count(region)
-    except Exception as exc:  # pragma: no cover - defensive logging/propagation
-        raise RuntimeError(f"Failed to inspect {region} region collection: {exc}") from exc
-
     combined_query_parts = [mission_clean, context_clean, prompt_clean]
     combined_query = " \n".join(part for part in combined_query_parts if part)
     documents: List[str] = []
     metadatas: List[Dict[str, Any]] = []
     distances: List[Any] = []
 
-    if collection_count > 0 and combined_query:
+    if combined_query:
         try:
-            query_results = _query_embedding_service([combined_query], region, RETRIEVAL_K)
+            query_results = _query_embedding_service(
+                [combined_query], region, RETRIEVAL_K
+            )
         except Exception as exc:  # pragma: no cover - defensive logging
             raise RuntimeError(
                 f"Failed to query embedding service for checklist generation: {exc}"
@@ -412,9 +392,14 @@ def generate_checklist_draft(
             except (TypeError, ValueError):
                 distance_value = None
 
-        title = str(metadata.get("title") or f"Document {index + 1}")
-        link = metadata.get("link") or metadata.get("url")
-        citation = metadata.get("citation") or metadata.get("source")
+        raw_title = metadata.get("title") or f"Document {index + 1}"
+        title = str(raw_title)
+        link = (
+            metadata.get("link")
+            or metadata.get("download_url")
+            or metadata.get("weblink")
+            or metadata.get("url")
+        )
 
         section_lines = [f"Title: {title}"]
         if link:
@@ -423,7 +408,12 @@ def generate_checklist_draft(
             section_lines.append(f"Similarity: {distance_value}")
         section_lines.append("Content:")
         section_lines.append(snippet)
+        context_sections.append("<document> \n")
+        context_sections.append("Document Title:" + title + "\n")
+        context_sections.append("Document Link:" + (link or "N/A") + "\n")
+        context_sections.append(title + "'s Content:\n")
         context_sections.append("\n".join(section_lines))
+        context_sections.append("</document> \n")  # Blank line between sections
 
         filtered_metadata: Dict[str, Any] = {}
         for key, value in metadata.items():
@@ -434,15 +424,15 @@ def generate_checklist_draft(
             else:
                 filtered_metadata[key] = str(value)
 
-        sources.append(
-            {
-                "title": title,
-                "link": link,
-                "citation": citation,
-                "distance": distance_value,
-                "metadata": filtered_metadata,
-            }
-        )
+        if link:
+            sources.append(
+                {
+                    "title": title,
+                    "link": link,
+                    "distance": distance_value,
+                    "metadata": filtered_metadata,
+                }
+            )
 
     if not context_sections:
         context_sections.append(
@@ -484,7 +474,9 @@ def generate_checklist_draft(
     if not choices:
         raise RuntimeError("OpenAI returned no choices for checklist generation")
 
-    content = getattr(choices[0].message, "content", None) if choices[0].message else None
+    content = (
+        getattr(choices[0].message, "content", None) if choices[0].message else None
+    )
     if not content:
         raise RuntimeError("OpenAI returned empty content for checklist generation")
 
@@ -505,7 +497,6 @@ def generate_checklist_draft(
             "context": context_clean,
             "prompt": prompt_clean,
             "retrievedDocumentCount": len(sources),
-            "collectionDocumentCount": collection_count,
             "retrievedContext": retrieved_context,
         },
     }

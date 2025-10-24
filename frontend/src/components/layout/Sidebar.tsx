@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState, type ReactNode, type SyntheticEvent } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   ChevronDown,
   ChevronRight,
   ClipboardCheck,
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import {
-  Sidebar,
+  Sidebar as SidebarPrimitive,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
@@ -31,10 +31,10 @@ import { WORKSPACE_MODULES } from "@/app/modules/modules";
 import { ToggleTheme } from "@/components/layout/toogle-theme";
 
 interface SectionToggleProps {
-  title: React.ReactNode;
+  title: ReactNode;
   isOpen: boolean;
   onToggle: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 function SectionToggle({ title, isOpen, onToggle, children }: SectionToggleProps) {
@@ -55,7 +55,7 @@ function SectionToggle({ title, isOpen, onToggle, children }: SectionToggleProps
 
 const CHECKLIST_MODULE = WORKSPACE_MODULES.find((entry) => entry.href === "/modules/compliance-checklist");
 
-export default function UnifiedSidebar() {
+export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -72,14 +72,22 @@ export default function UnifiedSidebar() {
     event.currentTarget.style.visibility = "hidden";
   };
 
+  const LOGIN_CHAT_MESSAGE = "Log in to view your chats";
+  const LOGIN_CHECKLIST_MESSAGE = "Log in to view your checklists";
+  const loginLinkClass =
+    "underline underline-offset-2 font-medium text-destructive transition hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/60";
+
   useEffect(() => {
     let isMounted = true;
     const user = getStoredUser();
 
     if (!user) {
       if (isMounted) {
-        setChatError("Log in to view your chats");
+        setChatError(LOGIN_CHAT_MESSAGE);
         setIsLoadingChats(false);
+        setChecklists([]);
+        setChecklistError(LOGIN_CHECKLIST_MESSAGE);
+        setIsLoadingChecklists(false);
       }
       return () => {
         isMounted = false;
@@ -87,6 +95,9 @@ export default function UnifiedSidebar() {
     }
 
     setIsLoadingChats(true);
+    setIsLoadingChecklists(true);
+    setChatError(null);
+    setChecklistError(null);
 
     Promise.allSettled([listChats(), listChecklists()])
       .then((results) => {
@@ -152,10 +163,10 @@ export default function UnifiedSidebar() {
   const chatEntries = useMemo(() => chats.slice(0, 20), [chats]);
 
   const activeChatId = useMemo(() => {
-    if (!pathname?.startsWith("/chat/")) {
+    if (!pathname?.startsWith("/modules/chat/")) {
       return null;
     }
-    const [, , chatId] = pathname.split("/");
+    const [, , , chatId] = pathname.split("/");
     return chatId ?? null;
   }, [pathname]);
 
@@ -163,11 +174,11 @@ export default function UnifiedSidebar() {
     if (!chat.id) {
       return;
     }
-    router.push(`/chat/${chat.id}`);
+    router.push(`/modules/chat/${chat.id}`);
   };
 
   const handleCreateChat = () => {
-    router.push("/chat");
+    router.push("/modules/chat");
   };
 
   const handleCreateChecklist = () => {
@@ -179,7 +190,7 @@ export default function UnifiedSidebar() {
   };
 
   return (
-    <Sidebar variant="sidebar" className="w-full max-w-sm">
+    <SidebarPrimitive variant="sidebar" className="w-full max-w-sm">
       <SidebarHeader>
         <div className="flex items-center justify-between px-3 py-4">
           <div className="flex items-center gap-3">
@@ -205,16 +216,24 @@ export default function UnifiedSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent className="space-y-6 px-3 py-4">
-        <SectionToggle
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.push("/modules")}
+          className="w-full justify-start gap-2 rounded-xl text-sidebar-foreground/80 transition hover:bg-muted"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to workspace
+        </Button>
+      <SectionToggle
           title={
-            <button
-              type="button"
-              onClick={() => router.push("/chat")}
-              className="flex items-center gap-2 text-sidebar-foreground/80"
+            <span
+              onClick={() => router.push("/modules/chat")}
+              className="flex items-center gap-2 text-sidebar-foreground/80 transition hover:text-primary"
             >
               <MessageSquare className="h-4 w-4" />
               <span>Chat</span>
-            </button>
+            </span>
           }
           isOpen={chatSectionOpen}
           onToggle={() => setChatSectionOpen((previous) => !previous)}
@@ -226,7 +245,20 @@ export default function UnifiedSidebar() {
               </div>
             ) : chatError ? (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-4 text-xs text-destructive">
-                {chatError}
+                {chatError === LOGIN_CHAT_MESSAGE ? (
+                  <span>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/login")}
+                      className={loginLinkClass}
+                    >
+                      Log in
+                    </button>
+                    <span> to view your chats.</span>
+                  </span>
+                ) : (
+                  chatError
+                )}
               </div>
             ) : chatEntries.length === 0 ? (
               <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-4 text-xs text-muted-foreground">
@@ -244,9 +276,8 @@ export default function UnifiedSidebar() {
                       <button
                         type="button"
                         onClick={() => handleChatSelect(chat)}
-                        className={`w-full rounded-xl border px-3 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 ${
-                          isActive ? "border-primary bg-primary/10" : "border-border/60 bg-background/80"
-                        }`}
+                        className={`w-full rounded-xl border px-3 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 ${isActive ? "border-primary bg-primary/10" : "border-border/60 bg-background/80"
+                          }`}
                       >
                         <p className="text-sm font-medium line-clamp-2">{preview}</p>
                         <p className="mt-1 text-[11px] text-muted-foreground">
@@ -263,14 +294,13 @@ export default function UnifiedSidebar() {
 
         <SectionToggle
           title={
-            <button
-              type="button"
+            <span
               onClick={() => router.push("/modules/compliance-checklist")}
-              className="flex items-center gap-2 text-sidebar-foreground/80"
+              className="flex items-center gap-2 text-sidebar-foreground/80 transition hover:text-primary"
             >
               <ClipboardCheck className="h-4 w-4" />
               <span>Compliance Checklist</span>
-            </button>
+            </span>
           }
           isOpen={checklistSectionOpen}
           onToggle={() => setChecklistSectionOpen((previous) => !previous)}
@@ -282,7 +312,20 @@ export default function UnifiedSidebar() {
               </div>
             ) : checklistError ? (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-4 text-xs text-destructive">
-                {checklistError}
+                {checklistError === LOGIN_CHECKLIST_MESSAGE ? (
+                  <span>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/login")}
+                      className={loginLinkClass}
+                    >
+                      Log in
+                    </button>
+                    <span> to view your checklists.</span>
+                  </span>
+                ) : (
+                  checklistError
+                )}
               </div>
             ) : checklists.length === 0 ? (
               <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-4 text-xs text-muted-foreground">
@@ -297,9 +340,8 @@ export default function UnifiedSidebar() {
                       <button
                         type="button"
                         onClick={() => handleChecklistSelect(checklist.id)}
-                        className={`flex w-full flex-col rounded-xl border px-3 py-3 text-left text-sm transition hover:border-primary/40 hover:bg-primary/5 ${
-                          isActive ? "border-primary bg-primary/10" : "border-border/60 bg-background/80"
-                        }`}
+                        className={`flex w-full flex-col rounded-xl border px-3 py-3 text-left text-sm transition hover:border-primary/40 hover:bg-primary/5 ${isActive ? "border-primary bg-primary/10" : "border-border/60 bg-background/80"
+                          }`}
                       >
                         <span className="font-medium">{checklist.title}</span>
                         <span className="mt-1 text-[11px] text-muted-foreground">
@@ -342,6 +384,6 @@ export default function UnifiedSidebar() {
           </div>
         </div>
       </SidebarFooter>
-    </Sidebar>
+    </SidebarPrimitive>
   );
 }

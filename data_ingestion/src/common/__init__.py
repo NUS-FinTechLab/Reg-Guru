@@ -16,7 +16,7 @@ This module provides shared functionality across different regional scrapers and
 #     insert_feed_if_not_exists_pg
 # )
 # # from .embedding_helper import (
-# #     get_testing_chromadb_client,
+# #     get_chromadb_client,
 # #     get_text_splitter,
 # #     embed_texts,
 # #     embed_batch,
@@ -33,7 +33,7 @@ This module provides shared functionality across different regional scrapers and
 #     'feed_exists_pg',
 #     'insert_feed_us_pg',
 #     'insert_feed_if_not_exists_pg',
-#     'get_testing_chromadb_client',
+#     'get_chromadb_client',
 #     'get_text_splitter',
 #     'embed_texts',
 #     'embed_batch',
