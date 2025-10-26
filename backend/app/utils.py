@@ -33,6 +33,7 @@ prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
 openai_client = OpenAI()
 
 MAX_CONTEXT_SNIPPET_CHARS = 1600
+DEFAULT_SESSION_CONTEXT = "No additional chat session context provided."
 
 
 def _parse_structured_answer(payload: str) -> Tuple[str, bool]:
@@ -122,7 +123,12 @@ def cleanup_temp():
         scheduler.shutdown()
 
 
-def process_chat_query(user_message, region="us"):
+def process_chat_query(
+    user_message,
+    region="us",
+    *,
+    session_context: str | None = None,
+):
     """Process chat query using ChromaDB for a specific region."""
     if not user_message.strip():
         raise ValueError("Empty message")
@@ -156,7 +162,15 @@ def process_chat_query(user_message, region="us"):
         context = "\n\n".join(context_parts)
 
         # Use the prompt template from config
-        formatted_prompt = prompt.format(context=context, question=user_message)
+        session_context_text = (session_context or DEFAULT_SESSION_CONTEXT).strip()
+        if not session_context_text:
+            session_context_text = DEFAULT_SESSION_CONTEXT
+
+        formatted_prompt = prompt.format(
+            context=context,
+            question=user_message,
+            session_context=session_context_text,
+        )
 
         # Get response from LLM
         response = llm.invoke(formatted_prompt)
@@ -261,7 +275,13 @@ def query_chroma_collection(user_message, region="us", n_results=5):
         return []
 
 
-def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
+def process_chat_query_with_chroma(
+    user_message,
+    regions=None,
+    use_faiss=True,
+    *,
+    session_context: str | None = None,
+):
     """
     Process chat query using both FAISS and ChromaDB collections.
 
@@ -288,7 +308,10 @@ def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
     faiss_response = None
     if use_faiss and os.path.exists(os.path.join(VECTORSTORE_DIRECTORY, "index.faiss")):
         try:
-            faiss_result = process_chat_query(user_message)
+            faiss_result = process_chat_query(
+                user_message,
+                session_context=session_context,
+            )
             if isinstance(faiss_result, tuple) and len(faiss_result) == 2:
                 faiss_response, _ = faiss_result
             else:
@@ -311,7 +334,15 @@ def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
         context = "\n\n".join(context_parts)
 
         # Use the prompt template from config
-        formatted_prompt = prompt.format(context=context, question=user_message)
+        session_context_text = (session_context or DEFAULT_SESSION_CONTEXT).strip()
+        if not session_context_text:
+            session_context_text = DEFAULT_SESSION_CONTEXT
+
+        formatted_prompt = prompt.format(
+            context=context,
+            question=user_message,
+            session_context=session_context_text,
+        )
 
         try:
             response = llm.invoke(formatted_prompt)

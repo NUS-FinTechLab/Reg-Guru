@@ -12,6 +12,52 @@ from . import api
 from .serializers import serialize_chat, serialize_message
 
 
+MAX_SESSION_CONTEXT_CHARS = 3000
+MAX_SESSION_HISTORY_MESSAGES = 10
+MAX_MESSAGE_SNIPPET_CHARS = 320
+
+
+def _render_session_context(chat: Chat, history: list[ChatMessage]) -> str:
+    lines: list[str] = [
+        "Chat metadata:",
+        f"- chat_id: {chat.id}",
+        f"- user_id: {chat.user_id}",
+        f"- created_at: {chat.created_at.isoformat()}",
+        f"- updated_at: {chat.updated_at.isoformat()}",
+    ]
+
+    if history:
+        lines.append("")
+        lines.append("Recent messages (oldest to newest):")
+        for message in history:
+            content = " ".join((message.body or "").split())
+            if len(content) > MAX_MESSAGE_SNIPPET_CHARS:
+                content = f"{content[:MAX_MESSAGE_SNIPPET_CHARS].rstrip()}…"
+            role = "User" if message.role == "user" else "Assistant"
+            lines.append(
+                f"[{message.created_at.isoformat()}] {role}: {content or '[no content recorded]'}"
+            )
+    else:
+        lines.append("")
+        lines.append("No previous messages recorded for this chat.")
+
+    rendered = "\n".join(lines).strip()
+    if len(rendered) <= MAX_SESSION_CONTEXT_CHARS:
+        return rendered
+
+    metadata_section = "\n".join(lines[:5]).strip()
+    history_section = "\n".join(lines[5:]).strip()
+    if not history_section:
+        return metadata_section
+
+    available_chars = MAX_SESSION_CONTEXT_CHARS - len(metadata_section) - 1
+    if available_chars <= 0:
+        return metadata_section
+
+    trimmed_history = history_section[-available_chars:]
+    return f"{metadata_section}\n{trimmed_history.strip()}"
+
+
 @api.route("/chats", methods=["GET"])
 def list_user_chats():
     authenticated_user_id = getattr(g, "authenticated_user_id", None)
@@ -80,6 +126,12 @@ def chat():
     try:
         chat = Chat.ensure(chat_id, user.id)
 
+        history_messages = ChatMessage.list_recent_for_chat(
+            chat.id,
+            limit=MAX_SESSION_HISTORY_MESSAGES,
+        )
+        session_context = _render_session_context(chat, history_messages)
+
         user_message_obj = ChatMessage.create(
             chat_id=chat.id,
             user_id=user.id,
@@ -88,7 +140,11 @@ def chat():
             sources=[],
         )
 
-        result = process_chat_query(user_message, region)
+        result = process_chat_query(
+            user_message,
+            region,
+            session_context=session_context,
+        )
         metadata = {}
         if isinstance(result, tuple) and len(result) == 2:
             response, metadata = result
