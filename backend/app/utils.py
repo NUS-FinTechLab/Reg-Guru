@@ -3,7 +3,7 @@ import shutil
 from hashlib import md5
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -33,6 +33,38 @@ prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
 openai_client = OpenAI()
 
 MAX_CONTEXT_SNIPPET_CHARS = 1600
+
+
+def _parse_structured_answer(payload: str) -> Tuple[str, bool]:
+    """Extract the assistant answer and checklist flag from a JSON payload."""
+
+    cleaned_payload = (payload or "").strip()
+    if not cleaned_payload:
+        return "", False
+
+    try:
+        data = json.loads(cleaned_payload)
+    except (TypeError, json.JSONDecodeError):
+        return cleaned_payload, False
+
+    if not isinstance(data, dict):
+        return cleaned_payload, False
+
+    answer_text = data.get("answer")
+    if isinstance(answer_text, str) and answer_text.strip():
+        cleaned_answer = answer_text.strip()
+    else:
+        cleaned_answer = cleaned_payload
+
+    should_create_raw = data.get("shouldCreateChecklist")
+    if isinstance(should_create_raw, bool):
+        should_create = should_create_raw
+    elif isinstance(should_create_raw, str):
+        should_create = should_create_raw.strip().lower() in {"1", "true", "yes"}
+    else:
+        should_create = bool(should_create_raw)
+
+    return cleaned_answer, should_create
 
 
 @dataclass(frozen=True)
@@ -156,7 +188,12 @@ def process_chat_query(user_message, region="us"):
         response_content = (
             response.content if hasattr(response, "content") else str(response)
         )
-        return response_content, {"sources": sources}
+        answer_text, should_create_checklist = _parse_structured_answer(response_content)
+
+        return answer_text, {
+            "sources": sources,
+            "should_create_checklist": should_create_checklist,
+        }
 
     except Exception as e:
         print(f"Error processing query for region {region}: {str(e)}")
@@ -251,7 +288,11 @@ def process_chat_query_with_chroma(user_message, regions=None, use_faiss=True):
     faiss_response = None
     if use_faiss and os.path.exists(os.path.join(VECTORSTORE_DIRECTORY, "index.faiss")):
         try:
-            faiss_response = process_chat_query(user_message)
+            faiss_result = process_chat_query(user_message)
+            if isinstance(faiss_result, tuple) and len(faiss_result) == 2:
+                faiss_response, _ = faiss_result
+            else:
+                faiss_response = faiss_result
         except Exception as e:
             print(f"Error with FAISS query: {str(e)}")
 

@@ -89,13 +89,21 @@ def chat():
         )
 
         result = process_chat_query(user_message, region)
-        if isinstance(result, tuple):
-            response, sources = result
+        metadata = {}
+        if isinstance(result, tuple) and len(result) == 2:
+            response, metadata = result
         else:
             response = result
-            sources = {"sources": []}
 
-        source_list = sources.get("sources", [])
+        source_list = metadata.get("sources") if isinstance(metadata, dict) else []
+        if not isinstance(source_list, list):
+            source_list = []
+
+        should_create_checklist = False
+        if isinstance(metadata, dict):
+            should_create_checklist = bool(
+                metadata.get("should_create_checklist", False)
+            )
 
         bot_message_obj = ChatMessage.create(
             chat_id=chat.id,
@@ -105,16 +113,20 @@ def chat():
             sources=source_list,
         )
 
-        print("Sources:", sources)
+        ai_message_payload = serialize_message(bot_message_obj)
+        ai_message_payload["shouldCreateChecklist"] = should_create_checklist
+
+        print("Sources:", source_list)
         return (
             jsonify(
                 {
                     "response": response,
                     "sources": source_list,
+                    "shouldCreateChecklist": should_create_checklist,
                     "chat": serialize_chat(chat),
                     "messages": {
                         "user": serialize_message(user_message_obj),
-                        "ai": serialize_message(bot_message_obj),
+                        "ai": ai_message_payload,
                     },
                 }
             ),

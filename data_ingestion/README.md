@@ -120,8 +120,7 @@ A FastAPI app wraps the embedder and ChromaDB queries so other services do not n
 
 ```bash
 source .venv-bgem3/bin/activate
-cd src
-uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
+uvicorn embedding_service.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 ```
 
  Environment variables:

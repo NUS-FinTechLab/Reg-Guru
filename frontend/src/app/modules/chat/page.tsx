@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import ChatDashboard from "@/app/modules/chat/components/ChatDashboard";
+import ChatPage from "@/app/modules/chat/[chatId]/components/ChatPage";
 
 export default function ChatHomePage() {
-  return <ChatDashboard />;
+  return <ChatPage />;
 }
 
 export const metadata: Metadata = {

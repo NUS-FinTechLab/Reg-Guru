@@ -72,10 +72,20 @@ def get_connection():
         yield conn
         conn.commit()
     except Exception:
-        conn.rollback()
+        try:
+            if conn and not conn.closed:
+                conn.rollback()
+        except psycopg2.InterfaceError:
+            logger.warning("Failed to roll back connection; already closed", exc_info=True)
         raise
     finally:
-        pool.putconn(conn)
+        try:
+            if conn and not conn.closed:
+                pool.putconn(conn)
+            else:
+                pool.putconn(conn, close=True)
+        except Exception:
+            logger.exception("Failed to return connection to pool")
 
 
 def close_pool():
