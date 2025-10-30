@@ -3,7 +3,7 @@ import shutil
 from hashlib import md5
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -135,7 +135,7 @@ def process_chat_query(
 
     try:
         # Query the collection for relevant documents
-        results = _query_embedding_service([user_message], region, RETRIEVAL_K)
+        results = _query_embedding_service([user_message], RETRIEVAL_K, filters={"jurisdiction": region})
 
         # Extract documents and metadata from results
         documents = results.get("documents", [[]])[0]
@@ -253,7 +253,7 @@ def query_chroma_collection(user_message, region="us", n_results=5):
         list: List of relevant documents from ChromaDB
     """
     try:
-        results = _query_embedding_service([user_message], region, n_results)
+        results = _query_embedding_service([user_message], n_results, filters={"jurisdiction": region})
 
         # Extract documents from results
         documents = results.get("documents", [[]])[0]
@@ -376,11 +376,11 @@ def _embedding_service_base_url() -> str:
     return url.rstrip("/")
 
 
-def _query_embedding_service(query_texts: List[str], region: str, n_results: int):
+def _query_embedding_service(query_texts: List[str], n_results: int, filters: Optional[Dict[str, Any]]=None):
     url = f"{_embedding_service_base_url()}/query"
     payload = {
         "query_texts": query_texts,
-        "region": region,
+        "filters": filters,
         "n_results": n_results,
     }
 
@@ -421,7 +421,7 @@ def generate_checklist_draft(
     if combined_query:
         try:
             query_results = _query_embedding_service(
-                [combined_query], region, RETRIEVAL_K
+                [combined_query], RETRIEVAL_K, filters={"jurisdiction": region}
             )
         except Exception as exc:  # pragma: no cover - defensive logging
             raise RuntimeError(

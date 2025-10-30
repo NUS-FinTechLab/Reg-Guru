@@ -17,15 +17,15 @@ class FincenProcessor(BaseProcessor):
 
     DATASET_KEY = "data_ingestion/raw/us/fincen"
 
-    def __init__(self, ds_code: str, batch_size: int = 12) -> None:
-        super().__init__(ds_code, batch_size)
+    def __init__(self, ds_name, batch_size, test_mode):
+        super().__init__(ds_name, batch_size, test_mode)
         self.bucket_name = os.getenv("S3_BUCKET_NAME")
         self.s3_obj = self.DATASET_KEY
         self.local_root = Path(__file__).resolve().parents[4] / self.DATASET_KEY
 
     # ---- Metadata preparation ----------------------------------------
     def clean_metadata(self, log_id: int) -> None:
-        """Copy bronze advisory rows into silver.metadata for this run."""
+        """Copy bronze advisory rows into the silver layer for this run."""
         if self.check_if_metadata_cleaned(log_id):
             print(f"Metadata for log {log_id} already cleaned; skipping.")
             return
@@ -38,7 +38,7 @@ class FincenProcessor(BaseProcessor):
         )[0][0]
 
         rows = self.db_client.execute(
-            f"SELECT * FROM bronze.feeds_{self.ds_code} WHERE log_id = %s",
+            f"SELECT * FROM bronze.feeds_{self.ds_name} WHERE log_id = %s",
             (log_id,),
         )
         records = [dict(row) for row in rows]
@@ -49,8 +49,8 @@ class FincenProcessor(BaseProcessor):
 
         for record in records:
             self.db_client.execute(
-                """
-                    INSERT INTO silver.metadata (
+                f"""
+                    INSERT INTO {self.metadata_table} (
                         id,
                         source_id,
                         log_id,
@@ -77,16 +77,16 @@ class FincenProcessor(BaseProcessor):
             )
 
         self.db_client.close()
-        print(f"Copied {len(records)} rows into silver.metadata for log {log_id}.")
+        print(f"Copied {len(records)} rows into {self.metadata_table} for log {log_id}.")
 
     def extract_metadata(self, log_id: int) -> pd.DataFrame:
         """Fetch cleaned metadata ready for text extraction."""
         self.db_client.connect()
         rows = self.db_client.execute(
-            """
+            f"""
                 SELECT title, download_url, published_date, valid_date, unique_id
-                FROM silver.metadata
-                WHERE log_id = %s
+                FROM {self.metadata_table}
+                WHERE log_id = %s AND flag = 0;
             """,
             (log_id,),
         )
@@ -98,10 +98,10 @@ class FincenProcessor(BaseProcessor):
 
         metadata["published_date"] = pd.to_datetime(
             metadata["published_date"], errors="coerce"
-        ).apply(lambda ts: int(ts.timestamp()) if pd.notnull(ts) else None)
+        ).apply(lambda x: x.strftime("%Y-%m-%d") if pd.notna(x) else None)
         metadata["valid_date"] = pd.to_datetime(
             metadata["valid_date"], errors="coerce"
-        ).apply(lambda ts: int(ts.timestamp()) if pd.notnull(ts) else None)
+        ).apply(lambda x: x.strftime("%Y-%m-%d") if pd.notna(x) else None)
         return metadata
 
     # ---- Text extraction ---------------------------------------------
@@ -134,7 +134,7 @@ class FincenProcessor(BaseProcessor):
                     chunks.append(text.strip())
         return chunks
 
-    def _process_document(self, log_id: int, row: pd.Series) -> Dict[str, object]:
+    def _process_a_document(self, log_id: int, row: pd.Series) -> Dict[str, object]:
         key = f"{self.s3_obj}/{log_id}/{row['unique_id']}.pdf"
         # Pull the PDF, clean up its text page-by-page, and attach metadata.
         raw_pages = self.extract_texts(key)
@@ -145,6 +145,7 @@ class FincenProcessor(BaseProcessor):
         return {
             "content": "\n".join(cleaned),
             "metadata": row.to_dict(),
+            "unique_id": self.ds_name + ':' + row["unique_id"],
         }
 
     # ---- Pipeline entrypoint ----------------------------------------
@@ -161,7 +162,7 @@ class FincenProcessor(BaseProcessor):
         batch: List[Dict[str, object]] = []
         for _, row in metadata.iterrows():
             # Step 3: extract + clean the PDF text for this item.
-            document = self._process_document(log_id, row)
+            document = self._process_a_document(log_id, row)
             if not document:
                 continue
             batch.append(document)

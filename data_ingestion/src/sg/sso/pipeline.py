@@ -1,19 +1,30 @@
 from ...common.BasePipeline import BasePipeline
-from .embedder import embed_into_chromadb
+from ...common.embedding_helper import embed_and_add_documents
 from .processor import SsoProcessor
 from .scraper import SsoScraper
 
 
 class SsoPipeline(BasePipeline):
     """SSO-specific pipeline implementation with FlagEmbedding support."""
+    DEFAULT_DS_NAME = "sg_sso"
+    DEFAULT_DS_CODE = "sg"
+    DEFAULT_DS_DESC = "Singapore Statutes Online official acts"
 
-    def __init__(self, process_batch_size=12):
-        super().__init__()
-        self.process_batch_size = process_batch_size
-        self.scraper = SsoScraper()
-        self.processor = SsoProcessor(
-            ds_code=self.scraper.DEFAULT_DS_CODE, batch_size=self.process_batch_size
-        )
+    def __init__(
+        self,
+        ds_name: str = DEFAULT_DS_NAME,
+        ds_code: str = DEFAULT_DS_CODE,
+        ds_description: str = DEFAULT_DS_DESC,
+        process_batch_size: int = 12,
+        test_mode: bool = False
+    ) -> None:
+        self.ds_name = ds_name if not test_mode else f"{ds_name}_test"
+        self.ds_code = ds_code
+        self.ds_description = ds_description if not test_mode else f"{ds_description} (test)"
+        self.process_batch_size=process_batch_size
+        self.scraper = SsoScraper(ds_name=self.ds_name, ds_code=self.ds_code, ds_description=self.ds_description, test_mode=test_mode)
+        self.processor = SsoProcessor(ds_name=self.ds_name, batch_size=self.process_batch_size, test_mode=test_mode)
+        self.test_mode = test_mode
         self.latest_log_id = None
 
     def ingest(self):
@@ -22,7 +33,7 @@ class SsoPipeline(BasePipeline):
         new_entries_num = self.scraper.run()
         self.latest_log_id = self.scraper.get_log_id()
         print(f"✅ SSO ingestion completed. Logged {new_entries_num} new items.")
-        return
+        return new_entries_num
 
     def process(self):
         """Convert raw data into structured docs (list of dicts)."""
@@ -38,10 +49,14 @@ class SsoPipeline(BasePipeline):
         if not minibatch:
             return
         print(f"🔗 Embedding {len(minibatch)} SSO documents...")
-        embed_into_chromadb(minibatch)
+        if self.test_mode:
+            embed_and_add_documents(minibatch, self.ds_code, collection_name="test")
+        else:
+            embed_and_add_documents(minibatch, self.ds_code)
         print("✅ Embedding step completed.")
+        return
 
 
 if __name__ == "__main__":
-    pipeline = SsoPipeline()
+    pipeline = SsoPipeline(test_mode=True)
     pipeline.run()
