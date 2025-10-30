@@ -22,15 +22,6 @@ _DEFAULT_CHROMADB_COLLECTION = os.getenv(
     "CHROMADB_COLLECTION", "reg_guru_embeddings"
 ).strip()
 
-# Load model once at startup
-# Setting use_fp16 to True speeds up computation with a slight performance degradation
-if torch.cuda.is_available():
-    device = "cuda:0"
-    use_fp16 = True
-else:
-    device = "cpu"
-    use_fp16 = False
-
 model_name = os.getenv("EMBEDDER_MODEL", "BAAI/bge-m3")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = SentenceTransformer(model_name, device=device)
@@ -110,10 +101,6 @@ def _get_collection() -> chromadb.Collection:
     return _COLLECTION
 
 
-def _embedding_tag(region: str) -> str:
-    return f"{region}_embeddings"
-
-
 class EmbedRequest(BaseModel):
     texts: List[str]
     batch_size: int = 16
@@ -125,7 +112,7 @@ class EmbedResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     query_texts: List[str]
-    region: str
+    filters: Optional[Dict[str, Any]] = None
     n_results: int = 5
 
 
@@ -170,13 +157,19 @@ def query(request: QueryRequest):
             return {"documents": [[]], "metadatas": [[]], "distances": [[]]}
 
         collection = _get_collection()
-        embedding_tag = _embedding_tag(request.region)
-        results = collection.query(
-            query_embeddings=query_embeddings,
-            n_results=request.n_results,
-            include=["documents", "metadatas", "distances"],
-            where={"embedding_name": embedding_tag},
-        )
+        if request.filters is None:
+            results = collection.query(
+                query_embeddings=query_embeddings,
+                n_results=request.n_results,
+                include=["documents", "metadatas", "distances"]
+            )
+        else:
+            results = collection.query(
+                query_embeddings=query_embeddings,
+                n_results=request.n_results,
+                include=["documents", "metadatas", "distances"],
+                where = request.filters
+            )
 
         return {
             "documents": results.get("documents", [[]]),

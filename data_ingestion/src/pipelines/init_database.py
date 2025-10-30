@@ -2,14 +2,15 @@ from common import DBClient
  
 if __name__ == '__main__':
     client = DBClient()
+    client.connect()
     queries = [
         # Create schema - ref
         """CREATE SCHEMA IF NOT EXISTS ref;""",
         """CREATE TABLE IF NOT EXISTS ref.data_sources (
             id SERIAL PRIMARY KEY,
-            name TEXT UNIQUE NOT NULL,           -- short name
-            code CHAR(2) NOT NULL,  -- country / region e.g. 'eu', 'sg', 'us'
-            description TEXT                     -- optional extra info
+            name VARCHAR(50) UNIQUE NOT NULL,      -- table name
+            code VARCHAR(5) NOT NULL,              -- usually country / region e.g. 'eu', 'sg', 'us'
+            description TEXT                       -- optional extra info
         );""",
         """CREATE TABLE IF NOT EXISTS ref.review_status (
             id SMALLINT PRIMARY KEY,
@@ -43,4 +44,5 @@ if __name__ == '__main__':
     ]
     for statement in queries:
         client.execute(statement)
+    client.close()
     print("Database initialised.")

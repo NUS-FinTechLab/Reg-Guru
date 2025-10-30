@@ -22,19 +22,8 @@ class FincenScraper(BaseScraper):
     DATASET_KEY = "data_ingestion/raw/us/fincen"
     DATASET_DIR = Path(__file__).resolve().parents[4] / DATASET_KEY
 
-    DEFAULT_DS_NAME = "fincen advisories"
-    DEFAULT_DS_CODE = "us_fincen"
-    DEFAULT_DS_DESCRIPTION = "FinCEN Advisories and Bulletins"
-
-    def __init__(
-        self,
-        ds_name: str = DEFAULT_DS_NAME,
-        ds_code: str = DEFAULT_DS_CODE,
-        ds_description: str = DEFAULT_DS_DESCRIPTION,
-    ) -> None:
-        # The ref.data_sources.code column is CHAR(2); trim before creating/looking up the source.
-        super().__init__(ds_name, ds_code[:2], ds_description)
-        self.ds_code = ds_code
+    def __init__(self, ds_name, ds_code, ds_description, test_mode):
+        super().__init__(ds_name, ds_code, ds_description, test_mode)
         self.s3_obj = self.DATASET_KEY
 
     # ---- HTML helpers -------------------------------------------------
@@ -52,6 +41,8 @@ class FincenScraper(BaseScraper):
             if "/resources/advisories/" not in href:
                 continue
             links.append(urljoin(self.BASE_URL, href))
+            if self.test_mode and len(links) >= 2:
+                break
         return links
 
     def _parse_detail_page(self, detail_url: str) -> Optional[Dict[str, str]]:
@@ -125,6 +116,8 @@ class FincenScraper(BaseScraper):
                 metadata = self._parse_detail_page(detail_url)
                 if metadata:
                     collected.append(metadata)
+            if self.test_mode: # test
+                break
 
             # Step 3: follow the paginator until no further pages are available.
             next_url = self._next_page_url(soup)
@@ -144,7 +137,7 @@ class FincenScraper(BaseScraper):
         self.db_client.connect()
         self.db_client.execute(
             f"""
-                CREATE TABLE IF NOT EXISTS bronze.feeds_{self.ds_code} (
+                CREATE TABLE IF NOT EXISTS bronze.feeds_{self.ds_name} (
                     id SERIAL PRIMARY KEY,
                     log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
                     title TEXT,
@@ -161,7 +154,7 @@ class FincenScraper(BaseScraper):
 
         # Look up existing advisory ids so we only insert new records.
         history_rows = self.db_client.execute(
-            f"SELECT doc_id FROM bronze.feeds_{self.ds_code} WHERE flag = 0;"
+            f"SELECT doc_id FROM bronze.feeds_{self.ds_name} WHERE flag = 0;"
         )
         existing_doc_ids = {row["doc_id"] for row in history_rows}
 
@@ -188,7 +181,7 @@ class FincenScraper(BaseScraper):
         )[0][0]
 
         insert_query = f"""
-            INSERT INTO bronze.feeds_{self.ds_code} (
+            INSERT INTO bronze.feeds_{self.ds_name} (
                 log_id,
                 title,
                 pdf_url,
@@ -217,7 +210,7 @@ class FincenScraper(BaseScraper):
             )
 
         count = self.db_client.execute(
-            f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = %s",
+            f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_name} WHERE log_id = %s",
             (self.log_id,),
         )[0][0]
 
@@ -233,7 +226,7 @@ class FincenScraper(BaseScraper):
 
         self.db_client.connect()
         rows = self.db_client.execute(
-            f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_code} WHERE log_id = %s",
+            f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_name} WHERE log_id = %s",
             (log_id,),
         )
         self.db_client.close()

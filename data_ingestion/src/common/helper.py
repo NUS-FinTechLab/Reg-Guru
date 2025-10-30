@@ -1,10 +1,8 @@
 import os
-import sqlite3
 import time
 from typing import Optional
 
 import boto3
-import psycopg2
 import requests
 from bs4 import BeautifulSoup
 from botocore.exceptions import ClientError

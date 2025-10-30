@@ -10,21 +10,28 @@ from .S3Client import S3Client
 class BaseScraper(ABC):
     """Base class for all scrapers with optional database integration."""
 
-    def __init__(self, ds_name=None, ds_code=None, ds_description=None):
+    def __init__(self, ds_name: str=None, ds_code: str=None, ds_description: str=None, test_mode: bool=False) -> None:
         """Initialize the scraper; data source metadata is optional for simple scrapers."""
-        self.ds_code = ds_code
+        self.ds_name = ds_name
+        self.ds_code = ds_code # The ref.data_sources.code column is VARCHAR(5) usually the first few characters in ds_name representing region.
         self.ds_description = ds_description
         self.db_client = DBClient()
         self.s3_client = S3Client()
         self.ds_id = None
-
         if all([ds_name, ds_code, ds_description]):
             self.ds_id = self._create_data_source(ds_name, ds_code, ds_description)
+        else:
+            raise ValueError("Data source name, code, and description must be provided.")
+        self.metadata_table = 'silver.metadata' if not test_mode else 'silver.metadata_test'
+        self.test_mode = test_mode
         self.log_id = None
         self.s3_obj = None
 
     def _create_data_source(self, name, code, description):
-        """Insert a data source if it doesn't exist"""
+        """
+        Insert a data source if it doesn't exist. 
+        Name is unique in ref.data_sources.
+        """
         self.db_client.connect()
         query = "SELECT id FROM ref.data_sources WHERE name = %s;"
         result = self.db_client.execute(query, (name,))
@@ -46,6 +53,12 @@ class BaseScraper(ABC):
 
     def get_log_id(self):
         return self.log_id
+    
+    def get_data_source_name(self):
+        return self.ds_name
+    
+    def get_data_source_code(self):
+        return self.ds_code
 
     def close_connection(self):
         """Helper to close the associated DB connection if one is open."""

@@ -2,52 +2,25 @@
 
 This directory houses the ingestion stacks that scrape regulatory sources, normalize documents, and embed text chunks into vector stores for Retrieval-Augmented Generation (RAG) workloads. Shared base classes in `src/common/` keep core logic reusable so new jurisdictions can plug into the same scrape → process → embed flow.
 
-Currently implemented pipelines:
+Currently implemented pipelines (historical pipelines are designed to only run once during the first set-up):
 
 - **FinCEN (US)** – Financial Crimes Enforcement Network releases.
-- **SSO (Singapore)** – Singapore Statutes Online acts.
-- **EUR-LEX (EU)** - European Union Regulations on Finance.
-
----
+- **SSO (SG)** – Singapore Statutes Online acts.
+- **EURLEX FEED (EU)** - European Union Regulations on Finance.
+- **EURLEX HISTORY (EU)** - European Union Regulations on Finance (Historical Documents)
 
 ## 1. Setup
-Create a new environment (if needed):
+- Create a new environment for data ingestion with requirement.txt (if needed):
    ```bash
-   # In venv: this will create a venv environment.
-   # Create a .venv-bgem3 folder inside the project
-   python -m venv .venv-bgem3
-   source .venv-bgem3/bin/activate
    pip install -r requirements.txt
    # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
    ```
-   ```bash
-   # In conda: this will create a conda environment
-   conda create -n reg-embed
-   conda activate reg-embed
-   pip install -r requirements.txt
-   # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-   ```
+- **Activate** the environment.
+- Ensure `embedding service` is running. There is no need to install embedding related heavy packages inside the data ingestion environment.
 
-## 2. Key Dependencies
-
-- **ChromaDB** – Persistent vector store
-- **Transformers / Sentence-Transformers** – Embedding models and text preprocessing utilities
-- **PyTorch** – Backing framework for embeddings (with CUDA support if available)
-
----
-
-## 3. Pipeline Architecture
+## 2. Pipeline Architecture
 
 ### Stage 1 – Scrape (`*_Scraper`)
-1. **Activate the environment**:
-   ```bash
-   # In venv:
-   source .venv-bgem3/bin/activate
-   ```
-   ```bash
-   # Or in conda:
-   conda activate reg-embed
-   ```
 
 - `BaseScraper` provides throttled HTML requests, pagination helpers, and logging utilities in `src/common/`.
 - Dataset scrapers (`FincenScraper`, `SsoScraper`) fetch listing/browse pages via `_request_html`, follow `_next_page_url`, and deduplicate records using `doc_id`.
@@ -57,69 +30,66 @@ Create a new environment (if needed):
 
 ### Stage 2 – Process (`*_Processor`)
 
-- `BaseProcessor` promotes bronze rows into `silver.metadata` once per run through `clean_metadata`.
-- `extract_metadata` normalizes timestamp fields (epoch integers) and returns the lookup information needed to locate PDFs.
-- `extract_texts` streams one string per PDF page via pdfplumber from either disk or S3.
-- `_process_document` applies the shared text cleaner, merges pages, and attaches metadata before yielding batches through `run(batch_size)`.
+- `BaseProcessor` promotes bronze rows into the silver tier once per run through `clean_metadata`.
+- `extract_metadata` returns the cleaned metadata in the silver tier assisting document embedding.
+- `extract_texts` and `clean_texts ` extracts plain texts from the given document and clean them respectively.
+- `_process_a_document` applies the shared text cleaner and attaches metadata before yielding batches through `run(batch_size)`.
 
 ### Stage 3 – Embed (`embed_into_chromadb`)
 
-- `_split_documents` chunks cleaned text with `CHUNK_SIZE=1000` and `CHUNK_OVERLAP=200`.
-- `embed_batch` uses the FlagEmbedding BGE-M3 model in batches of 16 to generate dense vectors.
-- `embed_into_chromadb` persists chunk text, embeddings, and metadata into the shared `CHROMADB_COLLECTION` while tagging rows with the region-specific `embedding_name` (e.g., `sg_embeddings`).
+- `embed_and_add_documents` relies on the embedding service and applies the shared text splitter, embedder, and chromadb client, inserting or updating the document embeddings in the vector store.
 
 ### Stage 4 – Orchestrate (`*_Pipeline`)
 
 - Pipelines inherit from `BasePipeline`, exposing `ingest()`, `process(log_id)`, `embed(minibatch)`, and `run()`.
-- `ingest()` runs the scraper and returns both `log_id` and the number of inserted/updated rows.
+- `ingest()` runs the scraper and returns the number of inserted/updated rows.
 - `process(log_id)` streams normalized document batches from the matching processor.
-- `embed(minibatch)` forwards batches to the embedding helper and logs completion.
+- `embed(minibatch)` forwards batches to the embedding service and logs completion.
 - `run()` chains the stages, enabling standalone execution or multi-region orchestration via `src/pipelines/run_all.py`.
 
 ### Shared Services & Utilities
 
-- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_testing_chromadb_client`, and collection accessors shared across datasets.
-- `src/pipelines/init_database.py` provisions bronze/silver tables for local development.
+- `src/common/embedding_helper.py` provides helpers such as `embed_batch`, `get_chromadb_client`, and collection accessors shared across datasets.
+- `src/pipelines/init_database.py` allows you to initialise the database with a basic structure.
 
----
+## 3. Dataset Quick Reference
 
-## 4. Dataset Quick Reference
-
-| Dataset | Module | Source | Bronze table | S3 back-up storage | Chroma collection | Notes |
+| Dataset | Module | Source | Bronze Tier Table | S3 back-up storage | Jurisdiction | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| FinCEN (US) | `src/us/fincen/` | Advisory listings on fincen.gov | `bronze.feeds_us_fincen` | `data_ingestion/raw/us/fincen/<log_id>/` | `us_embeddings` (remote) | Detail-page crawl captures the first advisory PDF; duplicates skipped by `doc_id`. |
-| SSO (Singapore) | `src/sg/sso/` | Singapore Statutes Online browse pages | `bronze.feeds_sg_sso` | `data_ingestion/raw/sg/sso/<log_id>/` | `sg_embeddings` (remote) | Flags superseded/missing statutes and records effective/valid dates from act detail pages. |
-| EUR-LEX (EU) | `src/eu/feed/` | Finance regulations on EUR-LEX | `bronze.feeds_eu` | `data_ingestion/raw/eu/eurlex-feed/<log_id>/` | `eu_embeddings` (`chroma/eu/chromadb_eu`) | `CELEX number` is the unique id used in the EUR-LEX system |
+| FinCEN (US) | `src/us/fincen/` | Advisory listings on fincen.gov | `bronze.feeds_us_fincen` | `data_ingestion/raw/us/fincen/<log_id>/` | `us` | Detail-page crawl captures the first advisory PDF; duplicates skipped by `doc_id`. |
+| SSO (SG) | `src/sg/sso/` | Singapore Statutes Online browse pages | `bronze.feeds_sg_sso` | `data_ingestion/raw/sg/sso/<log_id>/` | `sg` | Flags superseded/missing statutes and records effective/valid dates from act detail pages. |
+| EURLEX FEED (EU) | `src/eu/feed/` | Finance regulations on EUR-LEX | `bronze.feeds_eu_eurlex` | `data_ingestion/raw/eu/eurlex-feed/<log_id>/` | `eu` | `CELEX number` is the unique id used in the EUR-LEX system |
+| EURLEX HISTORY (EU) | `src/eu/history/` | Finance regulations on EUR-LEX (History Documents) | `bronze.feeds_eu_eurlex` | `data_ingestion/raw/eu/eurlex-feed/<log_id>/` | `eu` | `CELEX number` is the unique id used in the EUR-LEX system |
 
----
-
-## 5. Running Pipelines
+## 4. Running Pipelines
 
 **Activate the dedicated environment for data ingestion before running.**
 
 ```bash
-# Fincen Advisories
-python3 src/us/fincen/pipeline.py
+# Run a single pipeline
+python3 src/<jurisdiction>/<source>/pipeline.py
 
-# Singapore Statutes Online
-python3 src/sg/sso/pipeline.py
-
-# Or run both sequentially
+# Or run all sequentially
 python3 src/pipelines/run_all.py
 ```
 
 - Each run prints ingestion counts and the Chroma destination for embedded chunks.
-- Provide `S3_BUCKET_NAME` to push PDFs to object storage; otherwise they are written under `data_ingestion/raw/…`.
+- Provide `S3_BUCKET_NAME` to push documents to object storage.
 - Override `CHROMADB_HOST` or `CHROMADB_PORT` to target a different Chroma deployment.
+- `main` in `run_all.py` requires two arguments: `history` and `test_mode`.
+    - Always set `history = False` if you run / schedule the pipelines to check updates of existing documents. Only set `history = True` when you run the pipelines for the first time to initialise the database.
+    - Set `test_mode = True` to test if the pipelines work properly by absorbing a small scale of documents. If the test mode is enabled:
+        - Data in the bronze / silver tier is stored to the test tables in the same tiers.
+        - Data sources are marked as test data sources.
+        - Embeddings are stored to the 'test' collection in the same ChromaDB Client, instead of the default collection ('reg-guru-embeddings').
 
----
+## 5. Real-Time Embedding & Query Service
 
-## Real-Time Embedding & Query Service
+A FastAPI app wraps the embedder and ChromaDB queries as a re-usable long-run separate service so other services do not need to manage the embedding environment. 
 
-A FastAPI app wraps the embedder and ChromaDB queries so other services do not need to manage the ingestion environment.
+**In a separate terminal, activate the embedding service environment, then**:
 
 ```bash
-source .venv-bgem3/bin/activate
 cd src
 uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 ```
@@ -136,11 +106,9 @@ uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 API endpoints:
 
 - `POST /embed` – Returns dense embeddings for supplied texts.
-- `POST /query` – Queries region-specific Chroma collections.
+- `POST /query` – Queries Chroma collections with specific filters.
 
----
-
-## Local Testing & Validation
+## 6. Local Testing & Validation
 
 ```python
 from common.embedding_helper import embed_batch, get_chromadb_client, get_default_collection
@@ -171,20 +139,18 @@ print(results["documents"])
 - Update `query_texts` to align with the dataset you are validating.
 - Use the returned `documents` to confirm that recently ingested material is retrievable.
 
----
-
 ## 7. Database Connection (psql)
 
 ```bash
+# Default / production database postgres
 psql -h reg-guru.c3my688ou3oy.ap-southeast-1.rds.amazonaws.com -p 5433 -U master -d postgres
 ```
-
----
+Key in the password for the user.
 
 ## 8. Adding Another Pipeline
 
 - Define dataset-specific constants in a scraper subclass and expose `self.s3_obj` so downstream stages resolve PDF storage correctly.
-- Derive a processor that points `BaseProcessor.DATASET_KEY` to the same storage root used by the scraper and promotes bronze rows to `silver.metadata`.
+- Derive a processor that points `BaseProcessor.DATASET_KEY` to the same storage root used by the scraper and promotes bronze data to the silver tier.
 - Implement an embedder function that accepts `{content, metadata}` batches and persists to a dedicated Chroma collection (or your vector store of choice).
 - Register the new pipeline in `src/pipelines/run_all.py` to participate in the multi-region orchestrator.
 - Keep shared utilities in `src/common/` to minimise duplication across jurisdictions.

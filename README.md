@@ -29,7 +29,7 @@ The project consists of a few components, including a web app which user interac
    python app.py
    ```
 
-## ChromaDB
+### 2. ChromaDB
 - Default host: `ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
 - Default port: `80`
 - Override with `CHROMADB_HOST` / `CHROMADB_PORT` if you need to point at a different deployment.
@@ -38,7 +38,7 @@ The project consists of a few components, including a web app which user interac
 - SSH access (for maintenance only):
   - `ssh -i regguru-chromadb.pem ubuntu@ec2-13-228-79-108.ap-southeast-1.compute.amazonaws.com`
 
-### Chat & Feedback Persistence
+### 3. Chat & Feedback Persistence
 - Chats, messages, and feedback now live in PostgreSQL (schema `app`).
 - The backend reads the same credentials defined for the ingestion pipelines; no additional secrets are required.
 - REST endpoints:
@@ -70,7 +70,7 @@ The project consists of a few components, including a web app which user interac
    ```bash
    python scripts/apply_migrations.py
 
-### 2. Embedding Service
+### 4. Embedding Service
 A separate embedding service allows a smoother experience in switching embedding models and avoids contaminating the backend + data_ingestion environments. A FastAPI app wraps the embedding service and ChromaDB queries. **It can be run persistently and used in both document and query embedding.**
 
 #### Environment variables:
@@ -82,7 +82,7 @@ A separate embedding service allows a smoother experience in switching embedding
 #### API endpoints:
 
 - `POST /embed` – Returns dense embeddings for supplied texts.
-- `POST /query` – Queries region-specific Chroma collections.
+- `POST /query` – Queries Chroma collections with specified filters.
 - `GET /collections/{region}/count` – Retrieves document counts.
 
 #### Setup
@@ -103,7 +103,7 @@ A separate embedding service allows a smoother experience in switching embedding
    uvicorn embedding_service:app --host 0.0.0.0 --port 6000 --reload
    ```
 
-### 3. Frontend
+### 5. Frontend
 1. In a separate terminal, navigate to the frontend directory:
    ```
    cd frontend
@@ -123,7 +123,8 @@ A separate embedding service allows a smoother experience in switching embedding
    npm run dev
    ```
 
-### Data Ingestion
+### 6. Data Ingestion
+This is a separate section to build and maintain the central knowledge base, where a few pipelines can be scheduled to run regularly.
 1. In a separate terminal, navigate to the data_ingestion directory:
    ```
    cd data_ingestion

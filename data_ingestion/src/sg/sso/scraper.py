@@ -1,11 +1,12 @@
 import os
 import time
-from pathlib import Path
-from typing import Dict, List, Optional
-from urllib.parse import urljoin
-
 import pandas as pd
+from pathlib import Path
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from typing import Dict, List, Optional
+
+
 
 from ...common.BaseScraper import BaseScraper
 from ...common.helper import downloadPdf, downloadPdftoS3, getHtml
@@ -21,19 +22,8 @@ class SsoScraper(BaseScraper):
     DATASET_KEY = "data_ingestion/raw/sg/sso"
     DATASET_DIR = Path(__file__).resolve().parents[4] / DATASET_KEY
 
-    DEFAULT_DS_NAME = "sso acts"
-    DEFAULT_DS_CODE = "sg_sso"
-    DEFAULT_DS_DESC = "Singapore Statutes Online official acts"
-
-    def __init__(
-        self,
-        ds_name: str = DEFAULT_DS_NAME,
-        ds_code: str = DEFAULT_DS_CODE,
-        ds_description: str = DEFAULT_DS_DESC,
-    ) -> None:
-        # Store a two-character code in ref.data_sources while keeping the richer table suffix.
-        super().__init__(ds_name, ds_code[:2], ds_description)
-        self.ds_code = ds_code
+    def __init__(self, ds_name, ds_code, ds_description, test_mode):
+        super().__init__(ds_name, ds_code, ds_description, test_mode)
         self.s3_obj = self.DATASET_KEY
 
     # ---- HTML helpers -------------------------------------------------
@@ -50,9 +40,7 @@ class SsoScraper(BaseScraper):
         # The timeline lists revisions; the last item is the most recent version.
         timestamps = timeline.find_all("div", class_="timestamp")
         latest_timestamp = timestamps[-1].find("a", class_=None).text.strip()
-        latest_published = timeline.find_all("a", class_="timeline-popover")[-1][
-            "data-date"
-        ]
+        latest_published = timeline.find_all("a", class_="timeline-popover")[-1]["data-date"]
         return {
             "valid_date": latest_timestamp,
             "published_date": latest_published,
@@ -67,6 +55,8 @@ class SsoScraper(BaseScraper):
         if not tbody:
             return []
         rows = tbody.find_all("tr")
+        if self.test_mode:
+            rows = rows[:2]
 
         documents: List[Dict[str, str]] = []
         for row in rows:
@@ -116,6 +106,9 @@ class SsoScraper(BaseScraper):
             page_documents = self._extract_documents_from_page(soup)
             all_documents.extend(page_documents)
 
+            if self.test_mode: # test
+                break
+
             # Step 2: follow the paginator until there are no more pages.
             next_url = self._next_page_url(soup)
             if not next_url or next_url == current_url:
@@ -134,7 +127,7 @@ class SsoScraper(BaseScraper):
         self.db_client.connect()
         self.db_client.execute(
             f"""
-                CREATE TABLE IF NOT EXISTS bronze.feeds_{self.ds_code} (
+                CREATE TABLE IF NOT EXISTS bronze.feeds_{self.ds_name} (
                     id SERIAL PRIMARY KEY,
                     log_id INT NOT NULL REFERENCES logs.feeds(id) ON DELETE RESTRICT,
                     title TEXT,
@@ -154,7 +147,7 @@ class SsoScraper(BaseScraper):
                 SELECT DISTINCT ON (doc_id)
                     doc_id,
                     valid_date
-                FROM bronze.feeds_{self.ds_code}
+                FROM bronze.feeds_{self.ds_name}
                 WHERE flag = 0
                 ORDER BY doc_id, valid_date DESC;
             """
@@ -168,40 +161,53 @@ class SsoScraper(BaseScraper):
         documents_df["published_date"] = pd.to_datetime(
             documents_df["published_date"], errors="coerce"
         )
-
         if history.empty:
             # First run: insert everything we just scraped.
             records_to_insert = documents_df
         else:
+            print("Check existing documents for newer versions.")
             history["valid_date"] = pd.to_datetime(history["valid_date"])
             merged = documents_df.merge(
-                history, how="left", on="doc_id", suffixes=("", "_latest")
+                history, how="outer", left_on="route", right_on="doc_id", suffixes=("", "_latest")
             )
-
             # Mark older versions of the same document as superseded.
             superseded = merged[merged["valid_date"] > merged["valid_date_latest"]]
             for doc_id in superseded["doc_id"].unique():
                 self.db_client.execute(
                     f"""
-                        UPDATE bronze.feeds_{self.ds_code}
+                        UPDATE bronze.feeds_{self.ds_name}
                         SET flag = 3, remark = 'Superseded by newer version'
                         WHERE doc_id = %s AND flag = 0;
                     """,
                     (doc_id,),
                 )
-
+                self.db_client.execute(
+                    f"""
+                        UPDATE {self.metadata_table}
+                        SET flag = 3, remark = 'Superseded by newer version'
+                        WHERE unique_id = %s AND flag = 0;
+                    """,
+                    (doc_id,),
+                )
             # If a doc vanished from the listing, flag it as no longer available.
             missing = merged[merged["valid_date"].isna()]
             for doc_id in missing["doc_id"].unique():
                 self.db_client.execute(
                     f"""
-                        UPDATE bronze.feeds_{self.ds_code}
+                        UPDATE bronze.feeds_{self.ds_name}
                         SET flag = 2, remark = 'No longer available'
                         WHERE doc_id = %s AND flag = 0;
                     """,
                     (doc_id,),
                 )
-
+                self.db_client.execute(
+                    f"""
+                        UPDATE {self.metadata_table}
+                        SET flag = 2, remark = 'No longer available'
+                        WHERE unique_id = %s AND flag = 0;
+                    """,
+                    (doc_id,),
+                )
             records_to_insert = merged[merged["valid_date"].notna()]
             records_to_insert = records_to_insert[
                 records_to_insert["valid_date"]
@@ -224,7 +230,7 @@ class SsoScraper(BaseScraper):
         )[0][0]
 
         insert_query = f"""
-            INSERT INTO bronze.feeds_{self.ds_code} (
+            INSERT INTO bronze.feeds_{self.ds_name} (
                 log_id,
                 title,
                 pdf_url,
@@ -250,7 +256,7 @@ class SsoScraper(BaseScraper):
             )
 
         count = self.db_client.execute(
-            f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_code} WHERE log_id = %s",
+            f"SELECT COUNT(id) FROM bronze.feeds_{self.ds_name} WHERE log_id = %s",
             (self.log_id,),
         )[0][0]
 
@@ -266,7 +272,7 @@ class SsoScraper(BaseScraper):
 
         self.db_client.connect()
         rows = self.db_client.execute(
-            f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_code} WHERE log_id = %s",
+            f"SELECT pdf_url, doc_id FROM bronze.feeds_{self.ds_name} WHERE log_id = %s",
             (log_id,),
         )
         self.db_client.close()
@@ -320,7 +326,7 @@ class SsoScraper(BaseScraper):
 
 # if __name__ == "__main__":
 #     scraper = SsoScraper(
-#         ds_name="sso acts",
+#         ds_name="sg_sso",
 #         ds_code="sg",
 #         ds_description="Singapore Statutes Online official acts"
 #     )
