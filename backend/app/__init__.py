@@ -1,1 +1,0 @@
-# App package for Reg-Guru backend
