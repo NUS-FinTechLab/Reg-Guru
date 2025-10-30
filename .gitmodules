@@ -1,0 +1,12 @@
+[submodule "backend"]
+	path = backend
+	url = https://github.com/NUS-FinTechLab/Reg-Guru-backend
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/NUS-FinTechLab/Reg-Guru-frontend
+[submodule "service"]
+	path = service
+	url = https://github.com/NUS-FinTechLab/Reg-Guru-service
+[submodule "data_ingestion"]
+	path = data_ingestion
+	url = https://github.com/NUS-FinTechLab/Reg-Guru-data-ingestion
