@@ -11,6 +11,7 @@ export interface Message {
   timestamp: Date;
   sources?: Source[];
   pending?: boolean;
+  shouldCreateChecklist?: boolean;
 }
 
 export interface ReferenceLink {
@@ -41,11 +42,13 @@ export interface ChatMessageDTO {
   createdAt: string;
   updatedAt: string;
   userId?: string | null;
+  shouldCreateChecklist?: boolean;
 }
 
 export interface ChatResponse {
   response: string;
   sources: Source[];
+  shouldCreateChecklist: boolean;
   chat: ChatSummary;
   messages: {
     user: ChatMessageDTO;

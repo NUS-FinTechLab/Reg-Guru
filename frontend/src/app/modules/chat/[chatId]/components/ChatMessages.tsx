@@ -3,8 +3,9 @@
 import type { SyntheticEvent } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 import SourceLinks from "@/components/ui/source-links";
+import { Button } from "@/components/ui/button";
 import { Message } from "@/utils/api/types";
 
 interface MessageGroup {
@@ -18,9 +19,25 @@ interface ChatMessagesProps {
   formatDate: (date: Date) => string;
   formatTime: (date: Date) => string;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  shouldShowChecklistPrompt?: (message: Message) => boolean;
+  onChecklistConfirm?: (message: Message) => void;
+  onChecklistCancel?: (message: Message) => void;
+  checklistSubmittingId?: string | number | null;
+  checklistErrors?: Record<string, string>;
 }
 
-export default function ChatMessages({ messageGroups, isTyping, formatDate, formatTime, messagesEndRef }: ChatMessagesProps) {
+export default function ChatMessages({
+  messageGroups,
+  isTyping,
+  formatDate,
+  formatTime,
+  messagesEndRef,
+  shouldShowChecklistPrompt,
+  onChecklistConfirm,
+  onChecklistCancel,
+  checklistSubmittingId,
+  checklistErrors,
+}: ChatMessagesProps) {
   const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
     event.currentTarget.style.visibility = "hidden";
   };
@@ -35,11 +52,22 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
             </div>
           </div>
 
-          {group.messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+          {group.messages.map((message) => {
+            const messageKey = String(message.id);
+            const isChecklistSubmitting =
+              checklistSubmittingId !== null && checklistSubmittingId !== undefined &&
+              String(checklistSubmittingId) === messageKey;
+            const disableConfirmButton =
+              checklistSubmittingId !== null && checklistSubmittingId !== undefined &&
+              String(checklistSubmittingId) !== messageKey;
+            const checklistError = checklistErrors ? checklistErrors[messageKey] : undefined;
+            const showChecklistPrompt = shouldShowChecklistPrompt?.(message) ?? false;
+
+            return (
+              <div
+                key={message.id}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              >
                 <div className={`flex items-start gap-2 py-2 max-w-[90%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
                   {message.role === "ai" ? (
                     <div className="flex-shrink-0">
@@ -67,6 +95,39 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                       <div dangerouslySetInnerHTML={{ __html: message.text }} />
                       <span className="text-sm opacity-70 block text-right mt-1">{formatTime(message.timestamp)}</span>
                     </div>
+                    {message.role === "ai" && showChecklistPrompt && (
+                      <div className="mt-2 space-y-2">
+                        {checklistError && (
+                          <div className="text-sm text-red-600 dark:text-red-400">
+                            {checklistError}
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            onClick={() => onChecklistConfirm?.(message)}
+                            className="w-full"
+                            disabled={disableConfirmButton || isChecklistSubmitting}
+                          >
+                            {isChecklistSubmitting ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                Creating…
+                              </span>
+                            ) : (
+                              "Confirm"
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => onChecklistCancel?.(message)}
+                            className="w-full"
+                            disabled={isChecklistSubmitting}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     <div className={"py-2"}>
                       {/* Show source links for AI messages */}
                       {message.role === "ai" && message.sources && (
@@ -76,7 +137,8 @@ export default function ChatMessages({ messageGroups, isTyping, formatDate, form
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
         </div>
       ))}
 

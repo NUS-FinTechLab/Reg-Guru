@@ -150,15 +150,21 @@ export const fetchWithAuth = async (
 
   const response = await fetch(input, { ...init, headers: initialHeaders });
 
-  if (!skipAuth && retryOnAuthFailure && response.status === 401) {
-    const shouldRetry = await shouldRetryWithRefresh(response.clone());
-    if (shouldRetry) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        const retryHeaders = mergeHeaders(init, buildAuthHeaders());
-        return fetch(input, { ...init, headers: retryHeaders });
+  if (!skipAuth && response.status === 401) {
+    if (retryOnAuthFailure) {
+      const shouldRetry = await shouldRetryWithRefresh(response.clone());
+      if (shouldRetry) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          const retryHeaders = mergeHeaders(init, buildAuthHeaders());
+          return fetch(input, { ...init, headers: retryHeaders });
+        }
       }
     }
+
+    clearAuth();
+  } else if (!skipAuth && response.status === 403) {
+    clearAuth();
   }
 
   return response;

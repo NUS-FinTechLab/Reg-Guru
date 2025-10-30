@@ -82,6 +82,27 @@ class ChatMessage:
         )
         return [cls.from_row(row) for row in rows]
 
+    @classmethod
+    def list_recent_for_chat(
+        cls,
+        chat_id: UUID | str,
+        *,
+        limit: int = 10,
+    ) -> List["ChatMessage"]:
+        rows = fetch_all(
+            """
+            SELECT id, chat_id, user_id, role, body, sources, created_at, updated_at
+            FROM app.chat_messages
+            WHERE chat_id = %s
+            ORDER BY created_at DESC
+            LIMIT %s
+            """,
+            (chat_id, limit),
+        )
+        messages = [cls.from_row(row) for row in rows]
+        messages.reverse()
+        return messages
+
     def to_record(self) -> Dict[str, Any]:
         return {
             "id": self.id,
