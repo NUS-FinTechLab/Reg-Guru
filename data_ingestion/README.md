@@ -91,7 +91,7 @@ A FastAPI app wraps the embedder and ChromaDB queries as a re-usable long-run se
 
 ```bash
 cd src
-uvicorn common.embedding_service:app --host 0.0.0.0 --port 6000 --reload
+uvicorn embedding_service.embedding_service:app --host 0.0.0.0 --port 6000 --reload
 ```
 
  Environment variables:

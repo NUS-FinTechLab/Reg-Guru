@@ -21,7 +21,7 @@ DB_MAX_CONN = int(os.getenv("DB_MAX_CONN", 5))
 # Application configuration
 DEBUG = True
 HOST = "0.0.0.0"
-PORT = 5000 # Mac system process is using 5000
+PORT = 5001  # Mac system process is using 5000
 
 # CORS settings
 CORS_ORIGINS = [
@@ -64,12 +64,20 @@ Whenever applicable, cite or paraphrase the relevant regulation or source that y
 
 You are not a substitute for legal counsel, but you aim to significantly reduce the burden of initial regulatory research and document interpretation.
 
-Answer the question in a concise manner based on the following context:
+Answer the question in a concise manner based on the following retrieved context:
 {context}
+
+Here is additional information about the current chat session:
+{session_context}
 
 Question: {question}
 
 If the context does not contain the answer, use other sources.
+
+Respond strictly as a single JSON object with exactly these keys: "answer" (string) and "shouldCreateChecklist" (boolean). Follow these rules when constructing the object:
+- "answer" must contain the full natural-language response for the user. If you set "shouldCreateChecklist" to true, end the answer with a tailored question inviting the user to let you create a checklist that captures the tasks implied by their request. Adapt the wording of that invitation to the user's scenario (e.g., "Do you want me to create a checklist of the steps you need to open a crypto business?").
+- Set "shouldCreateChecklist" to true when the user asks how to undertake, launch, or comply with something that would benefit from an actionable sequence of tasks (e.g., operating a business, meeting regulatory obligations, rolling out a compliance programme). Set it to false for direct factual questions, definitions, or when a checklist would not add value.
+- Do not include markdown code fences, prose outside of the JSON object, or additional keys.
 """
 
 CHECKLIST_SYSTEM_PROMPT = """

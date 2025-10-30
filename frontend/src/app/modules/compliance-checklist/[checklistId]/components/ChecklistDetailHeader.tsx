@@ -21,7 +21,7 @@ export default function ChecklistDetailHeader({
         <h1 className="text-5xl font-semibold leading-tight tracking-tight text-foreground">
           {checklist.title}
         </h1>
-        <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
+        <p className="max-w text-base leading-relaxed text-muted-foreground">
           {checklist.description}
         </p>
       </div>
