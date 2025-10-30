@@ -75,8 +75,7 @@ A separate embedding service allows a smoother experience in switching embedding
 
 #### Environment variables:
 
-- `EMBEDDER_MODEL` – Override the default `BAAI/bge-m3`.
-- `CHROMADB_ROOT_DIR` – Custom location for Chroma persistence.
+- `EMBEDDING_MODEL` – Override the default `BAAI/bge-m3`.
 - `EMBEDDING_SERVICE_URL` – Backend override (defaults to `http://localhost:6000`).
 
 #### API endpoints:
@@ -104,24 +103,13 @@ A separate embedding service allows a smoother experience in switching embedding
    ```
 
 ### 5. Frontend
-1. In a separate terminal, navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
-2. Install Node.js dependencies:
-   ```
-   npm install
-   ```
-
-3. (Optional) If on mac, run:
-   ```
-   export NODE_OPTIONS=--openssl-legacy-provider
-   ```
-
-4. Start the development server:
-   ```
-   npm run dev
-   ```
+In a separate terminal:
+```bash
+cd frontend
+npm install # install Node.js dependencies
+export NODE_OPTIONS=--openssl-legacy-provider # (Optional) If on mac, run
+npm run dev # start the development server
+```
 
 ### 6. Data Ingestion
 This is a separate section to build and maintain the central knowledge base, where a few pipelines can be scheduled to run regularly.
@@ -139,3 +127,31 @@ This is a separate section to build and maintain the central knowledge base, whe
    ```
 
 4. Run the pipelines. Refer to data_ingestion/README.md.
+### 7. Git Submodules
+`backend`, `frontend`, `data_ingestion` and `service` serve as Git submodules. 
+1. Commit changes inside each submodules first. 
+   ```bash
+   cd <submodule>
+   git status  # check what needs committing
+   git add .
+   git commit -m "<your-commit-message>"
+   git push origin master  # push to the submodule remote
+   cd .. # go back to the mono repository
+   ```
+2. Update the mono repository to point to the latest submodule commits.
+   ```bash
+   git status
+   ```
+   You should see:
+   ```
+   modified: backend
+   modified: data_ingestion
+   modified: frontend
+   modified: service
+   ```
+   Then, stage, commit, and push the mono repository.
+   ```bash
+   git add backend data_ingestion frontend service
+   git commit -m "Update all submodules to latest commits"
+   git push origin master
+   ```
