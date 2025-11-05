@@ -18,7 +18,7 @@ To clone the repositories correctly into \<your-mono-repo\>, run:
 git clone --recursive https://github.com/NUS-FinTechLab/Reg-Guru <your-mono-repo>
 cd <your-mono-repo>
 
-# Update submodules if they already cloned without --recursive
+# [Optional] Update submodules if they already cloned without --recursive
 git submodule update --init --recursive
 
 # Checkout development branches (if needed)
@@ -33,7 +33,7 @@ To update them correctly:
    git status  # check what needs committing
    git add .
    git commit -m "<your-commit-message>"
-   git push origin master  # push to the submodule remote
+   git push -u origin <branch>  # push to the submodule remote
    cd .. # go back to the mono repository
    ```
 2. Update the mono repository to point to the latest submodule commits.
@@ -51,23 +51,24 @@ To update them correctly:
    ```bash
    git add backend data_ingestion frontend service
    git commit -m "Update all submodules to latest commits"
-   git push origin master
+   git push -u origin <branch>
    ```
-3. Or, you may automate this updating process using `git submodule foreach` in the **mono repository**:
+3. Create pull requests inside each submodule if necessary before creating a pull request in the mono repository.
+4. Or, you may automate committing & pushing process using `git submodule foreach` in the **mono repository**:
    ```bash
    git submodule foreach '
    git status --porcelain | grep -q . || exit 0
    echo "Committing changes in $name..."
    git add .
    git commit -m "Update submodules"
-   git push
+   git push --set-upstream origin <branch>
    '
    ```
    If submodules commit successfully, update the submodule references in the mono repository:
    ```bash
    git add .
    git commit -m 'Update submodule references'
-   git push
+   git push origin <branch>
    ```
    Run `git pull origin` inside the submodules before working on them individually.
 
@@ -135,7 +136,7 @@ In `service/`, create `.env` based on `.env.template`.
 
 In a separate terminal, create an environment for service and activate it.
 ```bash
-cd embedding_service
+cd service
 pip install -r requirements.txt
 # Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
