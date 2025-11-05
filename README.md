@@ -53,21 +53,22 @@ To update them correctly:
    git commit -m "Update all submodules to latest commits"
    git push -u origin <branch>
    ```
-3. Or, you may automate this updating process using `git submodule foreach` in the **mono repository**:
+3. Create pull requests inside each submodule if necessary before creating a pull request in the mono repository.
+4. Or, you may automate committing & pushing process using `git submodule foreach` in the **mono repository**:
    ```bash
    git submodule foreach '
    git status --porcelain | grep -q . || exit 0
    echo "Committing changes in $name..."
    git add .
    git commit -m "Update submodules"
-   git push
+   git push --set-upstream origin <branch>
    '
    ```
    If submodules commit successfully, update the submodule references in the mono repository:
    ```bash
    git add .
    git commit -m 'Update submodule references'
-   git push
+   git push origin <branch>
    ```
    Run `git pull origin` inside the submodules before working on them individually.
 
