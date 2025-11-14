@@ -72,6 +72,11 @@ To update them correctly:
    ```
    Run `git pull origin` inside the submodules before working on them individually.
 
+5. To update the submodules to the latest commit by other developers on their branch directly:
+   ```bash
+   git submodule update --remote
+   ```
+   Then, update the submodule references in the mono repository as in step 4.
 ### 1. Backend
 
 #### a. Setup
