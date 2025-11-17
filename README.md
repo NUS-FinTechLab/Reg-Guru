@@ -8,6 +8,11 @@ S3 connection
 RDS connection
 > https://pypi.org/project/psycopg2/
 
+## EC2 Instance
+```bash
+ssh -i "<YOUR PATH TO .SSH>/.ssh/reg-guru-engine.pem" ubuntu@ec2-18-141-209-181.ap-southeast-1.compute.amazonaws.com
+```
+
 ## Development Setup
 The project consists of a few components, including a web app which user interacts with and a few data ingestion pipelines to be scheduled to keep the vector store up-to-date. **Both the web app and pipelines reply on a long-run embedding service.** `backend`, `frontend`, `data_ingestion` and `service` serve as Git submodules in this mono repository. 
 
@@ -87,7 +92,7 @@ Create an environment for backend and activate it.
 ```bash
 cd backend
 pip install -r requirements.txt
-# Or faster pip through Tsinghua mirrors: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# Or faster pip through Tsinghua mirrors: pip install -r requirements_minimal.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 python app.py # Start the server
 ```
